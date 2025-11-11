@@ -1,0 +1,15 @@
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+html {
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+  interpolate-size: allow-keywords;
+}
+
+body {
+  background: #000000;
+}
