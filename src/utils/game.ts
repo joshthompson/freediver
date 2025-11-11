@@ -62,9 +62,11 @@ export function playSound(url: string, volume = 1) {
 
 type ControllerBaseType = {
   id: string
-  x: Accessor<number>
-  y: Accessor<number>
+  type: string
+  x: Accessor<Sprite['x']>
+  y: Accessor<Sprite['y']>
   game?: Game
+  style?: Accessor<Sprite['style']>
 } & Partial<Accessorise<Sprite>>
 
 type ControllerActions<CP extends ControllerBaseType> = {
@@ -84,6 +86,7 @@ export interface Controller<
   CP extends ControllerBaseType,
   CA extends ControllerActions<CP>,
 > {
+  type: string
   id: string
   frameRate: number
   onEnterFrame: (data: CP, game: Game, age: number) => void
@@ -116,10 +119,9 @@ export function createController<
   const destroy = () => clearInterval(interval)
   const setGame = (game: Game) => (data.game = game)
 
-  const frameInterval = data.frameInterval
-
   return {
     id: data.id,
+    type: data.type,
     frameRate,
     onEnterFrame,
     destroy,
@@ -130,7 +132,7 @@ export function createController<
       (): Sprite => ({
         frames: options.frames ?? [],
         class: options.class,
-        style: options.style,
+        style: { ...options.style, ...data.style?.() },
         x: data.x(),
         y: data.y(),
         xScale: data.xScale?.() ?? 1,

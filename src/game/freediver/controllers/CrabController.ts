@@ -25,6 +25,7 @@ export function createCrabController(
       const [speed, setSpeed] = createSignal(Math.random() * maxSpeed)
       return {
         id,
+        type: 'crab',
         x,
         setX,
         y,

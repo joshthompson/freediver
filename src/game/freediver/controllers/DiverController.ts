@@ -9,6 +9,7 @@ export type DiverController = ReturnType<typeof createDiverController>
 const bubbleFrequency = 20
 const pxInMeter = 40
 const eqTolerance = 4
+let bubbleN = 0
 
 export function createDiverController(
   id: string,
@@ -49,10 +50,23 @@ export function createDiverController(
         const [frameInterval, setFrameInterval] = createSignal(250)
         const [bubbleLevel, setBubbleLevel] = createSignal(0)
         const [eqLevel, setEqLevel] = createSignal(1)
+        const [holdSpace, setHoldSpace] = createSignal(1)
         const maxSpeed = 10
         const minSpeed = -2.5
+
+        const makeBubble = (xShift: number, yShift: number, xSpeed?: number, speed?: number) => {
+          return createBubbleController('diver-bubble-' + bubbleN++, {
+            x: x() + 20 + (40 + xShift) * Math.sin((rotation() * Math.PI) / 180),
+            y: y() + 40 - (40 + yShift) * Math.cos((rotation() * Math.PI) / 180),
+            xSpeed,
+            speed,
+          })
+        }
+
+
         return {
           id,
+          type: 'diver',
           x,
           setX,
           y,
@@ -76,6 +90,10 @@ export function createDiverController(
           eqLevel,
           setEqLevel,
           eqTolerance,
+          holdSpace,
+          setHoldSpace,
+          holdSpaceMax: 20,
+          makeBubble,
         }
       },
       onEnterFrame($, $game, $age) {
@@ -134,19 +152,27 @@ export function createDiverController(
         $.setBubbleLevel($.bubbleLevel() + Math.abs($.speed()) / 3 + 0.5)
         if ($.bubbleLevel() > bubbleFrequency) {
           $.setBubbleLevel(0)
-          $game.addController?.(
-            createBubbleController('diver-bubble-' + $age / bubbleFrequency, {
-              x: $.x() + 20 + 40 * Math.sin(($.rotation() * Math.PI) / 180),
-              y: $.y() + 40 - 40 * Math.cos(($.rotation() * Math.PI) / 180),
-            }),
-          )
+          $game.addController($.makeBubble(0, 0))
         }
 
         // Equalisation
         const yDiff = $.y() - initY
         $.setEqLevel(Math.max(0, $.eqLevel() + yDiff / pxInMeter))
         if (space) {
-          $.setEqLevel(0)
+          $.setHoldSpace($.holdSpace() + 1)
+          if ($.holdSpace() === $.holdSpaceMax) {
+            $.setEqLevel(0)
+            Array(20).fill(null).forEach((_, n) => {
+              $game.addController($.makeBubble(
+                n % 2 ? 10 : -10,
+                -4,
+                n % 2 === 0 ? -1 - Math.random() : 1 + Math.random(),
+                1 + Math.random(),
+              ))
+            })
+          }
+        } else {
+          $.setHoldSpace(0)
         }
 
         // Move canvas

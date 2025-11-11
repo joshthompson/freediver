@@ -34,6 +34,23 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
     )
   })
 
+  const typeOrder = [
+    'bubble',
+    'corgi',
+    'diver',
+    'fish',
+    'octopus',
+    'crab',
+  ]
+  const sprites = () => {
+    const all = Object.values(props.game.controllers())
+    return all.toSorted((a, b) => {
+      const aP = typeOrder.findIndex(type => type === a.type)
+      const bP = typeOrder.findIndex(type => type === b.type)
+      return bP - aP
+    })
+  }
+
   return (
     <GameContext.Provider value={props.game}>
       <div
@@ -47,7 +64,7 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
         onClick={props.onClick}
         onTouchStart={props.onClick}
       >
-        <For each={Object.values(props.game.controllers())}>
+        <For each={sprites()}>
           {controller => <Sprite {...controller.sprite()} />}
         </For>
         {props.children}
