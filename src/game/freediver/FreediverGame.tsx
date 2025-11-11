@@ -1,5 +1,5 @@
 import { Component } from 'solid-js'
-import { css } from '@style/css'
+import { css, cva } from '@style/css'
 import { createDiverController, DiverController } from './controllers/DiverController'
 import { createCorgiController } from './controllers/CorgiController'
 import { createFishController } from './controllers/FishController'
@@ -39,6 +39,12 @@ export const FreediverGame: Component = () => {
     return diver.actions.depth()
   }
 
+  const eqWarn = () => {
+    const diver = game.getController('diver') as DiverController
+    const { eqLevel, eqTolerance } = diver.data
+    return eqLevel() > eqTolerance
+  }
+
   return (
     <div class={styles.page}>
       <Canvas game={game} class={styles.level} style={{
@@ -58,6 +64,9 @@ export const FreediverGame: Component = () => {
         `,
       }}>
         <div class={styles.depth}>{depth() ?? 0}m</div>
+        <div class={styles.equalisation({ warn: eqWarn() })}>
+          Press SPACE to equalise
+        </div>
       </Canvas>
     </div>
   )
@@ -87,5 +96,24 @@ const styles = {
     top: '5px',
     right: '10px',
     fontSize: '2rem',
+  }),
+  equalisation: cva({
+    base: {
+      position: 'absolute',
+      inset: '0',
+      background: 'red',
+      opacity: 0,
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      fontSize: '3rem'
+    },
+    variants: {
+      warn: {
+        true: {
+          animation: 'flash 1s ease-in-out infinite'
+        },
+      },
+    },
   }),
 }

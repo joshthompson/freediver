@@ -45,6 +45,13 @@ export default defineConfig({
       md: '600px',
       lg: '800px',
     },
+
+    keyframes: {
+      flash: {
+        '0%, 100%': { opacity: 0 },
+        '50%': { opacity: 0.2 },
+      }
+    },
   },
 
   // The output directory for your css system

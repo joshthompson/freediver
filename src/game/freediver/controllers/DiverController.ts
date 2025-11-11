@@ -7,6 +7,8 @@ import dave from '@public/dave.png'
 export type DiverController = ReturnType<typeof createDiverController>
 
 const bubbleFrequency = 20
+const pxInMeter = 40
+const eqTolerance = 4
 
 export function createDiverController(
   id: string,
@@ -24,6 +26,7 @@ export function createDiverController(
   const rightKey = props?.right ?? 'ArrowRight'
   const upKey = props?.up ?? 'ArrowUp'
   const downKey = props?.down ?? 'ArrowDown'
+  const spaceKey = ' '
 
   return createController(
     {
@@ -45,6 +48,7 @@ export function createDiverController(
         const [state] = createSignal<Sprite['state']>('play')
         const [frameInterval, setFrameInterval] = createSignal(250)
         const [bubbleLevel, setBubbleLevel] = createSignal(0)
+        const [eqLevel, setEqLevel] = createSignal(1)
         const maxSpeed = 10
         const minSpeed = -2.5
         return {
@@ -69,16 +73,22 @@ export function createDiverController(
           setFrameInterval,
           bubbleLevel,
           setBubbleLevel,
+          eqLevel,
+          setEqLevel,
+          eqTolerance,
         }
       },
       onEnterFrame($, $game, $age) {
         if (!$game) return
 
-        const [left, right, up, down] = [
+        const initY = $.y()
+
+        const [left, right, up, down, space] = [
           Key.isDown(leftKey),
           Key.isDown(rightKey),
           Key.isDown(upKey),
           Key.isDown(downKey),
+          Key.isDown(spaceKey),
         ]
 
         if (up) $.setSpeed($.speed() + $.acceleration())
@@ -115,18 +125,13 @@ export function createDiverController(
         const float = Math.cos($age / 10) * 1
         $.setY($.y() + float)
 
-        const margin = 40
-        const xMin = 0 - margin * 2
         const yMin = 0
-        const xMax = $game.canvas.width + margin * 2
         const yMax = $game.canvas.height - 100
 
-        // if ($.x() < xMin) $.setX(xMax)
-        // if ($.x() > xMax) $.setX(xMin)
         if ($.y() < yMin) $.setY(yMin)
         if ($.y() > yMax) $.setY(yMax)
 
-        $.setBubbleLevel($.bubbleLevel() + $.speed() / 3 + 0.5)
+        $.setBubbleLevel($.bubbleLevel() + Math.abs($.speed()) / 3 + 0.5)
         if ($.bubbleLevel() > bubbleFrequency) {
           $.setBubbleLevel(0)
           $game.addController?.(
@@ -137,14 +142,20 @@ export function createDiverController(
           )
         }
 
+        // Equalisation
+        const yDiff = $.y() - initY
+        $.setEqLevel(Math.max(0, $.eqLevel() + yDiff / pxInMeter))
+        if (space) {
+          $.setEqLevel(0)
+        }
+
         // Move canvas
         $game.canvas.setX($.x() - $game.canvas.width / 2 + $.width() / 2)
-        // $game.canvas.setY(-$.y())
       },
     } as const,
     {
       depth($) {
-        return Math.max(0, Math.floor($.y() / 40 - 0.5))
+        return Math.max(0, Math.floor($.y() / pxInMeter - 0.5))
       },
     } as const,
   )
