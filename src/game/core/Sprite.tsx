@@ -70,7 +70,7 @@ export const Sprite: Component<Sprite> = props => {
     return {
       'background-image': `url(${frame.image})`,
       'background-position': `${-frame.left}px ${frame.top}px`,
-      'background-size': frame.width && frame.height ? '300%' : '100% 100%',
+      'background-size': frame.width && frame.height ? `auto 100%` : '100% 100%',
     }
   })
 
@@ -89,7 +89,7 @@ export const Sprite: Component<Sprite> = props => {
     setImageSize({ width: results[0].width, height: results[0].height })
   })
 
-  let enterFrameTimeout: ReturnType<typeof setTimeout>
+  let enterFrameTimeout: ReturnType<typeof setTimeout> | undefined
 
   const runAnimation = () => {
     if (props.state === 'play' && props.frames.length) {

@@ -51,9 +51,9 @@ export const FreediverGame: Component = () => {
         `,
         'background-position': `
           ${-game.canvas.x()}px bottom,
-          ${-game.canvas.x() / 2.5}px bottom,
-          ${-game.canvas.x() / 2.0}px bottom,
-          ${-game.canvas.x() / 1.5}px bottom,
+          ${-game.canvas.x() / 2.5}px 85%,
+          ${-game.canvas.x() / 2.0}px 85%,
+          ${-game.canvas.x() / 1.5}px 85%,
           ${-game.canvas.x()}px bottom
         `,
       }}>
