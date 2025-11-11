@@ -1,9 +1,9 @@
 import { randomItem } from '@/utils'
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
-import fish from '@public/fish.png'
+import octopus from '@public/octopus.gif'
 
-export function createFishController(
+export function createOctopusController(
   id: string,
   props: {
     x: number
@@ -11,17 +11,17 @@ export function createFishController(
   },
 ) {
   return createController({
-    frames: [fish],
+    frames: [octopus],
     init() {
       const [x, setX] = createSignal<number>(props.x)
       const [y, setY] = createSignal<number>(props.y)
       const [size, setSize] = createSignal(Math.random() + 0.5)
-      const speed = () => size() * 10
+      const speed = () => size() * 2
       const [direction, setDirection] = createSignal(randomItem([-1, 1]))
       const [hue, setHue] = createSignal(Math.random() * 360)
       return {
         id,
-        type: 'fish',
+        type: 'octopus',
         x,
         setX,
         y,
@@ -30,6 +30,7 @@ export function createFishController(
         width: () => 30,
         xScale: () => size() * direction(),
         yScale: size,
+        rotation: () => 90 * direction(),
         setSize,
         direction,
         setDirection,

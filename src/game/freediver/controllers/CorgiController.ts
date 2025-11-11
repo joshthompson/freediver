@@ -40,6 +40,7 @@ export function createCorgiController(
       const [bubbleLevel, setBubbleLevel] = createSignal(0)
       return {
         id,
+        type: 'corgi',
         x,
         setX,
         y,

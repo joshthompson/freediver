@@ -10,6 +10,7 @@ import sand from '@public/sand.png'
 import bg1 from '@public/bg-1.png'
 import bg2 from '@public/bg-2.png'
 import bg3 from '@public/bg-3.png'
+import { createOctopusController } from './controllers/OctopusController'
 
 export const FreediverGame: Component = () => {
   const game = new Game({
@@ -34,6 +35,13 @@ export const FreediverGame: Component = () => {
     }))
   })
 
+  Array(4).fill(null).forEach((_, n) => {
+    game.addController(createOctopusController('octopus-' + n, {
+      x: Math.random() * 500 + 100,
+      y: Math.random() * 500 + 100,
+    }))
+  })
+
   const depth = () => {
     const diver = game.getController('diver') as DiverController
     return diver.actions.depth()
@@ -43,6 +51,12 @@ export const FreediverGame: Component = () => {
     const diver = game.getController('diver') as DiverController
     const { eqLevel, eqTolerance } = diver.data
     return eqLevel() > eqTolerance
+  }
+
+  const eqBar = () => {
+    const diver = game.getController('diver') as DiverController
+    const { holdSpace, holdSpaceMax } = diver.data
+    return Math.min(100, holdSpace() / holdSpaceMax * 100)
   }
 
   return (
@@ -65,7 +79,11 @@ export const FreediverGame: Component = () => {
       }}>
         <div class={styles.depth}>{depth() ?? 0}m</div>
         <div class={styles.equalisation({ warn: eqWarn() })}>
-          Press SPACE to equalise
+          <div class={styles.equalisationBackground({ warn: eqWarn() })} />
+          <div>Hold <div class={styles.key}>SPACE</div> to equalise</div>
+          <div class={styles.equalisationBar}>
+            <div style={{ '--percent': eqBar() }} />
+          </div>
         </div>
       </Canvas>
     </div>
@@ -101,12 +119,29 @@ const styles = {
     base: {
       position: 'absolute',
       inset: '0',
-      background: 'red',
-      opacity: 0,
       display: 'flex',
+      flexDirection: 'column',
       justifyContent: 'center',
       alignItems: 'center',
-      fontSize: '3rem'
+      fontSize: '3rem',
+      gap: '3rem',
+      transition: 'opacity 0.5s ease-in-out',
+      opacity: 0,
+    },
+    variants: {
+      warn: {
+        true: {
+          opacity: '1',
+        },
+      },
+    },
+  }),
+  equalisationBackground: cva({
+    base: {
+      position: 'absolute',
+      inset: '0',
+      background: 'red',
+      opacity: 0,
     },
     variants: {
       warn: {
@@ -114,6 +149,35 @@ const styles = {
           animation: 'flash 1s ease-in-out infinite'
         },
       },
+    },
+  }),
+  key: css({
+    display: 'inline-block',
+    background: 'white',
+    color: 'black',
+    p: '0px 15px',
+    lineHeight: '1.2em',
+    mx: '0.15em',
+  }),
+  equalisationBar: css({
+    width: '300px',
+    borderRadius: '10px',
+    border: '3px solid white',
+    height: '20px',
+    background: 'white',
+
+    '& > div': {
+      height: '100%',
+      width: 'calc(1% * var(--percent))',
+      background: `
+        color-mix(
+          in srgb,
+          #0ab6fa calc(1% * var(--percent)),
+          red calc(100% - 1% * var(--percent))
+        )
+      `,
+      borderRadius: '7px',
+      transition: 'width 0.1s linear',
     },
   }),
 }

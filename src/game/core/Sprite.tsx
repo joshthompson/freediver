@@ -15,6 +15,7 @@ export interface Sprite {
   frames: string[]
   x: number
   y: number
+  z?: number
   xScale?: number
   yScale?: number
   state?: 'play' | 'pause' | undefined
@@ -119,6 +120,7 @@ export const Sprite: Component<Sprite> = props => {
         width: width(),
         'pointer-events': props.onClick ? 'auto' : 'none',
         rotate: props.rotation + 'deg',
+        'z-index': props.z,
         ...frameStyle(),
         ...props.style,
       }}

@@ -9,6 +9,8 @@ export function createBubbleController(
   props: {
     x: number
     y: number
+    xSpeed?: number,
+    speed?: number
   },
 ) {
   return createController({
@@ -16,16 +18,20 @@ export function createBubbleController(
     init() {
       const [x, setX] = createSignal<number>(props.x)
       const [y, setY] = createSignal<number>(props.y)
-      const [speed, setSpeed] = createSignal<number>(0.5)
       const [size, setSize] = createSignal(Math.random())
+      const [speed, setSpeed] = createSignal<number>((props.speed ?? 0.5) * (size() * 0.5 + 0.5))
+      const [xSpeed, setXSpeed] = createSignal<number>(props.xSpeed ?? 0)
       return {
         id,
+        type: 'bubble',
         x,
         setX,
         y,
         setY,
         speed,
         setSpeed,
+        xSpeed,
+        setXSpeed,
         seed: Math.random(),
         xScale: size,
         yScale: size,
@@ -33,10 +39,11 @@ export function createBubbleController(
       }
     },
     onEnterFrame($, $game, $age) {
-      $.setX($.x() + Math.cos($.seed + $age / 5 - 0.5) * 2)
+      $.setX($.x() + Math.cos($.seed + $age / 5 - 0.5) * 2 + $.xSpeed())
       $.setY($.y() - $.speed())
       $.setSpeed($.speed() + acceleration)
       $.setSize($.xScale() + 0.01)
+      $.setXSpeed($.xSpeed() * 0.99)
 
       if ($.y() < -30) {
         $game.removeController($.id)

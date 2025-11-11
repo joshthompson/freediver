@@ -34,6 +34,11 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
     )
   })
 
+  const sprites = () => {
+    const all = Object.values(props.game.controllers())
+    return all.toSorted((a, b) => a.data.y - b.data.y)
+  }
+
   return (
     <GameContext.Provider value={props.game}>
       <div
@@ -47,7 +52,7 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
         onClick={props.onClick}
         onTouchStart={props.onClick}
       >
-        <For each={Object.values(props.game.controllers())}>
+        <For each={sprites()}>
           {controller => <Sprite {...controller.sprite()} />}
         </For>
         {props.children}
