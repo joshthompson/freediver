@@ -1,5 +1,5 @@
-import { Canvas, CanvasControllers } from '@/games/core/Canvas'
-import { Sprite } from '@/games/core/Sprite'
+import { Canvas, CanvasControllers } from '@/game/core/Canvas'
+import { Sprite } from '@/game/core/Sprite'
 import { Accessor, createMemo, createSignal, Setter } from 'solid-js'
 
 type Accessorise<T> = {

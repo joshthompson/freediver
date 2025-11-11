@@ -6,6 +6,7 @@ import { createFishController } from './controllers/FishController'
 import { createCrabController } from './controllers/CrabController'
 import { Canvas } from '../core/Canvas'
 import { Game } from '@/utils/game'
+import sand from '@public/sand.png'
 
 export const FreediverGame: Component = () => {
   const game = new Game({
@@ -38,6 +39,7 @@ export const FreediverGame: Component = () => {
   return (
     <div class={styles.page}>
       <Canvas game={game} class={styles.level} style={{
+        'background-image': `url(${sand}), linear-gradient(0deg,rgba(7, 0, 145, 1) 0%, rgba(10, 182, 250, 1) 100%)`,
         'background-position': `${-game.canvas.x()}px bottom`,
       }}>
         <div class={styles.depth}>{depth() ?? 0}m</div>
@@ -60,8 +62,6 @@ const styles = {
   level: css({
     position: 'relative',
     border: '3px solid black',
-    backgroundImage:
-      'url(/sand.png), linear-gradient(0deg,rgba(7, 0, 145, 1) 0%, rgba(10, 182, 250, 1) 100%)',
     backgroundRepeat: 'repeat-x',
     backgroundSize: '200px, cover',
     fontFamily: '"Jersey 10", sans-serif',

@@ -1,6 +1,7 @@
 import { randomItem } from '@/utils'
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
+import fish from '@public/fish.png'
 
 export function createFishController(
   id: string,
@@ -10,7 +11,7 @@ export function createFishController(
   },
 ) {
   return createController({
-    frames: ['/fish.png'],
+    frames: [fish],
     init() {
       const [x, setX] = createSignal<number>(props.x)
       const [y, setY] = createSignal<number>(props.y)

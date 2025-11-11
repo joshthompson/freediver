@@ -1,11 +1,12 @@
 import type { Component } from 'solid-js';
 import { FreediverGame } from './game/freediver/FreediverGame';
 import { css } from '@style/css';
+import logo from '@public/logo.png'
 
 const App: Component = () => {
   return (
     <>
-      <img src="/logo.png" class={styles.logo} />
+      <img src={logo} class={styles.logo} />
       <FreediverGame />
     </>
   );

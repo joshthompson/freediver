@@ -1,6 +1,7 @@
 import { randomItem } from '@/utils'
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
+import crab from '@public/crab.png'
 
 type CrabMode = typeof modes[number]
 const modes = ['pause', 'left', 'right'] as const
@@ -15,7 +16,7 @@ export function createCrabController(
   },
 ) {
   return createController({
-    frames: ['/crab.png'],
+    frames: [crab],
     init() {
       const [x, setX] = createSignal<number>(props.x)
       const [y, setY] = createSignal<number>(630 + Math.random() * 30)

@@ -2,7 +2,8 @@ import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
 import { DiverController } from './DiverController'
 import { createBubbleController } from './BubbleController'
-import { Sprite } from '@/games/core/Sprite'
+import { Sprite } from '@/game/core/Sprite'
+import corgi from '@public/corgi.png'
 
 const followDistance = 50
 const bubbleFrequency = 20
@@ -19,7 +20,7 @@ export function createCorgiController(
   },
 ) {
   return createController({
-    frames: ['/corgi.png'],
+    frames: [corgi],
     init() {
       const [x, setX] = createSignal<number>(props?.x ?? 10)
       const [y, setY] = createSignal<number>(props?.y ?? 40)

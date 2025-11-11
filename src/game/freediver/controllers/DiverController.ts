@@ -1,7 +1,8 @@
 import { createController, Key } from '@/utils/game'
 import { createSignal } from 'solid-js'
 import { createBubbleController } from './BubbleController'
-import { Sprite } from '@/games/core/Sprite'
+import { Sprite } from '@/game/core/Sprite'
+import dave from '@public/dave.png'
 
 export type DiverController = ReturnType<typeof createDiverController>
 
@@ -27,9 +28,9 @@ export function createDiverController(
   return createController(
     {
       frames: [
-        '/dave.png#0,0,339,480',
-        '/dave.png#678,0,339,480',
-        '/dave.png#339,0,339,480',
+        `${dave}#0,0,339,480`,
+        `${dave}#678,0,339,480`,
+        `${dave}#339,0,339,480`,
       ],
       style: props?.style,
       init() {

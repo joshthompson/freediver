@@ -20,7 +20,8 @@
     // Paths
     "paths": {
       "@/*": ["./src/*"],
-      "@style/*": ["./styled-system/*"]
+      "@style/*": ["./styled-system/*"],
+      "@public/*": ["./public/*"]
     }
   }
 }
