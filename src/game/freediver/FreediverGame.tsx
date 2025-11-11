@@ -7,6 +7,9 @@ import { createCrabController } from './controllers/CrabController'
 import { Canvas } from '../core/Canvas'
 import { Game } from '@/utils/game'
 import sand from '@public/sand.png'
+import bg1 from '@public/bg-1.png'
+import bg2 from '@public/bg-2.png'
+import bg3 from '@public/bg-3.png'
 
 export const FreediverGame: Component = () => {
   const game = new Game({
@@ -39,8 +42,20 @@ export const FreediverGame: Component = () => {
   return (
     <div class={styles.page}>
       <Canvas game={game} class={styles.level} style={{
-        'background-image': `url(${sand}), linear-gradient(0deg,rgba(7, 0, 145, 1) 0%, rgba(10, 182, 250, 1) 100%)`,
-        'background-position': `${-game.canvas.x()}px bottom`,
+        'background-image': `
+          url(${sand}),
+          url(${bg1}),
+          url(${bg2}),
+          url(${bg3}),
+          linear-gradient(0deg,rgba(7, 0, 145, 1) 0%, rgba(10, 182, 250, 1) 100%)
+        `,
+        'background-position': `
+          ${-game.canvas.x()}px bottom,
+          ${-game.canvas.x() / 2.5}px bottom,
+          ${-game.canvas.x() / 2.0}px bottom,
+          ${-game.canvas.x() / 1.5}px bottom,
+          ${-game.canvas.x()}px bottom
+        `,
       }}>
         <div class={styles.depth}>{depth() ?? 0}m</div>
       </Canvas>
@@ -63,7 +78,7 @@ const styles = {
     position: 'relative',
     border: '3px solid black',
     backgroundRepeat: 'repeat-x',
-    backgroundSize: '200px, cover',
+    backgroundSize: '200px, 612px, 612px, 612px, cover',
     fontFamily: '"Jersey 10", sans-serif',
     color: 'white',
   }),
