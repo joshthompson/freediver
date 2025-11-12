@@ -38,5 +38,6 @@ const styles = {
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'column',
+    fontFamily: '"Jersey 10", sans-serif',
   }),
 }

@@ -55,7 +55,7 @@ export const OceanScene: SceneComponent = props => {
       debug={props.debug}
       game={game}
       overlay={<GameOverlay game={game} />}
-      underlay={<GameUnderlay />}
+      underlay={<GameUnderlay game={game} />}
       class={styles.level}
       style={{
         'background-image': `
@@ -115,8 +115,11 @@ const GameOverlay: Component<{ game: Game }> = props => {
   </>
 }
 
-const GameUnderlay: Component = () => {
-  return <div class={styles.surface} style={{ 'background-image': `url(${surface})` }} />
+const GameUnderlay: Component<{ game: Game }> = props => {
+  return <div class={styles.surface} style={{
+    'background-image': `url(${surface})`,
+    'background-position-x': `${-props.game.canvas.x() / 10}px`
+  }} />
 }
 
 const styles = {
@@ -125,7 +128,6 @@ const styles = {
     border: '3px solid black',
     backgroundRepeat: 'repeat-x',
     backgroundSize: '200px, 612px, 612px, 612px, cover',
-    fontFamily: '"Jersey 10", sans-serif',
     color: 'white',
     maxWidth: '100%',
   }),

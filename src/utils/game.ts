@@ -6,7 +6,7 @@ type Accessorise<T> = {
   [K in keyof T]: Accessor<T[K]>
 }
 
-export type SceneComponent<T extends {}> = Component<{
+export type SceneComponent<T extends {} = {}> = Component<{
   active: boolean
   debug: boolean
 } & T>
