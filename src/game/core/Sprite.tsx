@@ -56,9 +56,7 @@ export const Sprite: Component<Sprite> = props => {
       }
     }),
   )
-  const width = createMemo(() =>
-    props.width ? props.width + 'px' : imageSize().width + 'px',
-  )
+  const width = createMemo(() => props.width ? props.width : imageSize().width)
 
   const size = createMemo(() =>
     frames()[0].width
@@ -68,10 +66,14 @@ export const Sprite: Component<Sprite> = props => {
 
   const frameStyle = createMemo(() => {
     const frame = frames()[currentFrame()]
+    const ratio = width() / frame.width
     return {
       'background-image': `url(${frame.image})`,
-      'background-position': `${-frame.left}px ${frame.top}px`,
-      'background-size': frame.width && frame.height ? `auto 100%` : '100% 100%',
+      'background-position': `${frame.left}px ${frame.top}px`,
+      'background-size':
+        frame.width && frame.height
+          ? `auto 100%`
+          : '100% 100%',
     }
   })
 
@@ -117,7 +119,7 @@ export const Sprite: Component<Sprite> = props => {
         top: (props.y - game.canvas.y()) + 'px',
         left: (props.x - game.canvas.x()) + 'px',
         transform: `scale(${(props.xScale ?? 1).toString()}, ${(props.yScale ?? 1).toString()})`,
-        width: width(),
+        width: width() + 'px',
         'pointer-events': props.onClick ? 'auto' : 'none',
         rotate: props.rotation + 'deg',
         'z-index': props.z,

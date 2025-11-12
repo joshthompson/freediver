@@ -144,7 +144,7 @@ export function createDiverController(
         $.setY($.y() + float)
 
         const yMin = 0
-        const yMax = $game.canvas.height - 100
+        const yMax = $game.canvas.height - 130
 
         if ($.y() < yMin) $.setY(yMin)
         if ($.y() > yMax) $.setY(yMax)

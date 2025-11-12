@@ -31,18 +31,20 @@ export const FreediverGame: Component = () => {
     }))
   })
 
-  Array(3).fill(null).forEach((_, n) => {
-    game.addController(createCrabController('crab-' + n, {
+  const crabs = Array(3).fill(null).map((_, n) => 
+    createCrabController('crab-' + n, {
       x: Math.random() * 700,
-    }))
-  })
+    })
+  ).sort((a, b) => a.data.y() - b.data.y())
+  crabs.forEach(crab => game.addController(crab))
 
-  Array(4).fill(null).forEach((_, n) => {
-    game.addController(createOctopusController('octopus-' + n, {
+  const octopi = Array(4).fill(null).map((_, n) => 
+    createOctopusController('octopus-' + n, {
       x: Math.random() * 500 + 100,
       y: Math.random() * 500 + 100,
-    }))
-  })
+    })
+  ).sort((a, b) => b.data.y() - a.data.y())
+  octopi.forEach(octopus => game.addController(octopus))
 
   return (
     <div class={styles.page}>
@@ -133,8 +135,8 @@ const styles = {
     position: 'absolute',
     width: '84px',
     aspectRatio: '21 / 26',
-    top: '5px',
-    right: '10px',
+    top: '4px',
+    right: '4px',
     fontSize: '2rem',
     backgroundSize: 'cover',
     textAlign: 'center',
@@ -186,7 +188,9 @@ const styles = {
     left: '0',
     width: '100%',
     height: '50px',
-    backgroundSize: '8px',
+    backgroundSize: 'auto 100%',
+    filter: 'saturate(0) brightness(10)',
+    opacity: '0.5',
   }),
   key: css({
     display: 'inline-block',
