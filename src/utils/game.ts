@@ -1,10 +1,15 @@
 import { Canvas, CanvasControllers } from '@/game/core/Canvas'
 import { Sprite } from '@/game/core/Sprite'
-import { Accessor, createMemo, createSignal, Setter } from 'solid-js'
+import { Accessor, Component, createMemo, createSignal, Setter } from 'solid-js'
 
 type Accessorise<T> = {
   [K in keyof T]: Accessor<T[K]>
 }
+
+export type SceneComponent<T extends {}> = Component<{
+  active: boolean
+  debug: boolean
+} & T>
 
 class KeyController {
   #keys = new Map<string, boolean>()
