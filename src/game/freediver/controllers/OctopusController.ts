@@ -2,6 +2,7 @@ import { generateFrames, randomItem } from '@/utils'
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
 import octopus from '@public/octopus.png'
+import { DiverController } from './DiverController'
 
 export function createOctopusController(
   id: string,
@@ -35,6 +36,7 @@ export function createOctopusController(
         setSize,
         direction,
         setDirection,
+        hue,
         setHue,
         style: () => ({
           filter: `hue-rotate(${hue()}deg)`,
@@ -50,8 +52,8 @@ export function createOctopusController(
       else if ([5, 0].includes($currentFrame)) $.setSpeed($.size() * 2)
       else $.setSpeed($.size() * 1)
 
-      const xMin = $game.canvas.x() - 30
-      const xMax = $game.canvas.width + $game.canvas.x() + 30
+      const xMin = $game.canvas().x() - 30
+      const xMax = $game.canvas().width + $game.canvas().x() + 30
       if ($.x() > xMax || $.x() < xMin) {
         $.setY(Math.random() * 500 + 100)
         $.setSize(Math.random() + 0.5)
@@ -60,6 +62,17 @@ export function createOctopusController(
       }
       if ($.x() > xMax) $.setX(xMin)
       if ($.x() < xMin) $.setX(xMax)
+
+      const diver = $game?.getController('diver') as DiverController
+      if (diver) {
+        const dx = Math.abs(diver.data.x() - $.x())
+        const dy = Math.abs(diver.data.y() - $.y())
+        const distance = Math.hypot(dx, dy)
+
+        if (distance < 150) {
+          $.setHue($.hue() + 6 * Math.random())
+        }
+      }
     },
   })
 }

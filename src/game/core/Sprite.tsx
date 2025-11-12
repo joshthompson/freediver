@@ -32,7 +32,11 @@ export interface Sprite {
   onChangeFrame?: (frameIndex: number) => void
 }
 
-export const Sprite: Component<Sprite> = props => {
+interface SpriteExtendedProps {
+  active?: boolean
+}
+
+export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
   const game = useContext(GameContext)
   if (!game) return
   
@@ -76,7 +80,6 @@ export const Sprite: Component<Sprite> = props => {
 
   const frameStyle = createMemo(() => {
     const frame = frames()[currentFrame()]
-    const ratio = width() / frame.width
     return {
       'background-image': `url(${frame.image})`,
       'background-position': `${frame.left}px ${frame.top}px`,
@@ -105,7 +108,7 @@ export const Sprite: Component<Sprite> = props => {
   let enterFrameTimeout: ReturnType<typeof setTimeout> | undefined
 
   const runAnimation = () => {
-    if (props.state === 'play' && props.frames.length) {
+    if (props.active !== false && props.state === 'play' && props.frames.length) {
       setCurrentFrame(prev => (prev + 1) % props.frames.length)
     }
     setTimeout(
@@ -126,8 +129,8 @@ export const Sprite: Component<Sprite> = props => {
       style={{
         display: loading() ? 'none' : 'block',
         'aspect-ratio': `${size().width} / ${size().height}`,
-        top: (props.y - game.canvas.y()) + 'px',
-        left: (props.x - game.canvas.x()) + 'px',
+        top: (props.y - game.canvas().y()) + 'px',
+        left: (props.x - game.canvas().x()) + 'px',
         transform: `scale(${(props.xScale ?? 1).toString()}, ${(props.yScale ?? 1).toString()})`,
         width: width() + 'px',
         'pointer-events': props.onClick ? 'auto' : 'none',

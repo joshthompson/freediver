@@ -69,8 +69,8 @@ export function createCrabController(
 
       $.setState($.mode() !== 'pause' || $.y() > $.initY ? 'play' : 'pause')
       
-      const xMin = $game.canvas.x() - 30
-      const xMax = $game.canvas.width + $game.canvas.x() + 30
+      const xMin = $game.canvas().x() - 30
+      const xMax = $game.canvas().width + $game.canvas().x() + 30
       if ($.x() > xMax || $.x() < xMin) {
         $.setY($.initY)
       }

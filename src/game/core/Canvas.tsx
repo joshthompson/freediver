@@ -62,10 +62,10 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
     const rect = (event.currentTarget as HTMLDivElement).getBoundingClientRect()
     const x = (event instanceof MouseEvent
       ? event.clientX - rect.left
-      : event.touches[0].clientX - rect.left) + props.game.canvas.x()
+      : event.touches[0].clientX - rect.left) + props.game.canvas().x()
     const y = (event instanceof MouseEvent
       ? event.clientY - rect.top
-      : event.touches[0].clientY - rect.top) + props.game.canvas.y()
+      : event.touches[0].clientY - rect.top) + props.game.canvas().y()
     return { x, y }
   }
 
@@ -87,8 +87,8 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
         ref={props.ref}
         class={cx(styles.canvas, props.class)}
         style={{
-          width: `${props.game.canvas.width}px`,
-          height: `${props.game.canvas.height}px`,
+          width: `${props.game.canvas().width}px`,
+          height: `${props.game.canvas().height}px`,
           ...props.style,
         }}
         onClick={handleClick}
@@ -99,7 +99,7 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
       >
         {props.underlay}
         <For each={sprites()}>
-          {controller => <Sprite {...controller.sprite()} />}
+          {controller => <Sprite {...controller.sprite()} active={props.game.isActive()} />}
         </For>
         {props.overlay}
         {debugOn() && <Debugger game={props.game} />}
