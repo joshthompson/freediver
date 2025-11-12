@@ -10,6 +10,8 @@ import sand from '@public/sand.png'
 import bg1 from '@public/bg-1.png'
 import bg2 from '@public/bg-2.png'
 import bg3 from '@public/bg-3.png'
+import surface from '@public/surface.png'
+import watch from '@public/watch.png'
 import { createOctopusController } from './controllers/OctopusController'
 
 export const FreediverGame: Component = () => {
@@ -42,52 +44,70 @@ export const FreediverGame: Component = () => {
     }))
   })
 
+  return (
+    <div class={styles.page}>
+      <Canvas
+        game={game}
+        overlay={<GameOverlay game={game} />}
+        underlay={<GameUnderlay />}
+        class={styles.level}
+        style={{
+          'background-image': `
+            url(${sand}),
+            url(${bg1}),
+            url(${bg2}),
+            url(${bg3}),
+            linear-gradient(
+              0deg,
+              rgba(7, 0, 145, 1) 0%,
+              rgba(10, 182, 250, 1) 90%,
+              rgba(230, 240, 255, 1) 100%
+            )
+          `,
+          'background-position': `
+            ${-game.canvas.x()}px bottom,
+            ${-game.canvas.x() / 2.5}px 85%,
+            ${-game.canvas.x() / 2.0}px 85%,
+            ${-game.canvas.x() / 1.5}px 85%,
+            ${-game.canvas.x()}px bottom
+          `,
+        }}
+      />
+    </div>
+  )
+}
+
+const GameOverlay: Component<{ game: Game }> = props => {
   const depth = () => {
-    const diver = game.getController('diver') as DiverController
+    const diver = props.game.getController('diver') as DiverController
     return diver.actions.depth()
   }
 
   const eqWarn = () => {
-    const diver = game.getController('diver') as DiverController
+    const diver = props.game.getController('diver') as DiverController
     const { eqLevel, eqTolerance } = diver.data
     return eqLevel() > eqTolerance
   }
 
   const eqBar = () => {
-    const diver = game.getController('diver') as DiverController
+    const diver = props.game.getController('diver') as DiverController
     const { holdSpace, holdSpaceMax } = diver.data
     return Math.min(100, holdSpace() / holdSpaceMax * 100)
   }
 
-  return (
-    <div class={styles.page}>
-      <Canvas game={game} class={styles.level} style={{
-        'background-image': `
-          url(${sand}),
-          url(${bg1}),
-          url(${bg2}),
-          url(${bg3}),
-          linear-gradient(0deg,rgba(7, 0, 145, 1) 0%, rgba(10, 182, 250, 1) 100%)
-        `,
-        'background-position': `
-          ${-game.canvas.x()}px bottom,
-          ${-game.canvas.x() / 2.5}px 85%,
-          ${-game.canvas.x() / 2.0}px 85%,
-          ${-game.canvas.x() / 1.5}px 85%,
-          ${-game.canvas.x()}px bottom
-        `,
-      }}>
-        <div class={styles.depth}>{depth() ?? 0}m</div>
-        <div class={styles.equalisation({ warn: eqWarn() })}>
-          <div class={styles.equalisationBackground({ warn: eqWarn() })} />
-          <div>Hold <div class={styles.key}>SPACE</div> to equalise</div>
-          <div class={styles.equalisationBar}>
-            <div style={{ '--percent': eqBar() }} />
-          </div>
-        </div>
-      </Canvas>
+  return <>
+    <div class={styles.depth} style={{ 'background-image': `url(${watch})` }}>{depth() ?? 0}m</div>
+    <div class={styles.equalisation({ warn: eqWarn() })}>
+      <div class={styles.equalisationBackground({ warn: eqWarn() })} />
+      <div>Hold <div class={styles.key}>SPACE</div> to equalise</div>
+      <div class={styles.equalisationBar}>
+        <div style={{ '--percent': eqBar() }} />
+      </div>
     </div>
-  )
+  </>
+}
+const GameUnderlay: Component = () => {
+  return <div class={styles.surface} style={{ 'background-image': `url(${surface})` }} />
 }
 
 const styles = {
@@ -111,9 +131,18 @@ const styles = {
   }),
   depth: css({
     position: 'absolute',
+    width: '84px',
+    aspectRatio: '21 / 26',
     top: '5px',
     right: '10px',
     fontSize: '2rem',
+    backgroundSize: 'cover',
+    textAlign: 'center',
+    paddingRight: '16px',
+    paddingLeft: '8px',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
   }),
   equalisation: cva({
     base: {
@@ -150,6 +179,14 @@ const styles = {
         },
       },
     },
+  }),
+  surface: css({
+    position: 'absolute',
+    top: '0',
+    left: '0',
+    width: '100%',
+    height: '50px',
+    backgroundSize: '8px',
   }),
   key: css({
     display: 'inline-block',

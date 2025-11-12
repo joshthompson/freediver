@@ -9,7 +9,8 @@ export type CanvasControllers = Record<string, Controller<any, any>>
 export interface CanvasProps {
   ref?: HTMLDivElement | undefined
   game: Game
-  children?: JSX.Element
+  overlay?: JSX.Element
+  underlay?: JSX.Element
   style?: JSX.CSSProperties
   class?: string
   onClick?: () => void
@@ -64,10 +65,11 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
         onClick={props.onClick}
         onTouchStart={props.onClick}
       >
+        {props.underlay}
         <For each={sprites()}>
           {controller => <Sprite {...controller.sprite()} />}
         </For>
-        {props.children}
+        {props.overlay}
       </div>
     </GameContext.Provider>
   )
