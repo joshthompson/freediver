@@ -42,7 +42,7 @@ export function createBubbleController(
       $.setX($.x() + Math.cos($.seed + $age / 5 - 0.5) * 2 + $.xSpeed())
       $.setY($.y() - $.speed())
       $.setSpeed($.speed() + acceleration)
-      $.setSize($.xScale() + 0.01)
+      $.setSize($.xScale() * 1.01)
       $.setXSpeed($.xSpeed() * 0.99)
 
       if ($.y() < -30) {

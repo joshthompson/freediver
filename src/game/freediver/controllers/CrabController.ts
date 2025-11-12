@@ -1,4 +1,4 @@
-import { randomItem } from '@/utils'
+import { generateFrames, randomItem } from '@/utils'
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
 import crab from '@public/crab.png'
@@ -18,12 +18,7 @@ export function createCrabController(
   },
 ) {
   return createController({
-    frames: [
-      `${crab}#0,0,144,112`,
-      `${crab}#144,0,144,112`,
-      `${crab}#288,0,144,112`,
-      `${crab}#432,0,144,112`,
-    ],
+    frames: generateFrames(crab, 144, 112, 48, 4),
     init() {
       const initY = 630 + Math.random() * 30
       const [x, setX] = createSignal<number>(props.x)

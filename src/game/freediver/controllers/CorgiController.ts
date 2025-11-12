@@ -4,6 +4,7 @@ import { DiverController } from './DiverController'
 import { createBubbleController } from './BubbleController'
 import { Sprite } from '@/game/core/Sprite'
 import corgi from '@public/corgi2.png'
+import { generateFrames } from '@/utils'
 
 const followDistance = 50
 const bubbleFrequency = 20
@@ -22,10 +23,7 @@ export function createCorgiController(
   },
 ) {
   return createController({
-    frames: [
-      `${corgi}#0,0,76,66`,
-      `${corgi}#50,0,76,66`,
-    ],
+    frames: generateFrames(corgi, 70, 66, 76, 2),
     init() {
       const [x, setX] = createSignal<number>(props?.x ?? 10)
       const [y, setY] = createSignal<number>(props?.y ?? 40)
@@ -34,7 +32,6 @@ export function createCorgiController(
       const [rotationSpeed] = createSignal<number>(5)
       const [acceleration] = createSignal<number>(0.2)
       const [speed, setSpeed] = createSignal<number>(0)
-      const [width] = createSignal<number>(50)
       const [state] = createSignal<Sprite['state']>('play')
       const [frameInterval, setFrameInterval] = createSignal(250)
       const [bubbleLevel, setBubbleLevel] = createSignal(0)
@@ -53,7 +50,7 @@ export function createCorgiController(
         acceleration,
         speed,
         setSpeed,
-        width,
+        width: () => 70,
         state,
         frameInterval,
         setFrameInterval,

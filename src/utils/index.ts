@@ -40,3 +40,15 @@ export function isTouchDevice() {
 export function randomItem<T>(array: T[] | readonly T[]): T {
   return array[Math.floor(Math.random() * array.length)]
 }
+
+export function generateFrames(
+  image: string,
+  imageWidth: number,
+  imageHeight: number,
+  displayWidth: number,
+  frameCount: number,
+): string[] {
+  return Array(frameCount).fill(null).map(
+    (_, n) => `${image}#${displayWidth * n},0,${imageWidth},${imageHeight}`
+  )
+}
