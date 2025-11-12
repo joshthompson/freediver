@@ -4,6 +4,7 @@ import { createBubbleController } from './BubbleController'
 import { Sprite } from '@/game/core/Sprite'
 import dave from '@public/dave.png'
 import arm from '@public/dave-arm.png'
+import { generateFrames } from '@/utils'
 
 export type DiverController = ReturnType<typeof createDiver>
 export type DiverArmController = ReturnType<typeof createDiverArm>
@@ -38,11 +39,7 @@ function createDiver(id: string, props?: DiverControllerProps) {
 
   return createController(
     {
-      frames: [
-        `${dave}#0,0,339,480`,
-        `${dave}#678,0,339,480`,
-        `${dave}#339,0,339,480`,
-      ],
+      frames: generateFrames(dave, 339, 480, 68, 3),
       style: props?.style,
       init() {
         const [x, setX] = createSignal<number>(props?.x ?? 30)
@@ -52,7 +49,6 @@ function createDiver(id: string, props?: DiverControllerProps) {
         const [rotationSpeed] = createSignal<number>(5)
         const [acceleration] = createSignal<number>(0.5)
         const [speed, setSpeed] = createSignal<number>(0)
-        const [width] = createSignal<number>(68)
         const [state] = createSignal<Sprite['state']>('play')
         const [frameInterval, setFrameInterval] = createSignal(250)
         const [bubbleLevel, setBubbleLevel] = createSignal(0)
@@ -69,7 +65,6 @@ function createDiver(id: string, props?: DiverControllerProps) {
             speed,
           })
         }
-
 
         return {
           id,
@@ -88,7 +83,7 @@ function createDiver(id: string, props?: DiverControllerProps) {
           setSpeed,
           maxSpeed,
           minSpeed,
-          width,
+          width: () => 68,
           state,
           frameInterval,
           setFrameInterval,
