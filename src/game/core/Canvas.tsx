@@ -34,9 +34,21 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
     )
   })
 
+  const typeOrder = [
+    'bubble',
+    'corgi',
+    'diver',
+    'fish',
+    'octopus',
+    'crab',
+  ]
   const sprites = () => {
     const all = Object.values(props.game.controllers())
-    return all.toSorted((a, b) => a.data.y - b.data.y)
+    return all.toSorted((a, b) => {
+      const aP = typeOrder.findIndex(type => type === a.type)
+      const bP = typeOrder.findIndex(type => type === b.type)
+      return bP - aP
+    })
   }
 
   return (

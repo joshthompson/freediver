@@ -86,6 +86,7 @@ export interface Controller<
   CP extends ControllerBaseType,
   CA extends ControllerActions<CP>,
 > {
+  type: string
   id: string
   frameRate: number
   onEnterFrame: (data: CP, game: Game, age: number) => void
@@ -120,6 +121,7 @@ export function createController<
 
   return {
     id: data.id,
+    type: data.type,
     frameRate,
     onEnterFrame,
     destroy,
