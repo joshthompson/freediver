@@ -76,10 +76,11 @@ type ControllerActions<CP extends ControllerBaseType> = {
 interface ControllerProps<T extends ControllerBaseType> {
   init: () => T
   frames?: Sprite['frames']
+  randomStartFrame?: Sprite['randomStartFrame']
   class?: Sprite['class']
   style?: Sprite['style']
   frameRate?: number
-  onEnterFrame?: (data: T, game: Game, age: number) => void
+  onEnterFrame?: (data: T, game: Game, age: number, currentFrame: number) => void
 }
 
 export interface Controller<
@@ -89,7 +90,7 @@ export interface Controller<
   type: string
   id: string
   frameRate: number
-  onEnterFrame: (data: CP, game: Game, age: number) => void
+  onEnterFrame: (data: CP, game: Game, age: number, currentFrame: number) => void
   destroy: () => void
   setGame: (game: Game) => void
   data: CP
@@ -110,10 +111,11 @@ export function createController<
   const [age, setAge] = createSignal<number>(0)
   const onEnterFrame = options.onEnterFrame ?? (() => {})
   const frameRate = options.frameRate ?? 40
+  const [currentFrame, setCurrentFrame] = createSignal<number>(0)
 
   const data: CP = options.init()
   const interval = setInterval(() => {
-    data.game && onEnterFrame(data, data.game, age())
+    data.game && onEnterFrame(data, data.game, age(), currentFrame())
     setAge(age() + 1)
   }, frameRate)
   const destroy = () => clearInterval(interval)
@@ -131,16 +133,19 @@ export function createController<
     sprite: createMemo(
       (): Sprite => ({
         frames: options.frames ?? [],
+        randomStartFrame: options.randomStartFrame ?? false,
         class: options.class,
         style: { ...options.style, ...data.style?.() },
         x: data.x(),
         y: data.y(),
+        origin: data.origin?.(),
         xScale: data.xScale?.() ?? 1,
         yScale: data.yScale?.() ?? 1,
         width: data.width?.(),
         rotation: data.rotation?.() ?? 0,
         state: data.state?.(),
         frameInterval: data.frameInterval?.(),
+        onChangeFrame: frame => setCurrentFrame(frame),
       }),
     ),
     actions: Object.fromEntries(

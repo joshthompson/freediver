@@ -3,31 +3,38 @@ import { createSignal } from 'solid-js'
 import { createBubbleController } from './BubbleController'
 import { Sprite } from '@/game/core/Sprite'
 import dave from '@public/dave.png'
+import arm from '@public/dave-arm.png'
 
-export type DiverController = ReturnType<typeof createDiverController>
+export type DiverController = ReturnType<typeof createDiver>
+export type DiverArmController = ReturnType<typeof createDiverArm>
+
+interface DiverControllerProps {
+  x?: number
+  y?: number
+  style?: Sprite['style']
+}
 
 const bubbleFrequency = 20
 const pxInMeter = 40
 const eqTolerance = 4
 let bubbleN = 0
 
-export function createDiverController(
-  id: string,
-  props?: {
-    x?: number
-    y?: number
-    up?: string
-    down?: string
-    left?: string
-    right?: string
-    style?: Sprite['style']
-  },
-) {
-  const leftKey = props?.left ?? 'ArrowLeft'
-  const rightKey = props?.right ?? 'ArrowRight'
-  const upKey = props?.up ?? 'ArrowUp'
-  const downKey = props?.down ?? 'ArrowDown'
-  const spaceKey = ' '
+export function createDiverController(id: string, props?: DiverControllerProps) {
+  const diver = createDiver(id, props)
+  const diverArm = createDiverArm(diver)
+
+  return {
+    diver,
+    diverArm
+  }
+}
+
+function createDiver(id: string, props?: DiverControllerProps) {
+  const leftKey = () => Key.isDown('ArrowLeft') || Key.isDown('a')
+  const rightKey = () => Key.isDown('ArrowRight') || Key.isDown('d')
+  const upKey = () => Key.isDown('ArrowUp') || Key.isDown('w')
+  const downKey = () => Key.isDown('ArrowDown') || Key.isDown('s')
+  const spaceKey = () => Key.isDown(' ')
 
   return createController(
     {
@@ -99,39 +106,36 @@ export function createDiverController(
       onEnterFrame($, $game, $age) {
         if (!$game) return
 
+        const left = () => leftKey()
+        const right = () => rightKey()
+        const up = () => upKey()
+        const down = () => downKey()
+        const space = () => spaceKey()
+
         const initY = $.y()
 
-        const [left, right, up, down, space] = [
-          Key.isDown(leftKey),
-          Key.isDown(rightKey),
-          Key.isDown(upKey),
-          Key.isDown(downKey),
-          Key.isDown(spaceKey),
-        ]
-
-        if (up) $.setSpeed($.speed() + $.acceleration())
-        else if (down) $.setSpeed($.speed() - $.acceleration())
+        if (up()) $.setSpeed($.speed() + $.acceleration())
+        else if (down()) $.setSpeed($.speed() - $.acceleration())
         else if ($.speed() > 0) $.setSpeed($.speed() - $.acceleration() / 2)
         else if ($.speed() < 0) $.setSpeed($.speed() + $.acceleration() / 2)
         $.setSpeed(Math.max($.minSpeed, Math.min($.maxSpeed, $.speed())))
 
-        $.setFrameInterval(up ? 50 : 250)
+        $.setFrameInterval(up() ? 50 : 250)
 
-        if ($.speed() !== 0) {
-          let rotation = $.rotation()
-          if (left) rotation -= $.rotationSpeed()
-          if (right) rotation += $.rotationSpeed()
-          if (left || right) {
-            rotation = (rotation + 360) % 360
-            $.setRotation(rotation <= 180 ? rotation : -360 + rotation)
-          }
-
-          const rotate = (($.rotation() - 90) / 180) * Math.PI
-          $.setX($.x() + $.speed() * Math.cos(rotate))
-          $.setY($.y() + $.speed() * Math.sin(rotate))
+        // Rotation
+        let rotation = $.rotation()
+        const movingRotation = $.speed() !== 0 ? 1 : 0.5
+        if (left()) rotation -= $.rotationSpeed() * movingRotation
+        if (right()) rotation += $.rotationSpeed() * movingRotation
+        if (left() || right()) {
+          rotation = (rotation + 360) % 360
+          $.setRotation(rotation <= 180 ? rotation : -360 + rotation)
         }
+        const rotate = (($.rotation() - 90) / 180) * Math.PI
+        $.setX($.x() + $.speed() * Math.cos(rotate))
+        $.setY($.y() + $.speed() * Math.sin(rotate))
 
-        if (!left && !right && !up && !down) {
+        if (!left() && !right() && !up() && !down()) {
           let rotation = $.rotation()
           if (rotation > 1) rotation -= 1.5
           if (rotation < -1) rotation += 1.5
@@ -144,7 +148,7 @@ export function createDiverController(
         $.setY($.y() + float)
 
         const yMin = 0
-        const yMax = $game.canvas.height - 100
+        const yMax = $game.canvas.height - 130
 
         if ($.y() < yMin) $.setY(yMin)
         if ($.y() > yMax) $.setY(yMax)
@@ -158,15 +162,15 @@ export function createDiverController(
         // Equalisation
         const yDiff = $.y() - initY
         $.setEqLevel(Math.max(0, $.eqLevel() + yDiff / pxInMeter))
-        if (space) {
+        if (space()) {
           $.setHoldSpace($.holdSpace() + 1)
           if ($.holdSpace() === $.holdSpaceMax) {
             $.setEqLevel(0)
             Array(20).fill(null).forEach((_, n) => {
               $game.addController($.makeBubble(
-                n % 2 ? 10 : -10,
+                n % 2 ? 40 : -10,
                 -4,
-                n % 2 === 0 ? -1 - Math.random() : 1 + Math.random(),
+                n % 2 === 0 ? -2 - Math.random() : 2 + Math.random(),
                 1 + Math.random(),
               ))
             })
@@ -185,4 +189,23 @@ export function createDiverController(
       },
     } as const,
   )
+}
+
+function createDiverArm(
+  diver: DiverController
+) {
+  return createController({
+    frames: [arm],
+    init() {
+      return {
+        id: diver.id + '-arm',
+        type: 'diver-arm',
+        width: diver.data.width,
+        x: diver.data.x,
+        y: diver.data.y,
+        rotation: diver.data.rotation,
+        xScale: diver.data.xScale,
+      }
+    },
+  })
 }

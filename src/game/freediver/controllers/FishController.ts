@@ -1,7 +1,9 @@
-import { randomItem } from '@/utils'
+import { generateFrames, randomItem } from '@/utils'
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
-import fish from '@public/fish.png'
+import fish1 from '@public/fish1.png'
+import fish2 from '@public/fish2.png'
+import fish3 from '@public/fish3.png'
 
 export function createFishController(
   id: string,
@@ -10,13 +12,21 @@ export function createFishController(
     y: number
   },
 ) {
+  const width = 30
+  const frames = randomItem([
+    generateFrames(fish1, 252, 204, width, 4),
+    generateFrames(fish2, 460, 340, width, 8),
+    generateFrames(fish3, 320, 170, width, 8),
+  ])
+
   return createController({
-    frames: [fish],
+    frames,
+    randomStartFrame: true,
     init() {
       const [x, setX] = createSignal<number>(props.x)
       const [y, setY] = createSignal<number>(props.y)
       const [size, setSize] = createSignal(Math.random() + 0.5)
-      const speed = () => size() * 10
+      const speed = () => size() * 5
       const [direction, setDirection] = createSignal(randomItem([-1, 1]))
       const [hue, setHue] = createSignal(Math.random() * 360)
       return {
@@ -27,13 +37,14 @@ export function createFishController(
         y,
         setY,
         speed,
-        width: () => 30,
+        width: () => width,
         xScale: () => size() * direction(),
         yScale: size,
         setSize,
         direction,
         setDirection,
         setHue,
+        state: () => 'play',
         style: () => ({
           filter: `hue-rotate(${hue()}deg)`,
         })
