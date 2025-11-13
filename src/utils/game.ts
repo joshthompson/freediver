@@ -6,10 +6,14 @@ type Accessorise<T> = {
   [K in keyof T]: Accessor<T[K]>
 }
 
-export type SceneComponent<T extends {} = {}> = Component<{
+export type SceneComponent<
+  T extends {} = any,
+  D extends {} = any,
+> = Component<{
   active: boolean
   debug: boolean
-  setScene?: (scene: string) => void
+  setScene?: (scene: string, data?: D) => void
+  sceneData?: D
 } & T>
 
 class KeyController {
@@ -187,6 +191,8 @@ export class Game<C extends Controller<any, any> = Controller<any, any>> {
   setActive: Setter<boolean>
   paused: Accessor<boolean>
   setPaused: Setter<boolean>
+  mute: Accessor<boolean>
+  setMute: Setter<boolean>
 
 
   constructor(options: GameOptions) {
@@ -198,6 +204,7 @@ export class Game<C extends Controller<any, any> = Controller<any, any>> {
     const [controllers, setControllers] = createSignal<CanvasControllers>({})
     const [active, setActive] = createSignal<boolean>(true)
     const [paused, setPaused] = createSignal<boolean>(false)
+    const [mute, setMute] = createSignal<boolean>(false)
     this.canvas = canvas
     this.setCanvas = setCanvas
     this.active = active
@@ -206,6 +213,8 @@ export class Game<C extends Controller<any, any> = Controller<any, any>> {
     this.setPaused = setPaused
     this.controllers = controllers
     this.setControllers = setControllers
+    this.mute = mute
+    this.setMute = setMute
 
     // Set window event listeners
     window.addEventListener('keydown', this.handleWindowKeydown.bind(this))
@@ -214,8 +223,9 @@ export class Game<C extends Controller<any, any> = Controller<any, any>> {
     this.setup()
   }
 
-  addController(...controllers: C[]) {
+  addController(...controllers: (C | undefined)[]) {
     controllers.forEach(controller => {
+      if (!controller) return
       controller.setGame(this)
       this.setControllers({
         ...this.controllers(),

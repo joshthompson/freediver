@@ -22,9 +22,14 @@ export const OceanScene: SceneComponent = props => {
     width: Math.min(700, window.innerWidth - 20),
     height: 700,
     setup: ($game: Game) => {
-      $game.addController(...createDiverController('diver'))
-      $game.addController(createCorgiController('corgi'))
-      $game.addController(createRopeController('rope', { x: -50 }))
+      $game.addController(...createDiverController('diver', {
+        goToSurface: (speed: number) => {
+          props.setScene?.('surface', { speed, })
+        },
+        mode: 'ocean',
+      }))
+      $game.addController(createCorgiController('corgi', { mode: 'ocean' }))
+      $game.addController(createRopeController('rope', { x: -50, mode: 'ocean' }))
 
       Array(10).fill(null).forEach((_, n) => {
         $game.addController(createFishController('fish-' + n, {
@@ -130,6 +135,9 @@ const GameOverlay: Component<{ game: Game, exitToMenu: () => void }> = props => 
       <div class={styles.paused}>
         <div>PAUSED</div>
         <Button onClick={() => props.game.togglePause()} size="small">Resume</Button>
+        <Button onClick={() => props.game.setMute(!props.game.mute())} size="small">
+         Volume: { props.game.mute() ? 'Off' : 'On' }
+        </Button>
         <Button onClick={() => props.exitToMenu()} size="small">Exit to menu</Button>
       </div>
     </>}

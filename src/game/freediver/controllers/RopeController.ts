@@ -6,13 +6,15 @@ export function createRopeController(
   id: string,
   props: {
     x: number
+    y?: number
+    mode: 'ocean' | 'surface'
   },
 ) {
   return createController({
     frames: [rope],
     init() {
       const [x, setX] = createSignal<number>(props.x)
-      const [y, setY] = createSignal<number>(-10)
+      const [y, setY] = createSignal<number>(props?.y ?? -10)
       const [rotation, setRotation] = createSignal<number>(0)
       return {
         id,
@@ -25,10 +27,11 @@ export function createRopeController(
         rotation,
         setRotation,
         origin: () => ({ x: 30, y: 30 }),
+        mode: props.mode,
       }
     },
     onEnterFrame($, _, $age) {
-      const float = Math.cos(10 + $age / 10) * 0.5
+      const float = Math.cos(10 + $age / 10) * ($.mode === 'ocean' ? 0.5 : 0.15)
       $.setY($.y() + float)
       $.setRotation(Math.sin(10 + $age / 50) * 2)
     }

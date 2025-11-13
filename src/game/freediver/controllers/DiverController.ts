@@ -13,6 +13,8 @@ interface DiverControllerProps {
   x?: number
   y?: number
   style?: Sprite['style']
+  goToSurface?: (speed: number) => void
+  mode: 'ocean' | 'surface'
 }
 
 const bubbleFrequency = 20
@@ -31,11 +33,7 @@ export function createDiverController(id: string, props?: DiverControllerProps) 
 }
 
 function createDiver(id: string, props?: DiverControllerProps) {
-  const leftKey = () => Key.isDown('ArrowLeft') || Key.isDown('a')
-  const rightKey = () => Key.isDown('ArrowRight') || Key.isDown('d')
-  const upKey = () => Key.isDown('ArrowUp') || Key.isDown('w')
-  const downKey = () => Key.isDown('ArrowDown') || Key.isDown('s')
-  const spaceKey = () => Key.isDown(' ')
+  const goToSurface = props?.goToSurface ?? (() => {})
 
   return createController(
     {
@@ -58,6 +56,7 @@ function createDiver(id: string, props?: DiverControllerProps) {
         const minSpeed = -2.5
 
         const makeBubble = (xShift: number, yShift: number, xSpeed?: number, speed?: number) => {
+          if (props?.mode !== 'ocean') return
           return createBubbleController('diver-bubble-' + bubbleN++, {
             x: x() + 20 + (40 + xShift) * Math.sin((rotation() * Math.PI) / 180),
             y: y() + 40 - (40 + yShift) * Math.cos((rotation() * Math.PI) / 180),
@@ -96,81 +95,14 @@ function createDiver(id: string, props?: DiverControllerProps) {
           setHoldSpace,
           holdSpaceMax: 20,
           makeBubble,
+          goToSurface,
+          mode: props?.mode ?? 'ocean',
         }
       },
-      onEnterFrame($, $game, $age) {
-        const left = () => leftKey()
-        const right = () => rightKey()
-        const up = () => upKey()
-        const down = () => downKey()
-        const space = () => spaceKey()
-
-        const initY = $.y()
-
-        if (up()) $.setSpeed($.speed() + $.acceleration())
-        else if (down()) $.setSpeed($.speed() - $.acceleration())
-        else if ($.speed() > 0) $.setSpeed($.speed() - $.acceleration() / 2)
-        else if ($.speed() < 0) $.setSpeed($.speed() + $.acceleration() / 2)
-        $.setSpeed(Math.max($.minSpeed, Math.min($.maxSpeed, $.speed())))
-
-        $.setFrameInterval(up() ? 50 : 250)
-
-        // Rotation
-        let rotation = $.rotation()
-        const movingRotation = $.speed() !== 0 ? 1 : 0.5
-        if (left()) rotation -= $.rotationSpeed() * movingRotation
-        if (right()) rotation += $.rotationSpeed() * movingRotation
-        if (left() || right()) {
-          rotation = (rotation + 360) % 360
-          $.setRotation(rotation <= 180 ? rotation : -360 + rotation)
-        }
-        const rotate = (($.rotation() - 90) / 180) * Math.PI
-        $.setX($.x() + $.speed() * Math.cos(rotate))
-        $.setY($.y() + $.speed() * Math.sin(rotate))
-
-        if (!left() && !right() && !up() && !down()) {
-          let rotation = $.rotation()
-          if (rotation > 1) rotation -= 1.5
-          if (rotation < -1) rotation += 1.5
-          $.setRotation(rotation)
-        }
-
-        $.setXScale($.rotation() > 0 ? 1 : -1)
-
-        const float = Math.cos($age / 10) * 1
-        $.setY($.y() + float)
-
-        const yMin = 0
-        const yMax = $game.canvas().height - 130
-
-        if ($.y() < yMin) $.setY(yMin)
-        if ($.y() > yMax) $.setY(yMax)
-
-        $.setBubbleLevel($.bubbleLevel() + Math.abs($.speed()) / 3 + 0.5)
-        if ($.bubbleLevel() > bubbleFrequency) {
-          $.setBubbleLevel(0)
-          $game.addController($.makeBubble(0, 0))
-        }
-
-        // Equalisation
-        const yDiff = $.y() - initY
-        $.setEqLevel(Math.max(0, $.eqLevel() + yDiff / pxInMeter))
-        if (space()) {
-          $.setHoldSpace($.holdSpace() + 1)
-          if ($.holdSpace() === $.holdSpaceMax) {
-            $.setEqLevel(0)
-            Array(20).fill(null).forEach((_, n) => {
-              $game.addController($.makeBubble(
-                n % 2 ? 40 : -10,
-                -4,
-                n % 2 === 0 ? -2 - Math.random() : 2 + Math.random(),
-                1 + Math.random(),
-              ))
-            })
-          }
-        } else {
-          $.setHoldSpace(0)
-        }
+      onEnterFrame($, $game, $age, $currentFrame) {
+        // Specific surface / ocean stuff
+        if ($.mode === 'ocean') onEnterFrameOcean($, $game, $age, $currentFrame)
+        else if ($.mode === 'surface') onEnterFrameSurface($, $game, $age, $currentFrame)
 
         // Move canvas
         $game.canvas().setX($.x() - $game.canvas().width / 2 + $.width() / 2)
@@ -201,4 +133,89 @@ function createDiverArm(
       }
     },
   })
+}
+
+const onEnterFrameOcean: ReturnType<typeof createDiver>['onEnterFrame'] = ($, $game, $age) => {
+  const left = () => Key.isDown('ArrowLeft') || Key.isDown('a')
+  const right = () => Key.isDown('ArrowRight') || Key.isDown('d')
+  const up = () => Key.isDown('ArrowUp') || Key.isDown('w')
+  const down = () => Key.isDown('ArrowDown') || Key.isDown('s')
+  const space = () => Key.isDown(' ')
+
+  const initY = $.y()
+
+  if (up()) $.setSpeed($.speed() + $.acceleration())
+  else if (down()) $.setSpeed($.speed() - $.acceleration())
+  else if ($.speed() > 0) $.setSpeed($.speed() - $.acceleration() / 2)
+  else if ($.speed() < 0) $.setSpeed($.speed() + $.acceleration() / 2)
+  $.setSpeed(Math.max($.minSpeed, Math.min($.maxSpeed, $.speed())))
+
+  $.setFrameInterval(up() ? 50 : 250)
+
+  // Rotation
+  let rotation = $.rotation()
+  const movingRotation = $.speed() !== 0 ? 1 : 0.5
+  if (left()) rotation -= $.rotationSpeed() * movingRotation
+  if (right()) rotation += $.rotationSpeed() * movingRotation
+  if (left() || right()) {
+    rotation = (rotation + 360) % 360
+    $.setRotation(rotation <= 180 ? rotation : -360 + rotation)
+  }
+  const rotate = (($.rotation() - 90) / 180) * Math.PI
+  const xSpeed = $.x() + $.speed() * Math.cos(rotate)
+  const ySpeed = $.y() + $.speed() * Math.sin(rotate)
+  $.setX(xSpeed)
+  $.setY(ySpeed)
+
+  if (!left() && !right() && !up() && !down()) {
+    let rotation = $.rotation()
+    if (rotation > 1) rotation -= 1.5
+    if (rotation < -1) rotation += 1.5
+    $.setRotation(rotation)
+  }
+
+  $.setXScale($.rotation() > 0 ? 1 : -1)
+
+  const float = Math.cos($age / 10)
+  $.setY($.y() + float)
+
+  const yMin = -50
+  const yMax = $game.canvas().height - 130
+
+  if ($.y() < yMin) {
+    $.goToSurface(ySpeed)
+    $.setY(yMin)
+  }
+  if ($.y() > yMax) $.setY(yMax)
+
+  $.setBubbleLevel($.bubbleLevel() + Math.abs($.speed()) / 3 + 0.5)
+  if ($.bubbleLevel() > bubbleFrequency) {
+    $.setBubbleLevel(0)
+    $game.addController($.makeBubble(0, 0))
+  }
+
+  // Equalisation
+  const yDiff = $.y() - initY
+  $.setEqLevel(Math.max(0, $.eqLevel() + yDiff / pxInMeter))
+  if (space()) {
+    $.setHoldSpace($.holdSpace() + 1)
+    if ($.holdSpace() === $.holdSpaceMax) {
+      $.setEqLevel(0)
+      Array(20).fill(null).forEach((_, n) => {
+        $game.addController($.makeBubble(
+          n % 2 ? 40 : -10,
+          -4,
+          n % 2 === 0 ? -2 - Math.random() : 2 + Math.random(),
+          1 + Math.random(),
+        ))
+      })
+    }
+  } else {
+    $.setHoldSpace(0)
+  }
+}
+
+const onEnterFrameSurface: ReturnType<typeof createDiver>['onEnterFrame'] = ($, _$game, $age) => {
+  const float = Math.cos($age / 10) * 0.5
+  $.setY($.y() + float)
 }

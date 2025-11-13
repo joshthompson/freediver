@@ -16,10 +16,7 @@ export function createCorgiController(
   props?: {
     x?: number
     y?: number
-    up?: string
-    down?: string
-    left?: string
-    right?: string
+    mode: 'ocean' | 'surface'
   },
 ) {
   return createController({
@@ -56,14 +53,15 @@ export function createCorgiController(
         setFrameInterval,
         bubbleLevel,
         setBubbleLevel,
+        mode: props?.mode ?? 'ocean'
       }
     },
     onEnterFrame($, $game, $age) {
       const diver = $game?.getController('diver') as DiverController
       if (!diver) return
 
-      const targetX = diver.data.x()
-      const targetY = diver.data.y() + 80
+      const targetX = diver.data.x() + ($.mode === 'ocean' ? 0 : 30)
+      const targetY = diver.data.y() + ($.mode === 'ocean' ? 80 : 0)
       const distance = Math.hypot($.x() - targetX, $.y() - targetY)
       const direction = Math.atan2($.y() - targetY, $.x() - targetX)
 
@@ -85,18 +83,20 @@ export function createCorgiController(
       if ($.x() < targetX) $.setXScale(1)
       else $.setXScale(-1)
 
-      const float = Math.cos($age / 10 - 0.5) * 1
+      const float = Math.cos($age / 10 - 0.5) * ($.mode === 'ocean' ? 1 : 0.5)
       $.setY($.y() + float)
 
-      $.setBubbleLevel($.bubbleLevel() + $.speed() / 4 + 0.5)
-      if ($.bubbleLevel() > bubbleFrequency) {
-        $.setBubbleLevel(0)
-        $game.addController?.(
-          createBubbleController('corgi-bubble-' + $age / bubbleFrequency, {
-            x: $.x() + $.width() / 2,
-            y: $.y(),
-          }),
-        )
+      if ($.mode === 'ocean') {
+        $.setBubbleLevel($.bubbleLevel() + $.speed() / 4 + 0.5)
+        if ($.bubbleLevel() > bubbleFrequency) {
+          $.setBubbleLevel(0)
+          $game.addController?.(
+            createBubbleController('corgi-bubble-' + $age / bubbleFrequency, {
+              x: $.x() + $.width() / 2,
+              y: $.y(),
+            }),
+          )
+        }
       }
     },
   })

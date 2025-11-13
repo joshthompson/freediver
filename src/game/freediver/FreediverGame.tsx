@@ -6,14 +6,27 @@ import { MenuScene } from './scene/MenuScene'
 import { InstructionsScene } from './scene/InstructionsScene'
 
 export const FreediverGame: Component = () => {
-  const [scene, setScene] = createSignal<string>('menu')
+  const [scene, _setScene] = createSignal<string>('menu')
+  const [sceneData, setSceneData] = createSignal<any>(null)
+  const setScene = (scene: string, data?: any) => {
+    _setScene(scene)
+    setSceneData(data ?? null)
+  }
   const debug = window.location.hostname === 'localhost'
   return (
     <div class={styles.page}>
       <MenuScene debug={debug} active={scene() === 'menu'} setScene={setScene} />
-      <InstructionsScene debug={debug} active={scene() === 'instructions'} setScene={setScene} />
+      <InstructionsScene
+        debug={debug}
+        active={scene() === 'instructions'}
+        setScene={setScene}
+        sceneData={sceneData}
+      />
       <OceanScene debug={debug} active={scene() === 'ocean'} setScene={setScene} />
-      <SurfaceScene debug={debug} active={scene() === 'surface'} />
+      <SurfaceScene
+        debug={debug}
+        active={scene() === 'surface'}
+      />
     </div>
   )
 }

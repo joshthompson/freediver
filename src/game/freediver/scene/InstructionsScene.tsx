@@ -15,7 +15,7 @@ export const InstructionsScene: SceneComponent = props => {
       game={game}
       style={{ background: `url(${menu})` }}
       overlay={<div class={styles.overlay}>
-        <p>Dive and explore with your friend Linkosha the corgi</p>
+        <p class={styles.description}>Dive and explore with your friend Linkosha the corgi</p>
         <div class={styles.keyboard}>
           <div class={styles.key({ key: 'up' })}>
             <div class={styles.keyName}>↑</div>
@@ -55,6 +55,15 @@ const styles = {
     gap: '5px',
     pb: '10px',
     fontSize: '20px',
+  }),
+  description: css({
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    p: '40px 10px',
+    textAlign: 'center',
+    fontSize: '32px',
   }),
   keyboard: css({
     display: 'grid',
