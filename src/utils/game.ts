@@ -114,6 +114,8 @@ export function createController<
   options: ControllerProps<CP>,
   actions: ControllerActions<CP> = {},
 ): Controller<CP, CA> {
+
+
   const [age, setAge] = createSignal<number>(0)
   const onEnterFrame = options.onEnterFrame ?? (() => {})
   const frameRate = options.frameRate ?? 40
@@ -121,10 +123,14 @@ export function createController<
 
   const data: CP = options.init()
   const interval = setInterval(() => {
-    data.game && onEnterFrame(data, data.game, age(), currentFrame())
-    setAge(age() + 1)
+    if (data.game && data.game?.isActive()) {
+      onEnterFrame(data, data.game, age(), currentFrame())
+      setAge(age() + 1)
+    }
   }, frameRate)
-  const destroy = () => clearInterval(interval)
+  const destroy = () => {
+    clearInterval(interval)
+  }
   const setGame = (game: Game) => (data.game = game)
 
   return {
@@ -163,48 +169,58 @@ export function createController<
   }
 }
 
+interface GameOptions {
+  width: number
+  height: number
+  x?: number,
+  y?: number,
+  setup?: (game: Game) => void
+}
+
 export class Game<C extends Controller<any, any> = Controller<any, any>> {
-  canvas: Canvas
+  options: GameOptions
+  canvas: Accessor<Canvas>
+  setCanvas: Setter<Canvas>
   controllers: Accessor<CanvasControllers>
   setControllers: Setter<CanvasControllers>
+  active: Accessor<boolean>
+  setActive: Setter<boolean>
+  paused: Accessor<boolean>
+  setPaused: Setter<boolean>
 
-  constructor(options: {
-    width: number
-    height: number
-    x?: number,
-    y?: number,
-    controllers?: CanvasControllers
-  }) {
-    const [controllers, setControllers] = createSignal<CanvasControllers>(
-      options.controllers ?? {},
-    )
 
-    Object.values(controllers()).forEach(controller => {
-      controller.setGame(this)
-    })
+  constructor(options: GameOptions) {
+    // Store setup options
+    this.options = options
 
+    // Setup signals
+    const [canvas, setCanvas] = createSignal<Canvas>(this.createCanvas())
+    const [controllers, setControllers] = createSignal<CanvasControllers>({})
+    const [active, setActive] = createSignal<boolean>(true)
+    const [paused, setPaused] = createSignal<boolean>(false)
+    this.canvas = canvas
+    this.setCanvas = setCanvas
+    this.active = active
+    this.setActive = setActive
+    this.paused = paused
+    this.setPaused = setPaused
     this.controllers = controllers
     this.setControllers = setControllers
 
-    const [x, setX] = createSignal(options.x ?? 0)
-    const [y, setY] = createSignal(options.y ?? 0)
+    // Set window event listeners
+    window.addEventListener('keydown', this.handleWindowKeydown.bind(this))
 
-    this.canvas = {
-      width: options.width,
-      height: options.height,
-      x,
-      y,
-      setX,
-      setY,
-      controllers,
-    }
+    // Run setup
+    this.setup()
   }
 
-  addController(controller: C) {
-    controller.setGame(this)
-    this.setControllers({
-      ...this.controllers(),
-      [controller.id]: controller,
+  addController(...controllers: C[]) {
+    controllers.forEach(controller => {
+      controller.setGame(this)
+      this.setControllers({
+        ...this.controllers(),
+        [controller.id]: controller,
+      })
     })
   }
 
@@ -214,7 +230,60 @@ export class Game<C extends Controller<any, any> = Controller<any, any>> {
     this.setControllers(controllers)
   }
 
-  getController(id: string) {
-    return this.controllers()[id]
+  getController<T = Controller<any, any>>(id: string) {
+    return this.controllers()[id] as T | undefined
+  }
+
+  handleWindowKeydown(event: KeyboardEvent) {
+    if (event.key === 'p' || event.key === 'Escape') {
+      this.togglePause()
+    }
+  }
+
+  togglePause() {
+    if (!this.active()) return
+    this.setPaused(!this.paused())
+  }
+
+  isActive() {
+    return this.active() && !this.paused()
+  }
+
+  destroy() {
+    window.removeEventListener('keydown', this.handleWindowKeydown.bind(this))
+  }
+
+  createCanvas(): Canvas {
+    const [x, setX] = createSignal(this.options.x ?? 0)
+    const [y, setY] = createSignal(this.options.y ?? 0)
+
+    return {
+      width: this.options.width,
+      height: this.options.height,
+      x,
+      y,
+      setX,
+      setY,
+      controllers: this.controllers,
+    }
+  }
+  
+  setup() {
+    this.options.setup?.(this)
+    Object.values(this.controllers()).forEach(controller => {
+      controller.setGame(this)
+    })
+  }
+
+  reset() {
+    Object.values(this.controllers()).forEach(controller => {
+      controller.destroy()
+    })
+    requestAnimationFrame(() => {
+      this.setControllers({})
+      this.setup()
+      this.setPaused(false)
+      this.setCanvas(this.createCanvas())
+    })
   }
 }

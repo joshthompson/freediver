@@ -24,10 +24,10 @@ export function createDiverController(id: string, props?: DiverControllerProps) 
   const diver = createDiver(id, props)
   const diverArm = createDiverArm(diver)
 
-  return {
+  return [
     diver,
     diverArm
-  }
+  ]
 }
 
 function createDiver(id: string, props?: DiverControllerProps) {
@@ -99,8 +99,6 @@ function createDiver(id: string, props?: DiverControllerProps) {
         }
       },
       onEnterFrame($, $game, $age) {
-        if (!$game) return
-
         const left = () => leftKey()
         const right = () => rightKey()
         const up = () => upKey()
@@ -143,7 +141,7 @@ function createDiver(id: string, props?: DiverControllerProps) {
         $.setY($.y() + float)
 
         const yMin = 0
-        const yMax = $game.canvas.height - 130
+        const yMax = $game.canvas().height - 130
 
         if ($.y() < yMin) $.setY(yMin)
         if ($.y() > yMax) $.setY(yMax)
@@ -175,7 +173,7 @@ function createDiver(id: string, props?: DiverControllerProps) {
         }
 
         // Move canvas
-        $game.canvas.setX($.x() - $game.canvas.width / 2 + $.width() / 2)
+        $game.canvas().setX($.x() - $game.canvas().width / 2 + $.width() / 2)
       },
     } as const,
     {

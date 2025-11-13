@@ -7,7 +7,7 @@ import { createDiverController, DiverController } from "../controllers/DiverCont
 import { Game, SceneComponent } from "@/utils/game"
 import { createCorgiController } from "../controllers/CorgiController"
 import { createRopeController } from "../controllers/RopeController"
-import { Component, Show } from "solid-js"
+import { Component, createEffect, Show } from "solid-js"
 import { css, cva } from "@style/css"
 import bg1 from '@public/bg-1.png'
 import bg2 from '@public/bg-2.png'
@@ -15,45 +15,55 @@ import bg3 from '@public/bg-3.png'
 import surface from '@public/surface.png'
 import watch from '@public/watch.png'
 import sand from '@public/sand.png'
+import { Button } from "../ui/Button"
 
 export const OceanScene: SceneComponent = props => {
   const game = new Game({
     width: Math.min(700, window.innerWidth - 20),
     height: 700,
-    controllers: {
-      ...createDiverController('diver'),
-      corgi: createCorgiController('corgi'),
-      rope: createRopeController('rope', { x: -50 })
-    },
+    setup: ($game: Game) => {
+      $game.addController(...createDiverController('diver'))
+      $game.addController(createCorgiController('corgi'))
+      $game.addController(createRopeController('rope', { x: -50 }))
+
+      Array(10).fill(null).forEach((_, n) => {
+        $game.addController(createFishController('fish-' + n, {
+          x: Math.random() * 500 + 100,
+          y: Math.random() * 500 + 100,
+        }))
+      })
+    
+      const crabs = Array(3).fill(null).map((_, n) => 
+        createCrabController('crab-' + n, {
+          x: Math.random() * 700,
+        })
+      ).sort((a, b) => a.data.y() - b.data.y())
+      crabs.forEach(crab => $game.addController(crab))
+    
+      const octopi = Array(4).fill(null).map((_, n) => 
+        createOctopusController('octopus-' + n, {
+          x: Math.random() * 500 + 100,
+          y: Math.random() * 500 + 100,
+        })
+      ).sort((a, b) => b.data.y() - a.data.y())
+      octopi.forEach(octopus => $game.addController(octopus))
+    }
   })
 
-  Array(10).fill(null).forEach((_, n) => {
-    game.addController(createFishController('fish-' + n, {
-      x: Math.random() * 500 + 100,
-      y: Math.random() * 500 + 100,
-    }))
+  createEffect(() => {
+    game.setActive(props.active)
   })
 
-  const crabs = Array(3).fill(null).map((_, n) => 
-    createCrabController('crab-' + n, {
-      x: Math.random() * 700,
-    })
-  ).sort((a, b) => a.data.y() - b.data.y())
-  crabs.forEach(crab => game.addController(crab))
-
-  const octopi = Array(4).fill(null).map((_, n) => 
-    createOctopusController('octopus-' + n, {
-      x: Math.random() * 500 + 100,
-      y: Math.random() * 500 + 100,
-    })
-  ).sort((a, b) => b.data.y() - a.data.y())
-  octopi.forEach(octopus => game.addController(octopus))
+  const exitToMenu = () => {
+    game.reset()
+    props.setScene?.('menu')
+  }
 
   return <Show when={props.active}>
     <Canvas
       debug={props.debug}
       game={game}
-      overlay={<GameOverlay game={game} />}
+      overlay={<GameOverlay game={game} exitToMenu={exitToMenu} />}
       underlay={<GameUnderlay game={game} />}
       class={styles.level}
       style={{
@@ -70,34 +80,39 @@ export const OceanScene: SceneComponent = props => {
           )
         `,
         'background-position': `
-          ${-game.canvas.x()}px bottom,
-          ${-game.canvas.x() / 2.5}px 85%,
-          ${-game.canvas.x() / 2.0}px 85%,
-          ${-game.canvas.x() / 1.5}px 85%,
-          ${-game.canvas.x()}px bottom
+          ${-game.canvas().x()}px bottom,
+          ${-game.canvas().x() / 2.5}px 85%,
+          ${-game.canvas().x() / 2.0}px 85%,
+          ${-game.canvas().x() / 1.5}px 85%,
+          ${-game.canvas().x()}px bottom
         `,
       }}
       onClick={event => {
-        game.addController(createBubbleController('bubble-click-' + Date.now(), event))
+        if (!game.paused()) {
+          game.addController(createBubbleController('bubble-click-' + Date.now(), event))
+        }
       }}
     />
   </Show>
 }
 
-const GameOverlay: Component<{ game: Game }> = props => {
+const GameOverlay: Component<{ game: Game, exitToMenu: () => void }> = props => {
   const depth = () => {
-    const diver = props.game.getController('diver') as DiverController
+    const diver = props.game.getController<DiverController>('diver')
+    if (!diver) return 0
     return diver.actions.depth()
   }
 
   const eqWarn = () => {
-    const diver = props.game.getController('diver') as DiverController
+    const diver = props.game.getController<DiverController>('diver')
+    if (!diver) return false
     const { eqLevel, eqTolerance } = diver.data
     return eqLevel() > eqTolerance
   }
 
   const eqBar = () => {
-    const diver = props.game.getController('diver') as DiverController
+    const diver = props.game.getController<DiverController>('diver')
+    if (!diver) return 0
     const { holdSpace, holdSpaceMax } = diver.data
     return Math.min(100, holdSpace() / holdSpaceMax * 100)
   }
@@ -105,19 +120,26 @@ const GameOverlay: Component<{ game: Game }> = props => {
   return <>
     <div class={styles.depth} style={{ 'background-image': `url(${watch})` }}>{depth() ?? 0}m</div>
     <div class={styles.equalisation({ warn: eqWarn() })}>
-      <div class={styles.equalisationBackground} />
+      <div class={styles.equalisationBackground({ paused: props.game.paused() })} />
       <div>Hold <div class={styles.key}>SPACE</div> to equalise</div>
       <div class={styles.equalisationBar}>
         <div style={{ '--percent': eqBar() }} />
       </div>
     </div>
+    {props.game.paused() && <>
+      <div class={styles.paused}>
+        <div>PAUSED</div>
+        <Button onClick={() => props.game.togglePause()} size="small">Resume</Button>
+        <Button onClick={() => props.exitToMenu()} size="small">Exit to menu</Button>
+      </div>
+    </>}
   </>
 }
 
 const GameUnderlay: Component<{ game: Game }> = props => {
   return <div class={styles.surface} style={{
     'background-image': `url(${surface})`,
-    'background-position-x': `${-props.game.canvas.x() / 10}px`
+    'background-position-x': `${-props.game.canvas().x() / 10}px`
   }} />
 }
 
@@ -128,6 +150,17 @@ const styles = {
     backgroundSize: '200px, 612px, 612px, 612px, cover',
     color: 'white',
     maxWidth: '100%',
+  }),
+  paused: css({
+    position: 'absolute',
+    inset: '0',
+    background: 'rgba(0, 0, 0, 0.7)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    fontSize: '3rem',
+    flexDirection: 'column',
+    gap: '10px',
   }),
   depth: css({
     position: 'absolute',
@@ -167,12 +200,21 @@ const styles = {
       },
     },
   }),
-  equalisationBackground: css({
+  equalisationBackground: cva({
+    base: {
       position: 'absolute',
       inset: '0',
       background: 'red',
       opacity: 0,
-          animation: 'flash 1s ease-in-out infinite'
+      animation: 'flash 1s ease-in-out infinite'
+    },
+    variants: {
+      paused: {
+        true: {
+          animationPlayState: 'paused',
+        },
+      },
+    },
   }),
   surface: css({
     position: 'absolute',

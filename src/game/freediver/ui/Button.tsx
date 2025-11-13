@@ -20,15 +20,15 @@ const styles = {
       p:'7px 30px',
       borderRadius: '15px',
       border: '1px solid black',
-      fontSize: '26px',
+      fontSize: '30px',
       lineHeight: '110%',
       color: 'white',
       width: '180px',
       textShadow: `
-        1px 1px 0 black,
-        -1px 1px 0 black,
-        1px -1px 0 black,
-        -1px -1px 0 black
+        0.04em 0 0 black,
+        -0.04em 0 0 black,
+        0 0.04em 0 black,
+        0 -0.04em 0 black
       `,
       textTransform: 'uppercase',
       boxShadow: `

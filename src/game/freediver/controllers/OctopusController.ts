@@ -52,8 +52,8 @@ export function createOctopusController(
       else if ([5, 0].includes($currentFrame)) $.setSpeed($.size() * 2)
       else $.setSpeed($.size() * 1)
 
-      const xMin = $game.canvas.x() - 30
-      const xMax = $game.canvas.width + $game.canvas.x() + 30
+      const xMin = $game.canvas().x() - 30
+      const xMax = $game.canvas().width + $game.canvas().x() + 30
       if ($.x() > xMax || $.x() < xMin) {
         $.setY(Math.random() * 500 + 100)
         $.setSize(Math.random() + 0.5)

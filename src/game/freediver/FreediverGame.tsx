@@ -12,7 +12,7 @@ export const FreediverGame: Component = () => {
     <div class={styles.page}>
       <MenuScene debug={debug} active={scene() === 'menu'} setScene={setScene} />
       <InstructionsScene debug={debug} active={scene() === 'instructions'} setScene={setScene} />
-      <OceanScene debug={debug} active={scene() === 'ocean'} />
+      <OceanScene debug={debug} active={scene() === 'ocean'} setScene={setScene} />
       <SurfaceScene debug={debug} active={scene() === 'surface'} />
     </div>
   )

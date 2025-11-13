@@ -53,8 +53,8 @@ export function createFishController(
     onEnterFrame($, $game) {
       $.setX($.x() + $.speed() * $.direction())
 
-      const xMin = $game.canvas.x() - 30
-      const xMax = $game.canvas.width + $game.canvas.x() + 30
+      const xMin = $game.canvas().x() - 30
+      const xMax = $game.canvas().width + $game.canvas().x() + 30
       if ($.x() > xMax || $.x() < xMin) {
         $.setY(Math.random() * 500 + 100)
         $.setSize(Math.random() + 0.5)
