@@ -9,6 +9,7 @@ type Accessorise<T> = {
 export type SceneComponent<T extends {} = {}> = Component<{
   active: boolean
   debug: boolean
+  setScene?: (scene: string) => void
 } & T>
 
 class KeyController {

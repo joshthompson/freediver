@@ -16,7 +16,6 @@ import surface from '@public/surface.png'
 import watch from '@public/watch.png'
 import sand from '@public/sand.png'
 
-
 export const OceanScene: SceneComponent = props => {
   const game = new Game({
     width: Math.min(700, window.innerWidth - 20),
@@ -106,7 +105,7 @@ const GameOverlay: Component<{ game: Game }> = props => {
   return <>
     <div class={styles.depth} style={{ 'background-image': `url(${watch})` }}>{depth() ?? 0}m</div>
     <div class={styles.equalisation({ warn: eqWarn() })}>
-      <div class={styles.equalisationBackground({ warn: eqWarn() })} />
+      <div class={styles.equalisationBackground} />
       <div>Hold <div class={styles.key}>SPACE</div> to equalise</div>
       <div class={styles.equalisationBar}>
         <div style={{ '--percent': eqBar() }} />
@@ -125,7 +124,6 @@ const GameUnderlay: Component<{ game: Game }> = props => {
 const styles = {
   level: css({
     position: 'relative',
-    border: '3px solid black',
     backgroundRepeat: 'repeat-x',
     backgroundSize: '200px, 612px, 612px, 612px, cover',
     color: 'white',
@@ -169,20 +167,12 @@ const styles = {
       },
     },
   }),
-  equalisationBackground: cva({
-    base: {
+  equalisationBackground: css({
       position: 'absolute',
       inset: '0',
       background: 'red',
       opacity: 0,
-    },
-    variants: {
-      warn: {
-        true: {
           animation: 'flash 1s ease-in-out infinite'
-        },
-      },
-    },
   }),
   surface: css({
     position: 'absolute',
