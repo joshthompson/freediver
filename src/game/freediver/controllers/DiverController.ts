@@ -46,7 +46,7 @@ function createDiver(id: string, props?: DiverControllerProps) {
         const [rotation, setRotation] = createSignal<number>(0)
         const [rotationSpeed] = createSignal<number>(5)
         const [acceleration] = createSignal<number>(0.5)
-        const [speed, setSpeed] = createSignal<number>(0)
+        const [speed, setSpeed] = createSignal<number>(props?.mode === 'surface' ? 10 : 0)
         const [state] = createSignal<Sprite['state']>('play')
         const [frameInterval, setFrameInterval] = createSignal(250)
         const [bubbleLevel, setBubbleLevel] = createSignal(0)
@@ -72,6 +72,7 @@ function createDiver(id: string, props?: DiverControllerProps) {
           setX,
           y,
           setY,
+          initY: y(),
           xScale,
           setXScale,
           rotation,
@@ -215,7 +216,10 @@ const onEnterFrameOcean: ReturnType<typeof createDiver>['onEnterFrame'] = ($, $g
   }
 }
 
+const jumpLength = 20
+const jumpHeight = 20
 const onEnterFrameSurface: ReturnType<typeof createDiver>['onEnterFrame'] = ($, _$game, $age) => {
-  const float = Math.cos($age / 10) * 0.5
-  $.setY($.y() + float)
+  const float = Math.cos($age / 10) * 8
+  const jump = $age < jumpLength ? Math.sin($age / (jumpLength / Math.PI)) * jumpHeight : 0
+  $.setY(400 - float - jump)
 }

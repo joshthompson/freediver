@@ -1,6 +1,6 @@
 import { Canvas } from "@/game/core/Canvas"
 import { Game, SceneComponent } from "@/utils/game"
-import { Show } from "solid-js"
+import { createEffect, Show } from "solid-js"
 import { createDiverController } from "../controllers/DiverController"
 import { css } from "@style/css"
 import { createCorgiController } from "../controllers/CorgiController"
@@ -30,6 +30,11 @@ export const SurfaceScene: SceneComponent = props => {
       }))
     },
   })
+
+  createEffect(() => {
+    game.setActive(props.active)
+  })
+  
   return <Show when={props.active}>
     <Canvas
       debug={props.debug}
