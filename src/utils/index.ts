@@ -47,8 +47,10 @@ export function generateFrames(
   imageHeight: number,
   displayWidth: number,
   frameCount: number,
+  reverse = false,
 ): string[] {
-  return Array(frameCount).fill(null).map(
+  const frames = Array(frameCount).fill(null).map(
     (_, n) => `${image}#${displayWidth * n},0,${imageWidth},${imageHeight}`
   )
+  return reverse ? frames.reverse() : frames
 }

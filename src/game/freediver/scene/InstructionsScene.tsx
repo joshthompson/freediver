@@ -35,10 +35,10 @@ export const InstructionsScene: SceneComponent = props => {
           </div>
           <div class={styles.key({ key: 'space' })}>
             <div class={styles.keyName}>Spacebar</div>
-            <div class={styles.keyDescription}>Equalise air pressure</div>
+            <div class={styles.keyDescription}>Breathe in / Equalise air pressure</div>
           </div>
         </div>
-        <Button onClick={() => props.setScene?.('menu')} size="small">Back</Button>
+        <Button onClick={() => props.setScene('menu')} size="small">Back</Button>
       </div>}
     />
   </Show>

@@ -3,6 +3,7 @@ import { createSignal } from 'solid-js'
 import { createBubbleController } from './BubbleController'
 import { Sprite } from '@/game/core/Sprite'
 import dave from '@public/dave.png'
+import seadiver from '@public/sprites/seadiver/seadiver.png'
 import arm from '@public/dave-arm.png'
 import { generateFrames } from '@/utils'
 
@@ -28,7 +29,7 @@ export function createDiverController(id: string, props?: DiverControllerProps) 
 
   return [
     diver,
-    diverArm
+    // diverArm
   ]
 }
 
@@ -37,13 +38,13 @@ function createDiver(id: string, props?: DiverControllerProps) {
 
   return createController(
     {
-      frames: generateFrames(dave, 339, 480, 68, 3),
+      frames: generateFrames(seadiver, 638, 1578, 68, 7),
       style: props?.style,
       init() {
         const [x, setX] = createSignal<number>(props?.x ?? 30)
         const [y, setY] = createSignal<number>(props?.y ?? 15)
         const [xScale, setXScale] = createSignal<number>(1)
-        const [rotation, setRotation] = createSignal<number>(0)
+          const [rotation, setRotation] = createSignal<number>(props?.mode === 'surface' ? 0 : 180)
         const [rotationSpeed] = createSignal<number>(5)
         const [acceleration] = createSignal<number>(0.5)
         const [speed, setSpeed] = createSignal<number>(props?.mode === 'surface' ? 10 : 0)
@@ -52,14 +53,16 @@ function createDiver(id: string, props?: DiverControllerProps) {
         const [bubbleLevel, setBubbleLevel] = createSignal(0)
         const [eqLevel, setEqLevel] = createSignal(1)
         const [holdSpace, setHoldSpace] = createSignal(1)
+        const [oxygen, setOxygen] = createSignal(0)
+        const [spaceTap, setSpaceTap] = createSignal(false)
         const maxSpeed = 10
         const minSpeed = -2.5
 
         const makeBubble = (xShift: number, yShift: number, xSpeed?: number, speed?: number) => {
           if (props?.mode !== 'ocean') return
           return createBubbleController('diver-bubble-' + bubbleN++, {
-            x: x() + 20 + (40 + xShift) * Math.sin((rotation() * Math.PI) / 180),
-            y: y() + 40 - (40 + yShift) * Math.cos((rotation() * Math.PI) / 180),
+            x: x() + 30 - (80 + xShift) * Math.sin((-rotation() * Math.PI) / 180),
+            y: y() + 80 - (82 + yShift) * Math.cos((-rotation() * Math.PI) / 180),
             xSpeed,
             speed,
           })
@@ -97,7 +100,12 @@ function createDiver(id: string, props?: DiverControllerProps) {
           holdSpaceMax: 20,
           makeBubble,
           goToSurface,
+          oxygen,
+          setOxygen,
+          spaceTap,
+          setSpaceTap,
           mode: props?.mode ?? 'ocean',
+          depth: () => Math.max(0, Math.floor(y() / pxInMeter - 0.5)),
         }
       },
       onEnterFrame($, $game, $age, $currentFrame) {
@@ -107,11 +115,6 @@ function createDiver(id: string, props?: DiverControllerProps) {
 
         // Move canvas
         $game.canvas().setX($.x() - $game.canvas().width / 2 + $.width() / 2)
-      },
-    } as const,
-    {
-      depth($) {
-        return Math.max(0, Math.floor($.y() / pxInMeter - 0.5))
       },
     } as const,
   )
@@ -151,7 +154,7 @@ const onEnterFrameOcean: ReturnType<typeof createDiver>['onEnterFrame'] = ($, $g
   else if ($.speed() < 0) $.setSpeed($.speed() + $.acceleration() / 2)
   $.setSpeed(Math.max($.minSpeed, Math.min($.maxSpeed, $.speed())))
 
-  $.setFrameInterval(up() ? 50 : 250)
+  $.setFrameInterval(250 - 150 * ($.speed() / $.maxSpeed))
 
   // Rotation
   let rotation = $.rotation()
@@ -170,8 +173,11 @@ const onEnterFrameOcean: ReturnType<typeof createDiver>['onEnterFrame'] = ($, $g
 
   if (!left() && !right() && !up() && !down()) {
     let rotation = $.rotation()
-    if (rotation > 1) rotation -= 1.5
-    if (rotation < -1) rotation += 1.5
+    const target = 80
+    if (rotation > 0 && rotation > target + 1) rotation -= 1.5
+    if (rotation > 0 && rotation < target - 1) rotation += 1.5
+    if (rotation < 0 && rotation > -target + 1) rotation -= 1.5
+    if (rotation < 0 && rotation < -target - 1) rotation += 1.5
     $.setRotation(rotation)
   }
 
@@ -181,7 +187,7 @@ const onEnterFrameOcean: ReturnType<typeof createDiver>['onEnterFrame'] = ($, $g
   $.setY($.y() + float)
 
   const yMin = -50
-  const yMax = $game.canvas().height - 130
+  const yMax = $game.canvas().height - 160
 
   if ($.y() < yMin) {
     $.goToSurface(ySpeed)
@@ -202,10 +208,10 @@ const onEnterFrameOcean: ReturnType<typeof createDiver>['onEnterFrame'] = ($, $g
     $.setHoldSpace($.holdSpace() + 1)
     if ($.holdSpace() === $.holdSpaceMax) {
       $.setEqLevel(0)
-      Array(20).fill(null).forEach((_, n) => {
+      Array(10).fill(null).forEach((_, n) => {
         $game.addController($.makeBubble(
-          n % 2 ? 40 : -10,
-          -4,
+          -30,
+          -5,
           n % 2 === 0 ? -2 - Math.random() : 2 + Math.random(),
           1 + Math.random(),
         ))
@@ -216,10 +222,21 @@ const onEnterFrameOcean: ReturnType<typeof createDiver>['onEnterFrame'] = ($, $g
   }
 }
 
-const jumpLength = 20
-const jumpHeight = 20
+const oxygenUpRate = 15
+const oxygenDownRate = 3
 const onEnterFrameSurface: ReturnType<typeof createDiver>['onEnterFrame'] = ($, _$game, $age) => {
+  const space = Key.isDown(' ')
+
   const float = Math.cos($age / 10) * 8
-  const jump = $age < jumpLength ? Math.sin($age / (jumpLength / Math.PI)) * jumpHeight : 0
-  $.setY(400 - float - jump)
+  $.setY(400 - float)
+
+  if (!$.spaceTap() && space) {
+    $.setOxygen($.oxygen() + oxygenUpRate)
+    $.setSpaceTap(true)
+  }
+  if ($.spaceTap() && !space) {
+    $.setSpaceTap(false)
+  }
+
+  $.setOxygen(Math.max($.oxygen() - oxygenDownRate, 0))
 }

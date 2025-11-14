@@ -2,9 +2,12 @@ import { Canvas } from "@/game/core/Canvas"
 import { Game, SceneComponent } from "@/utils/game"
 import { createEffect, Show } from "solid-js"
 import { createDiverController } from "../controllers/DiverController"
-import { css } from "@style/css"
+import { css, cva } from "@style/css"
 import { createCorgiController } from "../controllers/CorgiController"
 import { createRopeController } from "../controllers/RopeController"
+import { PauseMenu } from "../ui/PauseMenu"
+import { DivingWatch } from "../ui/DivingWatch"
+import { Bar } from "../ui/Bar"
 
 export const SurfaceScene: SceneComponent = props => {
   const game = new Game({
@@ -25,14 +28,27 @@ export const SurfaceScene: SceneComponent = props => {
       }))
       $game.addController(createRopeController('rope', {
         x: -40,
-        y: 430,
+        y: 420,
         mode: 'surface',
       }))
     },
   })
 
+  const exitToMenu = () => {
+    game.reset()
+    props.setScene('menu')
+  }
+
   createEffect(() => {
     game.setActive(props.active)
+  })
+
+  const oxygen = () => game.getController('diver')?.data.oxygen() ?? 0
+
+  createEffect(() => {
+    if (oxygen() > 100) {
+      props.setScene('ocean')
+    }
   })
   
   return <Show when={props.active}>
@@ -42,8 +58,11 @@ export const SurfaceScene: SceneComponent = props => {
       class={styles.canvas}
       overlay={
         <>
-          <div class={styles.instructions}>Once you are ready, tap SPACE to breathe in</div>
+          <DivingWatch depth={0} />
+          <div class={styles.instructions}>Relax!<br />Once you are ready, tap SPACE to breathe in</div>
+          <Bar percent={oxygen()} class={styles.bar({ show: oxygen() > 0 })} />
           <div class={styles.surfaceLayer} />
+          {game.paused() && <PauseMenu game={game} exitToMenu={exitToMenu} />}
         </>
       }
     />
@@ -77,5 +96,19 @@ const styles = {
       #399cdc00 90%
     )`,
     backgroundSize: 'cover',
+  }),
+  bar: cva({
+    base: {
+      m: 'auto',
+      opacity: 0,
+      transition: 'opacity 0.1s ease-in',
+    },
+    variants: {
+      show: {
+        true: {
+          opacity: 1,
+        },
+      },
+    },
   }),
 }

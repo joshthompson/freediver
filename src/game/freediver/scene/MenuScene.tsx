@@ -15,8 +15,8 @@ export const MenuScene: SceneComponent = props => {
       game={game}
       style={{ background: `url(${menu})` }}
       overlay={<div class={styles.overlay}>
-        <Button onClick={() => props.setScene?.('ocean')}>Start</Button>
-        <Button onClick={() => props.setScene?.('instructions')} size="small">Instructions</Button>
+        <Button onClick={() => props.setScene('surface')}>Start</Button>
+        <Button onClick={() => props.setScene('instructions')} size="small">Instructions</Button>
         <div class={styles.credits}>A game by Josh Thompson and Olesya Vasileva</div>
       </div>}
     />

@@ -5,7 +5,7 @@ import { Controller, Game } from '@/utils/game'
 import { GameContext } from '@/utils/GameContext'
 import { Debugger } from './Debugger'
 
-export type CanvasControllers = Record<string, Controller<any, any>>
+export type CanvasControllers = Record<string, Controller<any>>
 
 export interface CanvasProps {
   ref?: HTMLDivElement | undefined

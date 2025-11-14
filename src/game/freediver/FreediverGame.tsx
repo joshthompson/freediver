@@ -23,10 +23,7 @@ export const FreediverGame: Component = () => {
         sceneData={sceneData}
       />
       <OceanScene debug={debug} active={scene() === 'ocean'} setScene={setScene} />
-      <SurfaceScene
-        debug={debug}
-        active={scene() === 'surface'}
-      />
+      <SurfaceScene debug={debug} active={scene() === 'surface'} setScene={setScene} />
     </div>
   )
 }

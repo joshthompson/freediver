@@ -12,7 +12,7 @@ export type SceneComponent<
 > = Component<{
   active: boolean
   debug: boolean
-  setScene?: (scene: string, data?: D) => void
+  setScene: (scene: string, data?: D) => void
   sceneData?: D
 } & T>
 
@@ -95,7 +95,6 @@ interface ControllerProps<T extends ControllerBaseType> {
 
 export interface Controller<
   CP extends ControllerBaseType,
-  CA extends ControllerActions<CP>,
 > {
   type: string
   id: string
@@ -106,19 +105,11 @@ export interface Controller<
   data: CP
   sprite: Accessor<Sprite>
   age: Accessor<number>
-  actions: {
-    [K in keyof CA]: () => ReturnType<CA[K]>
-  }
 }
 
 export function createController<
-  CP extends ControllerBaseType,
-  CA extends ControllerActions<CP>,
->(
-  options: ControllerProps<CP>,
-  actions: ControllerActions<CP> = {},
-): Controller<CP, CA> {
-
+  CP extends ControllerBaseType
+>(options: ControllerProps<CP>): Controller<CP> {
 
   const [age, setAge] = createSignal<number>(0)
   const onEnterFrame = options.onEnterFrame ?? (() => {})
@@ -164,12 +155,6 @@ export function createController<
         onChangeFrame: frame => setCurrentFrame(frame),
       }),
     ),
-    actions: Object.fromEntries(
-      Object.entries(actions).map(([key, fn]) => [
-        key,
-        () => fn(data, data.game),
-      ]),
-    ) as { [K in keyof CA]: () => ReturnType<CA[K]> },
   }
 }
 
@@ -181,7 +166,7 @@ interface GameOptions {
   setup?: (game: Game) => void
 }
 
-export class Game<C extends Controller<any, any> = Controller<any, any>> {
+export class Game<C extends Controller<any> = Controller<any>> {
   options: GameOptions
   canvas: Accessor<Canvas>
   setCanvas: Setter<Canvas>
@@ -240,7 +225,7 @@ export class Game<C extends Controller<any, any> = Controller<any, any>> {
     this.setControllers(controllers)
   }
 
-  getController<T = Controller<any, any>>(id: string) {
+  getController<T = Controller<any>>(id: string) {
     return this.controllers()[id] as T | undefined
   }
 

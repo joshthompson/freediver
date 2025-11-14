@@ -13,9 +13,10 @@ import bg1 from '@public/bg-1.png'
 import bg2 from '@public/bg-2.png'
 import bg3 from '@public/bg-3.png'
 import surface from '@public/surface.png'
-import watch from '@public/watch.png'
 import sand from '@public/sand.png'
-import { Button } from "../ui/Button"
+import { PauseMenu } from "../ui/PauseMenu"
+import { Bar } from "../ui/Bar"
+import { DivingWatch } from "../ui/DivingWatch"
 
 export const OceanScene: SceneComponent = props => {
   const game = new Game({
@@ -24,7 +25,7 @@ export const OceanScene: SceneComponent = props => {
     setup: ($game: Game) => {
       $game.addController(...createDiverController('diver', {
         goToSurface: (speed: number) => {
-          props.setScene?.('surface', { speed, })
+          props.setScene('surface', { speed, })
         },
         mode: 'ocean',
       }))
@@ -61,7 +62,7 @@ export const OceanScene: SceneComponent = props => {
 
   const exitToMenu = () => {
     game.reset()
-    props.setScene?.('menu')
+    props.setScene('menu')
   }
 
   return <Show when={props.active}>
@@ -105,7 +106,7 @@ const GameOverlay: Component<{ game: Game, exitToMenu: () => void }> = props => 
   const depth = () => {
     const diver = props.game.getController<DiverController>('diver')
     if (!diver) return 0
-    return diver.actions.depth()
+    return diver.data.depth()
   }
 
   const eqWarn = () => {
@@ -123,24 +124,13 @@ const GameOverlay: Component<{ game: Game, exitToMenu: () => void }> = props => 
   }
 
   return <>
-    <div class={styles.depth} style={{ 'background-image': `url(${watch})` }}>{depth() ?? 0}m</div>
+    <DivingWatch depth={depth()} />
     <div class={styles.equalisation({ warn: eqWarn() })}>
       <div class={styles.equalisationBackground({ paused: props.game.paused() })} />
       <div>Hold <div class={styles.key}>SPACE</div> to equalise</div>
-      <div class={styles.equalisationBar}>
-        <div style={{ '--percent': eqBar() }} />
-      </div>
+      <Bar percent={eqBar()} />
     </div>
-    {props.game.paused() && <>
-      <div class={styles.paused}>
-        <div>PAUSED</div>
-        <Button onClick={() => props.game.togglePause()} size="small">Resume</Button>
-        <Button onClick={() => props.game.setMute(!props.game.mute())} size="small">
-         Volume: { props.game.mute() ? 'Off' : 'On' }
-        </Button>
-        <Button onClick={() => props.exitToMenu()} size="small">Exit to menu</Button>
-      </div>
-    </>}
+    {props.game.paused() && <PauseMenu game={props.game} exitToMenu={props.exitToMenu} />}
   </>
 }
 
@@ -158,32 +148,6 @@ const styles = {
     backgroundSize: '200px, 612px, 612px, 612px, cover',
     color: 'white',
     maxWidth: '100%',
-  }),
-  paused: css({
-    position: 'absolute',
-    inset: '0',
-    background: 'rgba(0, 0, 0, 0.7)',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    fontSize: '3rem',
-    flexDirection: 'column',
-    gap: '10px',
-  }),
-  depth: css({
-    position: 'absolute',
-    width: '84px',
-    aspectRatio: '21 / 26',
-    top: '4px',
-    right: '4px',
-    fontSize: '2rem',
-    backgroundSize: 'cover',
-    textAlign: 'center',
-    paddingRight: '16px',
-    paddingLeft: '8px',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
   }),
   equalisation: cva({
     base: {
@@ -241,26 +205,5 @@ const styles = {
     p: '0px 15px',
     lineHeight: '1.2em',
     mx: '0.15em',
-  }),
-  equalisationBar: css({
-    width: '300px',
-    borderRadius: '10px',
-    border: '3px solid white',
-    height: '20px',
-    background: 'white',
-
-    '& > div': {
-      height: '100%',
-      width: 'calc(1% * var(--percent))',
-      background: `
-        color-mix(
-          in srgb,
-          #0ab6fa calc(1% * var(--percent)),
-          red calc(100% - 1% * var(--percent))
-        )
-      `,
-      borderRadius: '7px',
-      transition: 'width 0.1s linear',
-    },
   }),
 }
