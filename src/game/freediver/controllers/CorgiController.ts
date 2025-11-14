@@ -78,11 +78,16 @@ export function createCorgiController(
 
       $.setX($.x() - $.speed() * Math.cos(direction))
       $.setY($.y() - $.speed() * Math.sin(direction))
-
+      
       $.setFrameInterval(250 - 100 * $.speed() / maxSpeed)
-
-      if ($.x() < targetX) $.setXScale(1)
-      else $.setXScale(-1)
+      
+      if ($.x() < targetX) {
+        $.setXScale(1)
+        $.setRotation((direction * 180 / Math.PI) + 180)
+      } else {
+        $.setXScale(-1)
+        $.setRotation((direction * 180 / Math.PI) + 0)
+      }
 
       const float = Math.cos($age / 10 - 0.5) * ($.mode === 'ocean' ? 1 : 0.5)
       $.setY($.y() + float)

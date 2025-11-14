@@ -1,7 +1,7 @@
 import { generateFrames, randomItem } from '@/utils'
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
-import octopus from '@public/octopus.png'
+import octopus from '@public/sprites/octopus.png'
 import { DiverController } from './DiverController'
 
 export function createOctopusController(
