@@ -1,9 +1,9 @@
-import { createController, Key } from '@/utils/game'
+import { createConnectedController, createController, Key } from '@/utils/game'
 import { createSignal } from 'solid-js'
 import { createBubbleController } from './BubbleController'
 import { Sprite } from '@/game/core/Sprite'
-import dave from '@public/dave.png'
-import seadiver from '@public/sprites/seadiver/seadiver.png'
+import seadiver from '@public/sprites/seadiver/seadiver-body.png'
+import seadiverHead from '@public/sprites/seadiver/seadiver-head.png'
 import arm from '@public/dave-arm.png'
 import { generateFrames } from '@/utils'
 
@@ -25,10 +25,12 @@ let bubbleN = 0
 
 export function createDiverController(id: string, props?: DiverControllerProps) {
   const diver = createDiver(id, props)
-  const diverArm = createDiverArm(diver)
+  const diverHead = createDiverHead(diver)
+  // const diverArm = createDiverArm(diver)
 
   return [
     diver,
+    diverHead,
     // diverArm
   ]
 }
@@ -38,6 +40,7 @@ function createDiver(id: string, props?: DiverControllerProps) {
 
   return createController(
     {
+      // frames: generateFrames(seadiver, 638, 1578, 68, 7),
       frames: generateFrames(seadiver, 638, 1578, 68, 7),
       style: props?.style,
       init() {
@@ -47,7 +50,7 @@ function createDiver(id: string, props?: DiverControllerProps) {
           const [rotation, setRotation] = createSignal<number>(props?.mode === 'surface' ? 0 : 180)
         const [rotationSpeed] = createSignal<number>(5)
         const [acceleration] = createSignal<number>(0.5)
-        const [speed, setSpeed] = createSignal<number>(props?.mode === 'surface' ? 10 : 0)
+        const [speed, setSpeed] = createSignal<number>(0)
         const [state] = createSignal<Sprite['state']>('play')
         const [frameInterval, setFrameInterval] = createSignal(250)
         const [bubbleLevel, setBubbleLevel] = createSignal(0)
@@ -87,6 +90,7 @@ function createDiver(id: string, props?: DiverControllerProps) {
           maxSpeed,
           minSpeed,
           width: () => 68,
+          height: () => 168,
           state,
           frameInterval,
           setFrameInterval,
@@ -112,13 +116,25 @@ function createDiver(id: string, props?: DiverControllerProps) {
         // Specific surface / ocean stuff
         if ($.mode === 'ocean') onEnterFrameOcean($, $game, $age, $currentFrame)
         else if ($.mode === 'surface') onEnterFrameSurface($, $game, $age, $currentFrame)
-
-        // Move canvas
-        $game.canvas().setX($.x() - $game.canvas().width / 2 + $.width() / 2)
       },
     } as const,
   )
 }
+
+function createDiverHead(
+  diver: DiverController
+) {
+  return createConnectedController({
+    type: 'head',
+    base: diver,
+    frames: [seadiverHead],
+    width: () => 20,
+    rotation: $ => -70 * $.speed() / $.maxSpeed,
+    offset: { x: 45, y: -10 },
+    origin: { x: 8, y: 29 },
+  })
+}
+
 
 function createDiverArm(
   diver: DiverController
@@ -173,7 +189,7 @@ const onEnterFrameOcean: ReturnType<typeof createDiver>['onEnterFrame'] = ($, $g
 
   if (!left() && !right() && !up() && !down()) {
     let rotation = $.rotation()
-    const target = 80
+    const target = 0 // 80
     if (rotation > 0 && rotation > target + 1) rotation -= 1.5
     if (rotation > 0 && rotation < target - 1) rotation += 1.5
     if (rotation < 0 && rotation > -target + 1) rotation -= 1.5
@@ -209,22 +225,20 @@ const onEnterFrameOcean: ReturnType<typeof createDiver>['onEnterFrame'] = ($, $g
     if ($.holdSpace() === $.holdSpaceMax) {
       $.setEqLevel(0)
       Array(10).fill(null).forEach((_, n) => {
-        $game.addController($.makeBubble(
-          -30,
-          -5,
-          n % 2 === 0 ? -2 - Math.random() : 2 + Math.random(),
-          1 + Math.random(),
-        ))
+        $game.addController($.makeBubble(0, 0, Math.random() * 2 - 1, Math.random() * 2 - 1))
       })
     }
   } else {
     $.setHoldSpace(0)
   }
+
+  // Center camera
+  $game.canvas().setX($.x() - $game.canvas().width / 2 + $.width() / 2)
 }
 
 const oxygenUpRate = 15
 const oxygenDownRate = 3
-const onEnterFrameSurface: ReturnType<typeof createDiver>['onEnterFrame'] = ($, _$game, $age) => {
+const onEnterFrameSurface: ReturnType<typeof createDiver>['onEnterFrame'] = ($, $game, $age) => {
   const space = Key.isDown(' ')
 
   const float = Math.cos($age / 10) * 8
@@ -239,4 +253,7 @@ const onEnterFrameSurface: ReturnType<typeof createDiver>['onEnterFrame'] = ($, 
   }
 
   $.setOxygen(Math.max($.oxygen() - oxygenDownRate, 0))
+
+  // Center camera
+  $game.canvas().setX($.x() - $game.canvas().width / 2 + $.width() / 2 + 80)
 }

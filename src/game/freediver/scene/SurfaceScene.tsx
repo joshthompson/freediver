@@ -22,12 +22,12 @@ export const SurfaceScene: SceneComponent = props => {
         })
       )
       $game.addController(createCorgiController('corgi', {
-        x: 70,
+        x: 200,
         y: 400,
         mode: 'surface',
       }))
       $game.addController(createRopeController('rope', {
-        x: -40,
+        x: 80,
         y: 420,
         mode: 'surface',
       }))

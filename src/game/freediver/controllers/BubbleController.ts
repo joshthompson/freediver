@@ -1,6 +1,7 @@
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
-import bubble from '@public/bubble.png'
+import bubble from '@public/bubble2.png'
+import { css } from '@style/css'
 
 const acceleration = 0.1
 
@@ -36,6 +37,8 @@ export function createBubbleController(
         xScale: size,
         yScale: size,
         setSize,
+        width: () => 10,
+        class: () => css({ opacity: 0.5 }),
       }
     },
     onEnterFrame($, $game, $age) {

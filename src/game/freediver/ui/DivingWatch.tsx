@@ -18,6 +18,7 @@ const styles = {
     textAlign: 'center',
     paddingRight: '16px',
     paddingLeft: '8px',
+    paddingBottom: '6px',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',

@@ -22,12 +22,16 @@ export interface Sprite {
   xScale?: number
   yScale?: number
   state?: 'play' | 'pause' | undefined
-  width?: number
+  width: number
   class?: string
   style?: JSX.CSSProperties
   frameInterval?: number | Accessor<number>
   rotation?: number
   origin?: { x: number; y: number }
+  inner?: {
+    rotation?: number
+    origin?: { x: number; y: number }
+  }
   onClick?: () => void
   onChangeFrame?: (frameIndex: number) => void
 }
@@ -137,12 +141,19 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
         rotate: props.rotation + 'deg',
         'z-index': props.z,
         "transform-origin": props.origin ? `${props.origin.x}px ${props.origin.y}px` : 'center',
-        ...frameStyle(),
         ...props.style,
       }}
       onClick={props.onClick}
       onTouchStart={props.onClick}
-    />
+    >
+      <div style={{
+        width: '100%',
+        height: '100%',
+        rotate: props.inner?.rotation + 'deg',
+        "transform-origin": props.inner?.origin ? `${props.inner.origin.x}px ${props.inner.origin.y}px` : 'center',
+        ...frameStyle(),
+      }} />
+    </div>
   )
 }
 

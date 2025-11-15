@@ -25,6 +25,7 @@ export const OceanScene: SceneComponent = props => {
     setup: ($game: Game) => {
       $game.addController(...createDiverController('diver', {
         goToSurface: (speed: number) => {
+          $game.reset()
           props.setScene('surface', { speed, })
         },
         mode: 'ocean',

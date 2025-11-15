@@ -1,6 +1,8 @@
 import { Canvas, CanvasControllers } from '@/game/core/Canvas'
 import { Sprite } from '@/game/core/Sprite'
+import { cx } from '@style/css'
 import { Accessor, Component, createMemo, createSignal, Setter } from 'solid-js'
+import { transform } from 'typescript'
 
 type Accessorise<T> = {
   [K in keyof T]: Accessor<T[K]>
@@ -77,11 +79,13 @@ type ControllerBaseType = {
   y: Accessor<Sprite['y']>
   game?: Game
   style?: Accessor<Sprite['style']>
+  width?: Accessor<Sprite['width']>
+  height?: Accessor<number>
+  inner?: {
+    rotation?: Accessor<number>
+    origin?: Accessor<{ x: number; y: number }>
+  },
 } & Partial<Accessorise<Sprite>>
-
-type ControllerActions<CP extends ControllerBaseType> = {
-  [key: string]: (data: CP, game: Game | undefined) => void
-}
 
 interface ControllerProps<T extends ControllerBaseType> {
   init: () => T
@@ -141,22 +145,123 @@ export function createController<
       (): Sprite => ({
         frames: options.frames ?? [],
         randomStartFrame: options.randomStartFrame ?? false,
-        class: options.class,
+        class: cx(options.class, data.class?.()),
         style: { ...options.style, ...data.style?.() },
         x: data.x(),
         y: data.y(),
         origin: data.origin?.(),
         xScale: data.xScale?.() ?? 1,
         yScale: data.yScale?.() ?? 1,
-        width: data.width?.(),
+        width: data.width?.() ?? 1,
         rotation: data.rotation?.() ?? 0,
         state: data.state?.(),
         frameInterval: data.frameInterval?.(),
+        inner: {
+          rotation: data.inner?.rotation?.(),
+          origin: data.inner?.origin?.(),
+        },
         onChangeFrame: frame => setCurrentFrame(frame),
       }),
     ),
   }
 }
+
+type ExtractControllerType<T> = T extends Controller<infer A> ? A : never
+
+// export function createConnectedController<
+//   C extends Controller<any>
+// >(options: {
+//   name: string,
+//   base: C,
+//   frames?: ControllerProps<ExtractControllerType<C>>['frames'],
+//   x: ($: ExtractControllerType<C>) => number,
+//   y: ($: ExtractControllerType<C>) => number,
+//   width?: ($: ExtractControllerType<C>) => number,
+//   rotation?: ($: ExtractControllerType<C>) => number,
+//   xScale?: ($: ExtractControllerType<C>) => number,
+//   onEnterFrame?: ControllerProps<ExtractControllerType<C>>['onEnterFrame'],
+// }) {
+//   return createController({
+//     frames: options.frames,
+//     init() {
+//       const baseData = options.base.data as ExtractControllerType<C>
+//       return {
+//         id: options.base.id + '-' + options.name,
+//         type: options.name,
+//         x: () => options.x(baseData),
+//         y: () => options.y(baseData),
+//         width: options.width ? () => options.width!(baseData) : undefined,
+//         rotation: options.rotation ? () => options.rotation!(baseData) : undefined,
+//         xScale: options.xScale ? () => options.xScale!(baseData) : undefined,
+//       } as ExtractControllerType<C>
+//     },
+//     onEnterFrame: options.onEnterFrame,
+//   })
+// }
+
+export function createConnectedController<C extends Controller<any>>(options: {
+  type: string,
+  base: C,
+  frames?: ControllerProps<ExtractControllerType<C>>['frames'],
+  offset: { x: number, y: number },
+  origin?: { x: number, y: number },
+  width: ($: ExtractControllerType<C>) => number,
+  xScale?: ($: ExtractControllerType<C>) => number,
+  rotation?: ($: ExtractControllerType<C>, $age: number) => number,
+  onEnterFrame?: ControllerProps<ExtractControllerType<C>>['onEnterFrame'],
+}) {
+  return createController({
+    frames: options.frames,
+    init() {
+      const baseData = options.base.data as ExtractControllerType<C>
+
+      return {
+        id: `${options.base.id}-${options.type}`,
+        type: options.type,
+
+        x: () => baseData.x() + options.offset.x,
+        y: () => baseData.y() + options.offset.y,
+        width: options.width,
+        rotation: baseData.rotation,
+        xScale: baseData.xScale,
+        origin: () => ({
+          x: baseData.width() / 2 - options.offset.x,
+          y: baseData.height() / 2 - options.offset.y,
+        }),
+        inner: {
+          rotation: () => options.rotation?.(baseData, options.base.age()) ?? 0,
+          origin: () => ({ x: options.origin?.x ?? 0, y: options.origin?.y ?? 0 }),
+        },
+
+        // x: () => {
+        //   const p = baseData
+        //   const ox = options.x(p)
+        //   const oy = options.y(p)
+        //   const rot = (p.rotation?.() ?? 0) * (Math.PI / 180)  // convert deg → rad
+        
+        //   const pivotX = p.x() + (p.width?.() ?? 0) / 2
+        //   const pivotY = p.y() + (p.height?.() ?? 0) / 2
+        
+        //   return pivotX + ox * Math.cos(rot) - oy * Math.sin(rot)
+        // },
+        
+        // y: () => {
+        //   const p = baseData
+        //   const ox = options.x(p)
+        //   const oy = options.y(p)
+        //   const rot = (p.rotation?.() ?? 0) * (Math.PI / 180)
+        
+        //   const pivotX = p.x() + (p.width?.() ?? 0) / 2
+        //   const pivotY = p.y() + (p.height?.() ?? 0) / 2
+        
+        //   return pivotY + ox * Math.sin(rot) + oy * Math.cos(rot)
+        // },
+      } as ExtractControllerType<C>
+    },
+    onEnterFrame: options.onEnterFrame,
+  })
+}
+
 
 interface GameOptions {
   width: number
@@ -274,8 +379,8 @@ export class Game<C extends Controller<any> = Controller<any>> {
     Object.values(this.controllers()).forEach(controller => {
       controller.destroy()
     })
+    this.setControllers({})
     requestAnimationFrame(() => {
-      this.setControllers({})
       this.setup()
       this.setPaused(false)
       this.setCanvas(this.createCanvas())

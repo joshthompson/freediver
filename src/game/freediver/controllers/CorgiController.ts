@@ -6,7 +6,6 @@ import { Sprite } from '@/game/core/Sprite'
 import corgi from '@public/sprites/link/link.png'
 import { generateFrames } from '@/utils'
 
-const followDistance = 50
 const bubbleFrequency = 20
 const maxSpeed = 10
 const minSpeed = 0
@@ -28,11 +27,12 @@ export function createCorgiController(
       const [xScale, setXScale] = createSignal<number>(1)
       const [rotation, setRotation] = createSignal<number>(0)
       const [rotationSpeed] = createSignal<number>(5)
-      const [acceleration] = createSignal<number>(0.2)
       const [speed, setSpeed] = createSignal<number>(0)
       const [state] = createSignal<Sprite['state']>('play')
       const [frameInterval, setFrameInterval] = createSignal(250)
       const [bubbleLevel, setBubbleLevel] = createSignal(0)
+      const followDistance = props?.mode === 'surface' ? 130 : 50
+
       return {
         id,
         type: 'corgi',
@@ -45,7 +45,7 @@ export function createCorgiController(
         rotation,
         setRotation,
         rotationSpeed,
-        acceleration,
+        acceleration: 0.15,
         speed,
         setSpeed,
         width: () => 70,
@@ -54,7 +54,8 @@ export function createCorgiController(
         setFrameInterval,
         bubbleLevel,
         setBubbleLevel,
-        mode: props?.mode ?? 'ocean'
+        mode: props?.mode ?? 'ocean',
+        followDistance,
       }
     },
     onEnterFrame($, $game, $age) {
@@ -66,11 +67,11 @@ export function createCorgiController(
       const distance = Math.hypot($.x() - targetX, $.y() - targetY)
       const direction = Math.atan2($.y() - targetY, $.x() - targetX)
 
-      if (distance > followDistance) {
-        $.setSpeed($.speed() + $.acceleration())
+      if (distance > $.followDistance) {
+        $.setSpeed($.speed() + $.acceleration)
       } else {
         const before = $.speed()
-        $.setSpeed($.speed() - $.acceleration() * 4)
+        $.setSpeed($.speed() - $.acceleration * 4)
         if (before > 0 && $.speed() < 0) $.setSpeed(0)
         if (before < 0 && $.speed() > 0) $.setSpeed(0)
       }
@@ -81,12 +82,16 @@ export function createCorgiController(
       
       $.setFrameInterval(250 - 100 * $.speed() / maxSpeed)
       
-      if ($.x() < targetX) {
-        $.setXScale(1)
-        $.setRotation((direction * 180 / Math.PI) + 180)
+      if ($.x() < targetX) $.setXScale(1)
+      else $.setXScale(-1)
+
+      if (distance > $.followDistance) {
+        if ($.x() < targetX) $.setRotation((direction * 180 / Math.PI) + 180)
+        else $.setRotation((direction * 180 / Math.PI) + 0)
       } else {
-        $.setXScale(-1)
-        $.setRotation((direction * 180 / Math.PI) + 0)
+        $.setRotation(($.rotation() + 360) % 360)
+        if ($.rotation() > 10 || $.rotation() > 360) $.setRotation($.rotation() - 1.5)
+        if ($.rotation() < -10 || $.rotation() > 180) $.setRotation($.rotation() + 1.5)
       }
 
       const float = Math.cos($age / 10 - 0.5) * ($.mode === 'ocean' ? 1 : 0.5)
