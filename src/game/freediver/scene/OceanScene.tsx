@@ -28,7 +28,6 @@ export const OceanScene: SceneComponent = props => {
           $game.reset()
           props.setScene('surface', { speed, })
         },
-        mode: 'ocean',
       }))
       $game.addController(createCorgiController('corgi', { mode: 'ocean' }))
       $game.addController(createRopeController('rope', { x: -50, mode: 'ocean' }))

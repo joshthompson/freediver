@@ -1,13 +1,13 @@
 import { Canvas } from "@/game/core/Canvas"
 import { Game, SceneComponent } from "@/utils/game"
 import { createEffect, Show } from "solid-js"
-import { createDiverController } from "../controllers/DiverController"
 import { css, cva } from "@style/css"
-import { createCorgiController } from "../controllers/CorgiController"
 import { createRopeController } from "../controllers/RopeController"
 import { PauseMenu } from "../ui/PauseMenu"
 import { DivingWatch } from "../ui/DivingWatch"
 import { Bar } from "../ui/Bar"
+import { createDiverSurfaceController } from "../controllers/DiverSurface"
+import { createCorgiSurfaceController } from "../controllers/CorgiSurface"
 
 export const SurfaceScene: SceneComponent = props => {
   const game = new Game({
@@ -15,22 +15,21 @@ export const SurfaceScene: SceneComponent = props => {
     height: 700,
     setup($game: Game) {
       $game.addController(
-        ...createDiverController('diver', {
+        createDiverSurfaceController('diver-surface', {
           x: 0,
-          y: 400,
+          y: 330,
+        }),
+        createCorgiSurfaceController('corgi-surface', {
+          x: 200,
+          y: 380,
+        }),
+        createRopeController('rope', {
+          x: -40,
+          y: 420,
+          size: 2,
           mode: 'surface',
         })
       )
-      $game.addController(createCorgiController('corgi', {
-        x: 200,
-        y: 400,
-        mode: 'surface',
-      }))
-      $game.addController(createRopeController('rope', {
-        x: 80,
-        y: 420,
-        mode: 'surface',
-      }))
     },
   })
 
@@ -43,7 +42,7 @@ export const SurfaceScene: SceneComponent = props => {
     game.setActive(props.active)
   })
 
-  const oxygen = () => game.getController('diver')?.data.oxygen() ?? 0
+  const oxygen = () => game.getController('diver-surface')?.data.oxygen() ?? 0
 
   createEffect(() => {
     if (oxygen() > 100) {
