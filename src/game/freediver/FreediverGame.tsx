@@ -6,7 +6,7 @@ import { MenuScene } from './scene/MenuScene'
 import { InstructionsScene } from './scene/InstructionsScene'
 
 export const FreediverGame: Component = () => {
-  const [scene, _setScene] = createSignal<string>('ocean')
+  const [scene, _setScene] = createSignal<string>('menu')
   const [sceneData, setSceneData] = createSignal<any>(null)
   const setScene = (scene: string, data?: any) => {
     _setScene(scene)

@@ -7,6 +7,7 @@ export function createRopeController(
   props: {
     x: number
     y?: number
+    size?: number
     mode: 'ocean' | 'surface'
   },
 ) {
@@ -23,7 +24,8 @@ export function createRopeController(
         setX,
         y,
         setY,
-        width: () => 60,
+        size: props.size ?? 1,
+        width: () => 60 * (props.size ?? 1),
         rotation,
         setRotation,
         origin: () => ({ x: 30, y: 30 }),
@@ -31,9 +33,9 @@ export function createRopeController(
       }
     },
     onEnterFrame($, _, $age) {
-      const float = Math.cos(10 + $age / 10) * ($.mode === 'ocean' ? 0.5 : 0.15)
+      const float = Math.cos(10 + $age / 10) * ($.mode === 'ocean' ? 0.5 : 0.15) * $.size
       $.setY($.y() + float)
-      $.setRotation(Math.sin(10 + $age / 50) * 2)
+      $.setRotation(Math.sin(10 + $age / 50) * 2 * $.size)
     }
   })
 }
