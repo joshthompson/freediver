@@ -25,7 +25,7 @@ const styles = {
       background: '#FDD000',
       p:'7px 30px',
       borderRadius: '15px',
-      border: '1px solid black',
+      border: '2px solid #000000',
       fontSize: '30px',
       lineHeight: '110%',
       color: 'white',

@@ -46,6 +46,7 @@ export const SurfaceScene: SceneComponent = props => {
 
   createEffect(() => {
     if (oxygen() > 100) {
+      game.reset()
       props.setScene('ocean')
     }
   })

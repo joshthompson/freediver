@@ -7,7 +7,7 @@ import { createDiverController, DiverController } from "../controllers/DiverCont
 import { Game, SceneComponent } from "@/utils/game"
 import { createCorgiController } from "../controllers/CorgiController"
 import { createRopeController } from "../controllers/RopeController"
-import { Component, createEffect, Show } from "solid-js"
+import { Component, createEffect, Show, useContext } from "solid-js"
 import { css, cva } from "@style/css"
 import bg1 from '@assets/bg-1.png'
 import bg2 from '@assets/bg-2.png'
@@ -59,6 +59,11 @@ export const OceanScene: SceneComponent = props => {
         })
       ).sort((a, b) => b.data.y() - a.data.y())
       octopi.forEach(octopus => $game.addController(octopus))
+    },
+    sounds: {
+      thud: import('@/assets/sounds/thud.mp3'),
+      starfish: import('@/assets/sounds/starfish.mp3'),
+      equalisation: import('@/assets/sounds/swoop.mp3'),
     }
   })
 

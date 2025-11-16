@@ -4,6 +4,7 @@ import { createBubbleController } from './BubbleController'
 import { Sprite } from '@/game/core/Sprite'
 import seadiver from '@assets/sprites/seadiver/seadiver-body.png'
 import seadiverHead from '@assets/sprites/seadiver/seadiver-head.png'
+import seadiverArm from '@assets/sprites/seadiver/seadiver-arm.png'
 import { generateFrames } from '@/utils'
 
 export type DiverController = ReturnType<typeof createDiver>
@@ -24,10 +25,14 @@ let bubbleN = 0
 export function createDiverController(id: string, props?: DiverControllerProps) {
   const diver = createDiver(id, props)
   const diverHead = createDiverHead(diver)
+  const diverLeftArm = createDiverArm(diver, 'left')
+  const diverRightArm = createDiverArm(diver, 'right')
 
   return [
+    diverLeftArm,
     diver,
     diverHead,
+    diverRightArm,
   ]
 }
 
@@ -36,7 +41,6 @@ function createDiver(id: string, props?: DiverControllerProps) {
 
   return createController(
     {
-      // frames: generateFrames(seadiver, 638, 1578, 68, 7),
       frames: generateFrames(seadiver, 638, 1578, 68, 7),
       style: props?.style,
       init() {
@@ -154,7 +158,10 @@ function createDiver(id: string, props?: DiverControllerProps) {
           $.goToSurface(ySpeed)
           $.setY(yMin)
         }
-        if ($.y() > yMax) $.setY(yMax)
+        if ($.y() > yMax) {
+          $.setY(yMax)
+          $game.playSound('thud')
+        }
 
         $.setBubbleLevel($.bubbleLevel() + Math.abs($.speed()) / 3 + 0.5)
         if ($.bubbleLevel() > bubbleFrequency) {
@@ -166,6 +173,10 @@ function createDiver(id: string, props?: DiverControllerProps) {
         const yDiff = $.y() - initY
         $.setEqLevel(Math.max(0, $.eqLevel() + yDiff / pxInMeter))
         if (space()) {
+          if ($.eqLevel() > $.eqTolerance) {
+            $game.playSound('equalisation', { volume: 0.4 })
+          }
+
           $.setHoldSpace($.holdSpace() + 1)
           if ($.holdSpace() === $.holdSpaceMax) {
             $.setEqLevel(0)
@@ -175,6 +186,7 @@ function createDiver(id: string, props?: DiverControllerProps) {
           }
         } else {
           $.setHoldSpace(0)
+          $game.stopSound('equalisation')
         }
 
         // Center camera
@@ -195,5 +207,25 @@ function createDiverHead(
     rotation: $ => -70 * $.speed() / $.maxSpeed,
     offset: { x: 45, y: -10 },
     origin: { x: 8, y: 29 },
+  })
+}
+
+
+function createDiverArm(
+  diver: DiverController,
+  arm: 'left' | 'right',
+) {
+  let rotation = arm === 'left' ? 180 : 0
+  return createConnectedController({
+    type: 'arm-' + arm,
+    base: diver,
+    frames: [seadiverArm],
+    width: () => 12.5,
+    rotation: $ => {
+      rotation += $.speed() / 3
+      return rotation
+    },
+    offset: { x: 49, y: 17 },
+    origin: { x: 5.5, y: 6 },
   })
 }

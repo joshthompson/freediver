@@ -2,4 +2,5 @@
 [ ] Total breath
 [ ] Points - collect star fish
 [x] Music
-[ ] Sound effects
+[x] Sound effects
+[ ] Enemy that chases you

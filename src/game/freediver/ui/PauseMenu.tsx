@@ -1,14 +1,22 @@
 import { Game } from "@/utils/game";
-import { Component } from "solid-js";
+import { Component, useContext } from "solid-js";
 import { Button } from "./Button";
 import { css } from "@style/css";
+import { GameStateContext } from "@/utils/GameStateContext";
 
 export const PauseMenu: Component<{ game: Game, exitToMenu: () => void }> = props => {
+  const [gameState, setGameState] = useContext(GameStateContext)!
+
+  const toggleVolume = () => {
+    const on = gameState.options.volume > 0
+    setGameState('options', 'volume', on ? 0 : 1)
+  }
+  
   return <div class={styles.paused}>
     <div>PAUSED</div>
     <Button onClick={() => props.game.togglePause()} size="small">Resume</Button>
-    <Button onClick={() => props.game.setMute(!props.game.mute())} size="small">
-     Volume: { props.game.mute() ? 'Off' : 'On' }
+    <Button onClick={toggleVolume} size="small">
+     Volume: { gameState.options.volume > 0 ? 'On' : 'Off' }
     </Button>
     <Button onClick={() => props.exitToMenu()} size="small">Exit to menu</Button>
   </div>

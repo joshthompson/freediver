@@ -64,12 +64,25 @@ export function isOverlapping(
   )
 }
 
-export function playSound(url: string, volume = 1, loop = false) {
+export function playSound(
+  url: string,
+  options?: {
+    volume?: number,
+    loop?: boolean,
+    play?: boolean,
+    manage?: boolean,
+  },
+) {
+  const volume = options?.volume ?? 1
+  const loop = options?.loop ?? false
+  const play = options?.play ?? true
+  const manage = options?.manage ?? true
+
   const audio = new Audio(url)
   audio.volume = volume
   audio.loop = loop
-  audio.play()
-  audio.addEventListener('ended', () => audio.remove())
+  if (play) audio.play()
+  if (manage) audio.addEventListener('ended', () => audio.remove())
   return audio
 }
 
@@ -295,6 +308,7 @@ interface GameOptions {
   x?: number,
   y?: number,
   setup?: (game: Game) => void
+  sounds?: Record<string, string | Promise<typeof import("*.mp3")>>
 }
 
 export class Game<C extends Controller<any> = Controller<any>> {
@@ -307,20 +321,25 @@ export class Game<C extends Controller<any> = Controller<any>> {
   setActive: Setter<boolean>
   paused: Accessor<boolean>
   setPaused: Setter<boolean>
-  mute: Accessor<boolean>
-  setMute: Setter<boolean>
-
+  sounds: Record<string, HTMLAudioElement>
 
   constructor(options: GameOptions) {
     // Store setup options
     this.options = options
+
+    // Setup sounds
+    
+    this.sounds = {}
+    Object.entries(options.sounds ?? {}).forEach(async ([name, path]) => {
+      let resolvedPath = typeof path === 'object' ? (await path).default : path
+      this.sounds[name] = new Audio(resolvedPath)
+    })
 
     // Setup signals
     const [canvas, setCanvas] = createSignal<Canvas>(this.createCanvas())
     const [controllers, setControllers] = createSignal<CanvasControllers>({})
     const [active, setActive] = createSignal<boolean>(true)
     const [paused, setPaused] = createSignal<boolean>(false)
-    const [mute, setMute] = createSignal<boolean>(false)
     this.canvas = canvas
     this.setCanvas = setCanvas
     this.active = active
@@ -329,8 +348,6 @@ export class Game<C extends Controller<any> = Controller<any>> {
     this.setPaused = setPaused
     this.controllers = controllers
     this.setControllers = setControllers
-    this.mute = mute
-    this.setMute = setMute
 
     // Set window event listeners
     window.addEventListener('keydown', this.handleWindowKeydown.bind(this))
@@ -412,4 +429,53 @@ export class Game<C extends Controller<any> = Controller<any>> {
       this.setCanvas(this.createCanvas())
     })
   }
+
+  playSound(name: string, options?: {
+    volume?: number,
+    loop?: boolean,
+    unique?: boolean,
+  }) {
+    let sound = this.sounds[name]
+    if (!sound) return
+    if (options?.unique) {
+      sound = new Audio(sound.src)
+    }
+    sound.volume = options?.volume ?? 1
+    sound.loop = options?.loop ?? false
+    sound.play()
+    if (options?.unique) {
+      sound.addEventListener('ended', () => sound.remove())
+    }
+  }
+
+  stopSound(name: string) {
+    let sound = this.sounds[name]
+    if (!sound) return
+    sound.pause()
+    sound.currentTime = 0
+  }
+}
+
+export function playTone(
+  frequency = 440,
+  duration = 0.5,
+  volume = 1,
+  type: OscillatorType = 'sine'
+) {
+  const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+  const oscillator = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+
+  oscillator.type = type;
+  oscillator.frequency.value = frequency;
+
+  const compensatedGain = 1 / Math.sqrt(frequency)
+  gain.gain.setValueAtTime(volume * compensatedGain, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+
+  oscillator.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  oscillator.start();
+  oscillator.stop(audioCtx.currentTime + duration);
 }
