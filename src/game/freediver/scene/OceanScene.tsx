@@ -9,18 +9,22 @@ import { createCorgiController } from "../controllers/CorgiController"
 import { createRopeController } from "../controllers/RopeController"
 import { Component, createEffect, Show, useContext } from "solid-js"
 import { css, cva } from "@style/css"
-import bg1 from '@assets/bg-1.png'
-import bg2 from '@assets/bg-2.png'
-import bg3 from '@assets/bg-3.png'
+import depth1 from '@assets/depth1.png'
+import depth2 from '@assets/depth2.png'
+import depth3 from '@assets/depth3.png'
 import surface from '@assets/surface.png'
 import sand from '@assets/sand.png'
 import { PauseMenu } from "../ui/PauseMenu"
 import { Bar } from "../ui/Bar"
 import { DivingWatch } from "../ui/DivingWatch"
 import { createStarfishController } from "../controllers/StarFishController"
+import { GameStateContext } from "@/utils/GameStateContext"
 
 export const OceanScene: SceneComponent = props => {
+  const [gameState, setGameState] = useContext(GameStateContext)!
   const game = new Game({
+    gameState,
+    setGameState,
     width: Math.min(700, window.innerWidth - 20),
     height: 700,
     setup: ($game: Game) => {
@@ -45,7 +49,7 @@ export const OceanScene: SceneComponent = props => {
           x: Math.random() * 700,
         })
       ).sort((a, b) => a.data.y() - b.data.y())
-
+      crabs.forEach(sf => $game.addController(sf))
 
       const starfish = Array(1).fill(null).map((_, n) => 
         createStarfishController('starfish-' + n)
@@ -86,9 +90,9 @@ export const OceanScene: SceneComponent = props => {
       style={{
         'background-image': `
           url(${sand}),
-          url(${bg1}),
-          url(${bg2}),
-          url(${bg3}),
+          url(${depth1}),
+          url(${depth2}),
+          url(${depth3}),
           linear-gradient(
             0deg,
             rgba(7, 0, 145, 1) 0%,
@@ -98,9 +102,9 @@ export const OceanScene: SceneComponent = props => {
         `,
         'background-position': `
           ${-game.canvas().x()}px bottom,
-          ${-game.canvas().x() / 2.5}px 85%,
-          ${-game.canvas().x() / 2.0}px 85%,
           ${-game.canvas().x() / 1.5}px 85%,
+          ${-game.canvas().x() / 2.0}px 85%,
+          ${-game.canvas().x() / 2.5}px 85%,
           ${-game.canvas().x()}px bottom
         `,
       }}
@@ -156,7 +160,7 @@ const styles = {
   level: css({
     position: 'relative',
     backgroundRepeat: 'repeat-x',
-    backgroundSize: '200px, 612px, 612px, 612px, cover',
+    backgroundSize: '330px, 612px, 612px, 612px, cover',
     color: 'white',
     maxWidth: '100%',
   }),

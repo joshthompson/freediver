@@ -1,8 +1,9 @@
 import { createController, Key, playTone } from '@/utils/game'
-import { createSignal } from 'solid-js'
+import { createSignal, useContext } from 'solid-js'
 import { Sprite } from '@/game/core/Sprite'
 import seadiverFront from '@assets/sprites/seadiver/seadiver-front2.png'
 import { generateFrames } from '@/utils'
+import { GameStateContext } from '@/utils/GameStateContext'
 
 export type DiverSurfaceController = ReturnType<typeof createDiverSurfaceController>
 
@@ -51,7 +52,7 @@ export function createDiverSurfaceController(id: string, props?: DiverSurfaceCon
         if (!$.spaceTap() && space) {
           $.setOxygen($.oxygen() + oxygenUpRate)
           $.setSpaceTap(true)
-          playTone(400 + $.oxygen() * 15, 0.5, 10)
+          playTone(400 + $.oxygen() * 15, 0.5, 10 * $game.gameState.options.volume)
         }
         if ($.spaceTap() && !space) {
           $.setSpaceTap(false)

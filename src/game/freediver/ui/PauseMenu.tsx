@@ -9,6 +9,11 @@ export const PauseMenu: Component<{ game: Game, exitToMenu: () => void }> = prop
 
   const toggleVolume = () => {
     const on = gameState.options.volume > 0
+    const audioElements = document.querySelectorAll<HTMLAudioElement>('audio[data-game-volume]')
+    audioElements.forEach(audio => {
+      audio.volume = on ? 0 : parseFloat(audio.getAttribute('data-game-volume')!)
+    })
+    window.localStorage.setItem('game-volume', JSON.stringify(on ? 0 : 1))
     setGameState('options', 'volume', on ? 0 : 1)
   }
   

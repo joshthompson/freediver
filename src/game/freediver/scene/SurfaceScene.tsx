@@ -1,6 +1,6 @@
 import { Canvas } from "@/game/core/Canvas"
 import { Game, SceneComponent } from "@/utils/game"
-import { createEffect, Show } from "solid-js"
+import { createEffect, Show, useContext } from "solid-js"
 import { css, cva } from "@style/css"
 import { createRopeController } from "../controllers/RopeController"
 import { PauseMenu } from "../ui/PauseMenu"
@@ -8,9 +8,13 @@ import { DivingWatch } from "../ui/DivingWatch"
 import { Bar } from "../ui/Bar"
 import { createDiverSurfaceController } from "../controllers/DiverSurface"
 import { createCorgiSurfaceController } from "../controllers/CorgiSurface"
+import { GameStateContext } from "@/utils/GameStateContext"
 
 export const SurfaceScene: SceneComponent = props => {
+  const [gameState, setGameState] = useContext(GameStateContext)!
   const game = new Game({
+    gameState,
+    setGameState,
     width: Math.min(700, window.innerWidth - 20),
     height: 700,
     setup($game: Game) {

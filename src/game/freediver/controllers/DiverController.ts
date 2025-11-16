@@ -9,6 +9,7 @@ import { generateFrames } from '@/utils'
 
 export type DiverController = ReturnType<typeof createDiver>
 export type DiverHeadController = ReturnType<typeof createDiverHead>
+export type DiverArmController = ReturnType<typeof createDiverArm>
 
 interface DiverControllerProps {
   x?: number

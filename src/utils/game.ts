@@ -2,6 +2,8 @@ import { Canvas, CanvasControllers } from '@/game/core/Canvas'
 import { Sprite } from '@/game/core/Sprite'
 import { cx } from '@style/css'
 import { Accessor, Component, createMemo, createSignal, Setter } from 'solid-js'
+import { SetStoreFunction } from 'solid-js/store'
+import { GameState } from './GameStateContext'
 
 type Accessorise<T> = {
   [K in keyof T]: Accessor<T[K]>
@@ -71,6 +73,7 @@ export function playSound(
     loop?: boolean,
     play?: boolean,
     manage?: boolean,
+    mute?: boolean
   },
 ) {
   const volume = options?.volume ?? 1
@@ -79,8 +82,11 @@ export function playSound(
   const manage = options?.manage ?? true
 
   const audio = new Audio(url)
-  audio.volume = volume
+  audio.volume = options?.mute ? 0 : volume
   audio.loop = loop
+  audio.setAttribute('data-game-volume', `${volume}`)
+  audio.style.setProperty('display', 'none')
+  document.body.appendChild(audio)
   if (play) audio.play()
   if (manage) audio.addEventListener('ended', () => audio.remove())
   return audio
@@ -303,6 +309,8 @@ export function createConnectedController<C extends Controller<any>>(options: {
 
 
 interface GameOptions {
+  gameState: GameState
+  setGameState: SetStoreFunction<GameState>
   width: number
   height: number
   x?: number,
@@ -313,6 +321,8 @@ interface GameOptions {
 
 export class Game<C extends Controller<any> = Controller<any>> {
   options: GameOptions
+  gameState: GameState
+  setGameState: SetStoreFunction<GameState>
   canvas: Accessor<Canvas>
   setCanvas: Setter<Canvas>
   controllers: Accessor<CanvasControllers>
@@ -326,9 +336,10 @@ export class Game<C extends Controller<any> = Controller<any>> {
   constructor(options: GameOptions) {
     // Store setup options
     this.options = options
+    this.gameState = options.gameState
+    this.setGameState = options.setGameState
 
     // Setup sounds
-    
     this.sounds = {}
     Object.entries(options.sounds ?? {}).forEach(async ([name, path]) => {
       let resolvedPath = typeof path === 'object' ? (await path).default : path
@@ -440,9 +451,12 @@ export class Game<C extends Controller<any> = Controller<any>> {
     if (options?.unique) {
       sound = new Audio(sound.src)
     }
-    sound.volume = options?.volume ?? 1
+    sound.volume = (options?.volume ?? 1) * (this.gameState.options.volume ?? 1)
     sound.loop = options?.loop ?? false
+    sound.setAttribute('data-game-volume', `${options?.volume ?? 1}`)
     sound.play()
+    sound.style.setProperty('display', 'none')
+    document.body.appendChild(sound)
     if (options?.unique) {
       sound.addEventListener('ended', () => sound.remove())
     }

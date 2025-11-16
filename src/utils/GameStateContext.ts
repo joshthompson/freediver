@@ -1,7 +1,7 @@
 import { createContext } from "solid-js"
 import { SetStoreFunction } from "solid-js/store"
 
-interface GameState {
+export interface GameState {
   score: {
     total: number
     currentDive: number

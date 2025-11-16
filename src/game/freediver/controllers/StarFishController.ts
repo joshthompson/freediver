@@ -1,7 +1,7 @@
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
 import starfish from '@assets/sprites/starfish.png'
-import { DiverController } from './DiverController'
+import { DiverArmController, DiverController } from './DiverController'
 import { playSound } from '@/utils/game'
 import starfishSound from '@assets/sounds/starfish.mp3'
 
@@ -45,9 +45,9 @@ export function createStarfishController(
       $.setY(200 + Math.sin($age / 3) * 5)
       $.setRotation(0 + Math.sin($age / 12) * 10)
 
-      const diver = $game.getController('diver') as DiverController
-      if (diver == null) return
-      const caught = diver.hitTest($controller)
+      const diverArmLeft = $game.getController('diver-arm-left') as DiverArmController
+      const diverArmRight = $game.getController('diver-arm-left') as DiverArmController
+      const caught = diverArmLeft?.hitTest($controller) || diverArmRight?.hitTest($controller)
 
       if (caught) {
         $game.playSound('starfish', { volume: 0.5, unique: true })

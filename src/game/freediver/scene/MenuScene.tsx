@@ -1,12 +1,16 @@
 import { Canvas } from "@/game/core/Canvas"
 import { Game, SceneComponent } from "@/utils/game"
-import { Show } from "solid-js"
+import { Show, useContext } from "solid-js"
 import menu from '@assets/menu.png'
 import { css } from "@style/css"
 import { Button } from "../ui/Button"
+import { GameStateContext } from "@/utils/GameStateContext"
 
 export const MenuScene: SceneComponent = props => {
+  const [gameState, setGameState] = useContext(GameStateContext)!
   const game = new Game({
+    gameState,
+    setGameState,
     width: Math.min(700, window.innerWidth - 20),
     height: 700,
   })
