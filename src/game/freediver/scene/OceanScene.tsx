@@ -9,14 +9,15 @@ import { createCorgiController } from "../controllers/CorgiController"
 import { createRopeController } from "../controllers/RopeController"
 import { Component, createEffect, Show } from "solid-js"
 import { css, cva } from "@style/css"
-import bg1 from '@public/bg-1.png'
-import bg2 from '@public/bg-2.png'
-import bg3 from '@public/bg-3.png'
-import surface from '@public/surface.png'
-import sand from '@public/sand.png'
+import bg1 from '@assets/bg-1.png'
+import bg2 from '@assets/bg-2.png'
+import bg3 from '@assets/bg-3.png'
+import surface from '@assets/surface.png'
+import sand from '@assets/sand.png'
 import { PauseMenu } from "../ui/PauseMenu"
 import { Bar } from "../ui/Bar"
 import { DivingWatch } from "../ui/DivingWatch"
+import { createStarfishController } from "../controllers/StarFishController"
 
 export const OceanScene: SceneComponent = props => {
   const game = new Game({
@@ -44,7 +45,12 @@ export const OceanScene: SceneComponent = props => {
           x: Math.random() * 700,
         })
       ).sort((a, b) => a.data.y() - b.data.y())
-      crabs.forEach(crab => $game.addController(crab))
+
+
+      const starfish = Array(1).fill(null).map((_, n) => 
+        createStarfishController('starfish-' + n)
+      )
+      starfish.forEach(sf => $game.addController(sf))
     
       const octopi = Array(4).fill(null).map((_, n) => 
         createOctopusController('octopus-' + n, {

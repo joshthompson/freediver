@@ -3,7 +3,7 @@ import { createSignal } from 'solid-js'
 import { DiverController } from './DiverController'
 import { createBubbleController } from './BubbleController'
 import { Sprite } from '@/game/core/Sprite'
-import corgi from '@public/sprites/link/link.png'
+import corgi from '@assets/sprites/link/link.png'
 import { generateFrames } from '@/utils'
 
 const bubbleFrequency = 20
@@ -58,7 +58,7 @@ export function createCorgiController(
         followDistance,
       }
     },
-    onEnterFrame($, $game, $age) {
+    onEnterFrame({ $, $game, $age }) {
       const diver = $game?.getController('diver') as DiverController
       if (!diver) return
 

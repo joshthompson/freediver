@@ -4,14 +4,25 @@ import { OceanScene } from './scene/OceanScene'
 import { SurfaceScene } from './scene/SurfaceScene'
 import { MenuScene } from './scene/MenuScene'
 import { InstructionsScene } from './scene/InstructionsScene'
+import { playSound } from '@/utils/game'
+import ocean1 from '@assets/sounds/ocean1.mp3'
 
 export const FreediverGame: Component = () => {
   const [scene, _setScene] = createSignal<string>('menu')
   const [sceneData, setSceneData] = createSignal<any>(null)
-  const setScene = (scene: string, data?: any) => {
-    _setScene(scene)
+  const setScene = (newScene: string, data?: any) => {
+    if (['ocean', 'surface'].includes(newScene) && !music()) {
+      startMusic()
+    }
+    _setScene(newScene)
     setSceneData(data ?? null)
   }
+
+  const [music, setMusic] = createSignal<HTMLAudioElement | undefined>(undefined)
+  const startMusic = () => {
+    setMusic(playSound(ocean1, 1, true))
+  }
+
   const debug = window.location.hostname === 'localhost'
   return (
     <div class={styles.page}>

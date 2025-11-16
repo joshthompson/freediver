@@ -1,7 +1,7 @@
 import { generateFrames, randomItem } from '@/utils'
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
-import octopus from '@public/sprites/octopus.png'
+import octopus from '@assets/sprites/octopus.png'
 import { DiverController } from './DiverController'
 
 export function createOctopusController(
@@ -44,7 +44,7 @@ export function createOctopusController(
         state: () => 'play',
       }
     },
-    onEnterFrame($, $game, _age, $currentFrame) {
+    onEnterFrame({ $, $game, $currentFrame }) {
       $.setX($.x() + $.speed() * $.direction())
 
       if ([7, 8].includes($currentFrame)) $.setSpeed($.size() * 5)

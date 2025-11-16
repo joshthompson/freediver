@@ -1,7 +1,7 @@
 import { createController, Key } from '@/utils/game'
 import { createSignal } from 'solid-js'
 import { Sprite } from '@/game/core/Sprite'
-import seadiverFront from '@public/sprites/seadiver/seadiver-front2.png'
+import seadiverFront from '@assets/sprites/seadiver/seadiver-front2.png'
 import { generateFrames } from '@/utils'
 
 export type DiverSurfaceController = ReturnType<typeof createDiverSurfaceController>
@@ -42,7 +42,7 @@ export function createDiverSurfaceController(id: string, props?: DiverSurfaceCon
           setSpaceTap,
         }
       },
-      onEnterFrame($, $game, $age) {
+      onEnterFrame({ $, $game, $age }) {
         const space = Key.isDown(' ')
       
         const float = Math.cos($age / 10) * 8

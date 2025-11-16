@@ -1,9 +1,9 @@
 import { generateFrames, randomItem } from '@/utils'
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
-import fish1 from '@public/sprites/fish1.png'
-import fish2 from '@public/sprites/fish2.png'
-import fish3 from '@public/sprites/fish3.png'
+import fish1 from '@assets/sprites/fish1.png'
+import fish2 from '@assets/sprites/fish2.png'
+import fish3 from '@assets/sprites/fish3.png'
 
 export function createFishController(
   id: string,
@@ -50,7 +50,7 @@ export function createFishController(
         })
       }
     },
-    onEnterFrame($, $game) {
+    onEnterFrame({ $, $game }) {
       $.setX($.x() + $.speed() * $.direction())
 
       const xMin = $game.canvas().x() - 30

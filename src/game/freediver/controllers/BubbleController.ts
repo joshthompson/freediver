@@ -1,6 +1,6 @@
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
-import bubble from '@public/bubble2.png'
+import bubble from '@assets/bubble2.png'
 import { css } from '@style/css'
 
 const acceleration = 0.1
@@ -41,7 +41,7 @@ export function createBubbleController(
         class: () => css({ opacity: 0.5 }),
       }
     },
-    onEnterFrame($, $game, $age) {
+    onEnterFrame({ $, $game, $age }) {
       $.setX($.x() + Math.cos($.seed + $age / 5 - 0.5) * 2 + $.xSpeed())
       $.setY($.y() - $.speed())
       $.setSpeed($.speed() + acceleration)

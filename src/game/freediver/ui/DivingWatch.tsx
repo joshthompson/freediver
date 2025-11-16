@@ -1,5 +1,5 @@
 import { Component } from "solid-js"
-import watch from '@public/watch.png'
+import watch from '@assets/sprites/watch/watch.png'
 import { css } from "@style/css"
 
 export const DivingWatch: Component<{ depth: number}> = props => {

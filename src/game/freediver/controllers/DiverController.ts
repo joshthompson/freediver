@@ -2,13 +2,12 @@ import { createConnectedController, createController, Key } from '@/utils/game'
 import { createSignal } from 'solid-js'
 import { createBubbleController } from './BubbleController'
 import { Sprite } from '@/game/core/Sprite'
-import seadiver from '@public/sprites/seadiver/seadiver-body.png'
-import seadiverHead from '@public/sprites/seadiver/seadiver-head.png'
-import arm from '@public/dave-arm.png'
+import seadiver from '@assets/sprites/seadiver/seadiver-body.png'
+import seadiverHead from '@assets/sprites/seadiver/seadiver-head.png'
 import { generateFrames } from '@/utils'
 
 export type DiverController = ReturnType<typeof createDiver>
-export type DiverArmController = ReturnType<typeof createDiverArm>
+export type DiverHeadController = ReturnType<typeof createDiverHead>
 
 interface DiverControllerProps {
   x?: number
@@ -25,12 +24,10 @@ let bubbleN = 0
 export function createDiverController(id: string, props?: DiverControllerProps) {
   const diver = createDiver(id, props)
   const diverHead = createDiverHead(diver)
-  // const diverArm = createDiverArm(diver)
 
   return [
     diver,
     diverHead,
-    // diverArm
   ]
 }
 
@@ -103,7 +100,7 @@ function createDiver(id: string, props?: DiverControllerProps) {
           depth: () => Math.max(0, Math.floor(y() / pxInMeter - 0.5)),
         }
       },
-      onEnterFrame($, $game, $age) {
+      onEnterFrame({ $, $game, $age }) {
         const left = () => Key.isDown('ArrowLeft') || Key.isDown('a')
         const right = () => Key.isDown('ArrowRight') || Key.isDown('d')
         const up = () => Key.isDown('ArrowUp') || Key.isDown('w')
@@ -198,25 +195,5 @@ function createDiverHead(
     rotation: $ => -70 * $.speed() / $.maxSpeed,
     offset: { x: 45, y: -10 },
     origin: { x: 8, y: 29 },
-  })
-}
-
-
-function createDiverArm(
-  diver: DiverController
-) {
-  return createController({
-    frames: [arm],
-    init() {
-      return {
-        id: diver.id + '-arm',
-        type: 'diver-arm',
-        width: diver.data.width,
-        x: diver.data.x,
-        y: diver.data.y,
-        rotation: diver.data.rotation,
-        xScale: diver.data.xScale,
-      }
-    },
   })
 }

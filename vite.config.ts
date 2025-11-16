@@ -9,7 +9,7 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, 'src'),
       '@style': path.resolve(__dirname, 'styled-system'),
-      '@public': path.resolve(__dirname, 'public'),
+      '@assets': path.resolve(__dirname, 'src/assets'),
     },
   },
   server: {

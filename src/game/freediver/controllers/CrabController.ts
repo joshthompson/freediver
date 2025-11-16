@@ -1,7 +1,7 @@
 import { generateFrames, randomItem } from '@/utils'
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
-import crab from '@public/sprites/crab.png'
+import crab from '@assets/sprites/crab.png'
 import { DiverController } from './DiverController'
 import { Sprite } from '@/game/core/Sprite'
 
@@ -53,7 +53,7 @@ export function createCrabController(
         setState,
       }
     },
-    onEnterFrame($, $game) {
+    onEnterFrame({ $, $game }) {
       if ($.changeMode() <= 0) {
         $.setMode(randomItem(modes))
         $.setChangeMode(minChangeMode + Math.random() * (maxChangeMode - minChangeMode))

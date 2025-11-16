@@ -1,7 +1,7 @@
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
 import { Sprite } from '@/game/core/Sprite'
-import corgiFront from '@public/sprites/link/link-front2.png'
+import corgiFront from '@assets/sprites/link/link-front2.png'
 
 export type CorgiSurfaceController = ReturnType<typeof createCorgiSurfaceController>
 
@@ -28,7 +28,7 @@ export function createCorgiSurfaceController(id: string, props?: CorgiSurfaceCon
           width: () => 100,
         }
       },
-      onEnterFrame($, _, $age) {
+      onEnterFrame({ $, $age }) {
         const float = Math.cos($age / 10 - 0.5) * 0.5
         $.setY($.y() + float)
       },

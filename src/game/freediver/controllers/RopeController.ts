@@ -1,6 +1,6 @@
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
-import rope from '@public/rope.png'
+import rope from '@assets/sprites/rope.png'
 
 export function createRopeController(
   id: string,
@@ -32,7 +32,7 @@ export function createRopeController(
         mode: props.mode,
       }
     },
-    onEnterFrame($, _, $age) {
+    onEnterFrame({ $, $age }) {
       const float = Math.cos(10 + $age / 10) * ($.mode === 'ocean' ? 0.5 : 0.15) * $.size
       $.setY($.y() + float)
       $.setRotation(Math.sin(10 + $age / 50) * 2 * $.size)

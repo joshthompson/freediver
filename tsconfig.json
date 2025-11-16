@@ -21,7 +21,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "@style/*": ["./styled-system/*"],
-      "@public/*": ["./public/*"]
+      "@assets/*": ["./src/assets/*"]
     }
   }
 }

@@ -1,7 +1,7 @@
 import { Canvas } from "@/game/core/Canvas"
 import { Game, SceneComponent } from "@/utils/game"
 import { Show } from "solid-js"
-import menu from '@public/menu.png'
+import menu from '@assets/menu.png'
 import { css } from "@style/css"
 import { Button } from "../ui/Button"
 

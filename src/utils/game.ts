@@ -2,7 +2,6 @@ import { Canvas, CanvasControllers } from '@/game/core/Canvas'
 import { Sprite } from '@/game/core/Sprite'
 import { cx } from '@style/css'
 import { Accessor, Component, createMemo, createSignal, Setter } from 'solid-js'
-import { transform } from 'typescript'
 
 type Accessorise<T> = {
   [K in keyof T]: Accessor<T[K]>
@@ -65,11 +64,13 @@ export function isOverlapping(
   )
 }
 
-export function playSound(url: string, volume = 1) {
+export function playSound(url: string, volume = 1, loop = false) {
   const audio = new Audio(url)
   audio.volume = volume
+  audio.loop = loop
   audio.play()
   audio.addEventListener('ended', () => audio.remove())
+  return audio
 }
 
 type ControllerBaseType = {
@@ -87,6 +88,14 @@ type ControllerBaseType = {
   },
 } & Partial<Accessorise<Sprite>>
 
+interface OnEnterFrameData<T extends ControllerBaseType> {
+  $: T,
+  $game: Game,
+  $age: number,
+  $currentFrame: number
+  $controller: Controller<T>
+}
+
 interface ControllerProps<T extends ControllerBaseType> {
   init: () => T
   frames?: Sprite['frames']
@@ -94,7 +103,7 @@ interface ControllerProps<T extends ControllerBaseType> {
   class?: Sprite['class']
   style?: Sprite['style']
   frameRate?: number
-  onEnterFrame?: (data: T, game: Game, age: number, currentFrame: number) => void
+  onEnterFrame?: (data: OnEnterFrameData<T>) => void
 }
 
 export interface Controller<
@@ -103,8 +112,9 @@ export interface Controller<
   type: string
   id: string
   frameRate: number
-  onEnterFrame: (data: CP, game: Game, age: number, currentFrame: number) => void
+  onEnterFrame: (data: OnEnterFrameData<CP>) => void
   destroy: () => void
+  hitTest: (other: Controller<any>) => boolean
   setGame: (game: Game) => void
   data: CP
   sprite: Accessor<Sprite>
@@ -119,25 +129,24 @@ export function createController<
   const onEnterFrame = options.onEnterFrame ?? (() => {})
   const frameRate = options.frameRate ?? 40
   const [currentFrame, setCurrentFrame] = createSignal<number>(0)
-
   const data: CP = options.init()
-  const interval = setInterval(() => {
-    if (data.game && data.game?.isActive()) {
-      onEnterFrame(data, data.game, age(), currentFrame())
-      setAge(age() + 1)
-    }
-  }, frameRate)
   const destroy = () => {
     clearInterval(interval)
   }
   const setGame = (game: Game) => (data.game = game)
+  const hitTest = (other: Controller<any>) => {
+    const sprite1 = data.game?.canvas().controllers()[data.id]?.sprite()
+    const sprite2 = other.data.game?.canvas().controllers()[other.id]?.sprite()
+    return isOverlapping(sprite1?.ref, sprite2?.ref)
+  }
 
-  return {
+  const controller: Controller<CP> = {
     id: data.id,
     type: data.type,
     frameRate,
     onEnterFrame,
     destroy,
+    hitTest,
     setGame,
     age,
     data,
@@ -164,6 +173,21 @@ export function createController<
       }),
     ),
   }
+
+  const interval = setInterval(() => {
+    if (data.game && data.game?.isActive()) {
+      onEnterFrame({
+        $: data,
+        $game: data.game,
+        $age: age(),
+        $currentFrame: currentFrame(),
+        $controller: controller
+      })
+      setAge(age() + 1)
+    }
+  }, frameRate)
+
+  return controller
 }
 
 type ExtractControllerType<T> = T extends Controller<infer A> ? A : never

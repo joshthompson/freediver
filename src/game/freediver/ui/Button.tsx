@@ -1,14 +1,20 @@
 import { Component, JSX } from "solid-js"
 import { cva } from "@style/css"
+import { playSound } from "@/utils/game"
+import clickSound from "@assets/sounds/click.mp3"
 
 export const Button: Component<{
   size?: 'medium' | 'small'
   onClick?: (event: MouseEvent) => void
   children?: JSX.Element
 }> = props => {
+  const onClick = (event: MouseEvent) => {
+    playSound(clickSound)
+    props.onClick?.(event)
+  }
   return <button
     class={styles.button({ size: props.size ?? 'medium' })}
-    onClick={props.onClick}
+    onClick={onClick}
     children={props.children}
   />
 }
