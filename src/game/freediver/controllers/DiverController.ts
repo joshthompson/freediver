@@ -48,7 +48,7 @@ function createDiver(id: string, props?: DiverControllerProps) {
         const [acceleration] = createSignal<number>(0.5)
         const [speed, setSpeed] = createSignal<number>(0)
         const [state] = createSignal<Sprite['state']>('play')
-        const [_frameInterval, setFrameInterval] = createSignal(250)
+        const [frameInterval, setFrameInterval] = createSignal(250)
         const [bubbleLevel, setBubbleLevel] = createSignal(0)
         const [eqLevel, setEqLevel] = createSignal(1)
         const [holdSpace, setHoldSpace] = createSignal(1)
@@ -84,8 +84,8 @@ function createDiver(id: string, props?: DiverControllerProps) {
           minSpeed,
           width: () => 68,
           height: () => 168,
-          // state,
-          // frameInterval,
+          state,
+          frameInterval,
           setFrameInterval,
           bubbleLevel,
           setBubbleLevel,

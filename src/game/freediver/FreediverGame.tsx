@@ -7,8 +7,10 @@ import { InstructionsScene } from './scene/InstructionsScene'
 import { playSound } from '@/utils/game'
 import ocean1 from '@assets/sounds/ocean1.mp3'
 
+const local = window.location.hostname === 'localhost'
+
 export const FreediverGame: Component = () => {
-  const [scene, _setScene] = createSignal<string>('menu')
+  const [scene, _setScene] = createSignal<string>(local ? 'menu' : 'menu')
   const [sceneData, setSceneData] = createSignal<any>(null)
   const setScene = (newScene: string, data?: any) => {
     if (['ocean', 'surface'].includes(newScene) && !music()) {
@@ -23,18 +25,17 @@ export const FreediverGame: Component = () => {
     setMusic(playSound(ocean1, 1, true))
   }
 
-  const debug = window.location.hostname === 'localhost'
   return (
     <div class={styles.page}>
-      <MenuScene debug={debug} active={scene() === 'menu'} setScene={setScene} />
+      <MenuScene debug={local} active={scene() === 'menu'} setScene={setScene} />
       <InstructionsScene
-        debug={debug}
+        debug={local}
         active={scene() === 'instructions'}
         setScene={setScene}
         sceneData={sceneData}
       />
-      <OceanScene debug={debug} active={scene() === 'ocean'} setScene={setScene} />
-      <SurfaceScene debug={debug} active={scene() === 'surface'} setScene={setScene} />
+      <OceanScene debug={local} active={scene() === 'ocean'} setScene={setScene} />
+      <SurfaceScene debug={local} active={scene() === 'surface'} setScene={setScene} />
     </div>
   )
 }

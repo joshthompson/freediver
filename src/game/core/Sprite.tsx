@@ -38,6 +38,7 @@ export interface Sprite {
 
 interface SpriteExtendedProps {
   active?: boolean
+  id?: string
 }
 
 export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
@@ -128,6 +129,7 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
 
   return (
     <div
+      data-controller-id={props.id}
       ref={props.ref}
       class={cx(styles.sprite, props.class)}
       style={{

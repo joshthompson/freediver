@@ -135,10 +135,12 @@ export function createController<
   }
   const setGame = (game: Game) => (data.game = game)
   const hitTest = (other: Controller<any>) => {
-    const sprite1 = data.game?.canvas().controllers()[data.id]?.sprite()
-    const sprite2 = other.data.game?.canvas().controllers()[other.id]?.sprite()
-    return isOverlapping(sprite1?.ref, sprite2?.ref)
+    const ref1 = document.querySelector(`[data-controller-id="${data.id}"]`) as HTMLElement
+    const ref2 = document.querySelector(`[data-controller-id="${other.id}"]`) as HTMLElement
+    return isOverlapping(ref1, ref2)
   }
+
+  let spriteRef: HTMLDivElement
 
   const controller: Controller<CP> = {
     id: data.id,

@@ -33,7 +33,7 @@ export interface Canvas<T extends CanvasControllers = CanvasControllers> {
 export function Canvas<T extends CanvasControllers = CanvasControllers>(
   props: CanvasProps,
 ) {
-  const [debugOn, setDebugOn] = createSignal(!!props.debug)
+  const debugOn = !!props.debug
 
   onCleanup(() => {
     Object.values(props.game.controllers()).forEach(controller =>
@@ -99,10 +99,10 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
       >
         {props.underlay}
         <For each={sprites()}>
-          {controller => <Sprite {...controller.sprite()} active={props.game.isActive()} />}
+          {controller => <Sprite {...controller.sprite()} id={controller.id} active={props.game.isActive()} />}
         </For>
         {props.overlay}
-        {debugOn() && <Debugger game={props.game} />}
+        {debugOn && <Debugger game={props.game} />}
       </div>
     </GameContext.Provider>
   )

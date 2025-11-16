@@ -50,7 +50,7 @@ export function createStarfishController(
       const caught = diver.hitTest($controller)
 
       if (caught) {
-        playSound(starfishSound)
+        playSound(starfishSound, 0.5)
         $.setX(Math.random() * $game.canvas().width)
         $.setY(Math.random() * $game.canvas().height * 0.35 + $game.canvas().height * 0.6)
         $.setHue(Math.random() * 360)
