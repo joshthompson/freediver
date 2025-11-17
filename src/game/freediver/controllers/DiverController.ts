@@ -2,7 +2,7 @@ import { createConnectedController, createController, Key } from '@/utils/game'
 import { createSignal } from 'solid-js'
 import { createBubbleController } from './BubbleController'
 import { Sprite } from '@/game/core/Sprite'
-import seadiver from '@assets/sprites/seadiver/seadiver-body.png'
+import seadiverBody from '@assets/sprites/seadiver/seadiver-body.png'
 import seadiverHead from '@assets/sprites/seadiver/seadiver-head.png'
 import seadiverArm from '@assets/sprites/seadiver/seadiver-arm.png'
 import { generateFrames } from '@/utils'
@@ -44,13 +44,13 @@ function createDiver(id: string, props?: DiverControllerProps) {
 
   return createController(
     {
-      frames: generateFrames(seadiver, 638, 1578, 68, 7),
+      frames: generateFrames(seadiverBody, 952 / 7, 315, 68, 7),
       style: props?.style,
       init() {
         const [x, setX] = createSignal<number>(props?.x ?? 30)
-        const [y, setY] = createSignal<number>(props?.y ?? 15)
+        const [y, setY] = createSignal<number>(props?.y ?? 15 + 100)
         const [xScale, setXScale] = createSignal<number>(1)
-        const [rotation, setRotation] = createSignal<number>(180)
+        const [rotation, setRotation] = createSignal<number>(180 - 180)
         const [rotationSpeed] = createSignal<number>(5)
         const [acceleration] = createSignal<number>(0.5)
         const [speed, setSpeed] = createSignal<number>(0)
@@ -90,7 +90,7 @@ function createDiver(id: string, props?: DiverControllerProps) {
           maxSpeed,
           minSpeed,
           width: () => 68,
-          height: () => 168,
+          height: () => 157,
           state,
           frameInterval,
           setFrameInterval,
@@ -199,7 +199,7 @@ function createDiver(id: string, props?: DiverControllerProps) {
           $.setHoldSpace($.holdSpace() + 1)
           if ($.holdSpace() === $.holdSpaceMax) {
             $.setEqLevel(0)
-            Array(10).fill(null).forEach((_, n) => {
+            Array(10).fill(null).forEach(() => {
               $game.addController($.makeBubble(0, 0, Math.random() * 2 - 1, Math.random() * 2 - 1))
             })
           }
@@ -224,7 +224,7 @@ function createDiverHead(
     frames: [seadiverHead],
     width: () => 20,
     rotation: $ => -70 * $.speed() / $.maxSpeed,
-    offset: { x: 45, y: -10 },
+    offset: { x: 42, y: -19 },
     origin: { x: 8, y: 29 },
   })
 }
@@ -244,7 +244,7 @@ function createDiverArm(
       rotation += $.speed() / 3
       return rotation
     },
-    offset: { x: 49, y: 17 },
+    offset: { x: 49, y: 7 },
     origin: { x: 5.5, y: 6 },
   })
 }

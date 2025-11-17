@@ -178,6 +178,7 @@ export function createController<
         xScale: data.xScale?.() ?? 1,
         yScale: data.yScale?.() ?? 1,
         width: data.width?.() ?? 1,
+        parallax: data.parallax?.() ?? 1,
         rotation: data.rotation?.() ?? 0,
         state: data.state?.(),
         frameInterval: data.frameInterval?.(),
@@ -296,7 +297,7 @@ export class Game<C extends Controller<any> = Controller<any>> {
     const [loadingAssetCount, setLoadingAssetCount] = createSignal<number>(0)
     const [loadingAssetTotal, setLoadingAssetTotal] = createSignal<number>(0)
     const [canvas, setCanvas] = createSignal<Canvas>(this.createCanvas())
-    const [controllers, setControllers] = createSignal<CanvasControllers>({})
+    const [controllers, setControllers] = createSignal<CanvasControllers>([])
     const [paused, setPaused] = createSignal<boolean>(false)
     this.loading = loading
     this.setLoading = setLoading
@@ -322,21 +323,19 @@ export class Game<C extends Controller<any> = Controller<any>> {
     controllers.forEach(controller => {
       if (!controller) return
       controller.setGame(this)
-      this.setControllers({
+      this.setControllers([
         ...this.controllers(),
-        [controller.id]: controller,
-      })
+        { id: controller.id, controller },
+      ])
     })
   }
 
   removeController(id: string) {
-    const controllers = this.controllers()
-    delete controllers[id]
-    this.setControllers(controllers)
+    this.setControllers(this.controllers().filter(({ id: name }) => name !== id))
   }
 
   getController<T = Controller<any>>(id: string) {
-    return this.controllers()[id] as T | undefined
+    return this.controllers().find(c => c.id === id)?.controller as T | undefined
   }
 
   handleWindowKeydown(event: KeyboardEvent) {
@@ -374,7 +373,7 @@ export class Game<C extends Controller<any> = Controller<any>> {
   
   async setup() {
     this.options.setup?.(this)
-    Object.values(this.controllers()).forEach(controller => {
+    this.controllers().forEach(({ controller }) => {
       controller.setGame(this)
     })
     this.load()
@@ -415,8 +414,8 @@ export class Game<C extends Controller<any> = Controller<any>> {
   }
 
   async preloadAssets() {
-    const frameAssets = Object.values(this.controllers())
-      .map(controllers => controllers.frames ?? [])
+    const frameAssets = this.controllers()
+      .map(({ controller }) => controller.frames ?? [])
       .flat()
       .map(frame => frame.split('#')[0])
 

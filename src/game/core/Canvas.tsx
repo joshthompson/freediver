@@ -5,7 +5,7 @@ import { Controller, Game } from '@/utils/game'
 import { GameContext } from '@/utils/GameContext'
 import { Debugger } from './Debugger'
 
-export type CanvasControllers = Record<string, Controller<any>>
+export type CanvasControllers = { id: string, controller: Controller<any> }[]
 
 export interface CanvasProps {
   ref?: HTMLDivElement | undefined
@@ -35,7 +35,7 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
   props: CanvasProps,
 ) {
   onCleanup(() => {
-    Object.values(props.game.controllers()).forEach(controller =>
+    props.game.controllers().forEach(({ controller }) =>
       controller.destroy(),
     )
   })
@@ -43,18 +43,22 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
   const typeOrder = [
     'bubble',
     'corgi',
+    'diver-arm-left',
     'diver',
+    'diver-arm-right',
     'fish',
     'octopus',
     'crab',
+    'whale',
   ]
   const sprites = () => {
-    const all = Object.values(props.game.controllers())
-    return all.toSorted((a, b) => {
-      const aP = typeOrder.findIndex(type => type === a.type)
-      const bP = typeOrder.findIndex(type => type === b.type)
-      return bP - aP
-    })
+    return props.game.controllers()
+      .map(({ controller }) => controller)
+      .toSorted((a, b) => {
+        const aP = typeOrder.findIndex(type => type === a.type)
+        const bP = typeOrder.findIndex(type => type === b.type)
+        return bP - aP
+      })
   }
 
   const getMousePosition = (event: MouseEvent | TouchEvent) => {

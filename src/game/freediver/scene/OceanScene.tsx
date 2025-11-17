@@ -23,6 +23,7 @@ import { DivingWatch } from "../ui/DivingWatch"
 import { createStarfishController } from "../controllers/StarFishController"
 import { GameStateContext } from "@/utils/GameStateContext"
 import { LoadingScreen } from "../ui/LoadingScreen"
+import { createWhaleController } from "../controllers/WhaleController"
 
 export const OceanScene: SceneComponent = props => {
   const [gameState, setGameState] = useContext(GameStateContext)!
@@ -32,6 +33,7 @@ export const OceanScene: SceneComponent = props => {
     width: Math.min(700, window.innerWidth - 20),
     height: 700,
     setup($game: Game) {
+      $game.addController(createWhaleController('whale'))
       $game.addController(...createDiverController('diver', {
         goToSurface: () => {
           props.setScene('surface')
@@ -156,7 +158,7 @@ const GameOverlay: Component<{ game: Game, exitToMenu: () => void }> = props => 
       <Bar percent={eqBar()} />
     </div>
     <div
-      class={styles.blackoutWarning({ warn: blackoutWarning() > 0 })}
+      class={styles.blackoutWarning({ warn: blackoutWarning() > 0, superWarn: blackoutWarning() > 0.9 })}
       style={{ '--percent': blackoutWarning() }}
     >
       Warning: Low Oxygen!
@@ -248,11 +250,17 @@ const styles = {
       alignItems: 'center',
       fontSize: '3rem',
       gap: '3rem',
-      transition: 'opacity 0.5s ease-in-out, box-shadow 0.5s ease-in-out',
+      transition: `
+        opacity 0.5s ease-in-out,
+        box-shadow 0.5s ease-in-out,
+        background 0.5s ease-in-out,
+        color 0.5s ease-in-out
+      `,
       opacity: 0,
       p: '0.5rem',
       textAlign: 'center',
       boxShadow: 'inset 0 0 calc(200px * var(--percent)) calc(100px * var(--percent)) #000000',
+      background: '#00000000',
     },
     variants: {
       warn: {
@@ -260,6 +268,12 @@ const styles = {
           opacity: 1,
         },
       },
+      superWarn: {
+        true: {
+          background: '#000000FF',
+          color: 'black',
+        },
+      }
     },
   }),
 }

@@ -33,6 +33,7 @@ export interface Sprite {
     origin?: { x: number; y: number }
     style?: JSX.CSSProperties
   }
+  parallax?: number
   children?: JSX.Element
   onClick?: () => void
   onChangeFrame?: (frameIndex: number) => void
@@ -138,8 +139,8 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
       style={{
         display: loading() ? 'none' : 'block',
         'aspect-ratio': `${size().width} / ${size().height}`,
-        top: (props.y - game.canvas().y()) + 'px',
-        left: (props.x - game.canvas().x()) + 'px',
+        top: (props.y - game.canvas().y() * (props.parallax ?? 1)) + 'px',
+        left: (props.x - game.canvas().x() * (props.parallax ?? 1)) + 'px',
         transform: `scale(${(props.xScale ?? 1).toString()}, ${(props.yScale ?? 1).toString()})`,
         width: width() + 'px',
         'pointer-events': props.onClick ? 'auto' : 'none',
