@@ -4,7 +4,6 @@ import {
   createEffect,
   createMemo,
   createSignal,
-  For,
   JSX,
   onCleanup,
   useContext,
@@ -15,6 +14,7 @@ import { GameContext } from '@/utils/GameContext'
 export interface Sprite {
   ref?: HTMLDivElement | undefined
   frames: string[]
+  frame?: number
   randomStartFrame?: boolean
   x: number
   y: number
@@ -59,6 +59,7 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
       : 0,
   )
   createEffect(() => props.onChangeFrame?.(currentFrame()))
+  createEffect(() => typeof props.frame === 'number' && setCurrentFrame(props.frame))
   const frames = createMemo(() =>
     props.frames.map(frame => {
       const image = frame.split('#')[0]

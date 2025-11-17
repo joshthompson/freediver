@@ -130,6 +130,7 @@ export interface Controller<
 > {
   type: string
   id: string
+  frames?: Sprite['frames']
   frameRate: number
   onEnterFrame: (data: OnEnterFrameData<CP>) => void
   destroy: () => void
@@ -159,11 +160,10 @@ export function createController<
     return isOverlapping(ref1, ref2)
   }
 
-  let spriteRef: HTMLDivElement
-
   const controller: Controller<CP> = {
     id: data.id,
     type: data.type,
+    frames: options.frames,
     frameRate,
     onEnterFrame,
     destroy,
@@ -174,6 +174,7 @@ export function createController<
     sprite: createMemo(
       (): Sprite => ({
         frames: options.frames ?? [],
+        frame: data?.frame?.(),
         randomStartFrame: options.randomStartFrame ?? false,
         class: cx(options.class, data.class?.()),
         style: { ...options.style, ...data.style?.() },
@@ -213,37 +214,6 @@ export function createController<
 
 type ExtractControllerType<T> = T extends Controller<infer A> ? A : never
 
-// export function createConnectedController<
-//   C extends Controller<any>
-// >(options: {
-//   name: string,
-//   base: C,
-//   frames?: ControllerProps<ExtractControllerType<C>>['frames'],
-//   x: ($: ExtractControllerType<C>) => number,
-//   y: ($: ExtractControllerType<C>) => number,
-//   width?: ($: ExtractControllerType<C>) => number,
-//   rotation?: ($: ExtractControllerType<C>) => number,
-//   xScale?: ($: ExtractControllerType<C>) => number,
-//   onEnterFrame?: ControllerProps<ExtractControllerType<C>>['onEnterFrame'],
-// }) {
-//   return createController({
-//     frames: options.frames,
-//     init() {
-//       const baseData = options.base.data as ExtractControllerType<C>
-//       return {
-//         id: options.base.id + '-' + options.name,
-//         type: options.name,
-//         x: () => options.x(baseData),
-//         y: () => options.y(baseData),
-//         width: options.width ? () => options.width!(baseData) : undefined,
-//         rotation: options.rotation ? () => options.rotation!(baseData) : undefined,
-//         xScale: options.xScale ? () => options.xScale!(baseData) : undefined,
-//       } as ExtractControllerType<C>
-//     },
-//     onEnterFrame: options.onEnterFrame,
-//   })
-// }
-
 export function createConnectedController<C extends Controller<any>>(options: {
   type: string,
   base: C,
@@ -254,6 +224,7 @@ export function createConnectedController<C extends Controller<any>>(options: {
   xScale?: ($: ExtractControllerType<C>) => number,
   rotation?: ($: ExtractControllerType<C>, $age: number) => number,
   onEnterFrame?: ControllerProps<ExtractControllerType<C>>['onEnterFrame'],
+  frame?: ($: ExtractControllerType<C>) => number,
 }) {
   return createController({
     frames: options.frames,
@@ -266,6 +237,7 @@ export function createConnectedController<C extends Controller<any>>(options: {
 
         x: () => baseData.x() + options.offset.x,
         y: () => baseData.y() + options.offset.y,
+        frame: () => options.frame?.(baseData),
         width: options.width,
         rotation: baseData.rotation,
         xScale: baseData.xScale,
@@ -277,30 +249,6 @@ export function createConnectedController<C extends Controller<any>>(options: {
           rotation: () => options.rotation?.(baseData, options.base.age()) ?? 0,
           origin: () => ({ x: options.origin?.x ?? 0, y: options.origin?.y ?? 0 }),
         },
-
-        // x: () => {
-        //   const p = baseData
-        //   const ox = options.x(p)
-        //   const oy = options.y(p)
-        //   const rot = (p.rotation?.() ?? 0) * (Math.PI / 180)  // convert deg → rad
-        
-        //   const pivotX = p.x() + (p.width?.() ?? 0) / 2
-        //   const pivotY = p.y() + (p.height?.() ?? 0) / 2
-        
-        //   return pivotX + ox * Math.cos(rot) - oy * Math.sin(rot)
-        // },
-        
-        // y: () => {
-        //   const p = baseData
-        //   const ox = options.x(p)
-        //   const oy = options.y(p)
-        //   const rot = (p.rotation?.() ?? 0) * (Math.PI / 180)
-        
-        //   const pivotX = p.x() + (p.width?.() ?? 0) / 2
-        //   const pivotY = p.y() + (p.height?.() ?? 0) / 2
-        
-        //   return pivotY + ox * Math.sin(rot) + oy * Math.cos(rot)
-        // },
       } as ExtractControllerType<C>
     },
     onEnterFrame: options.onEnterFrame,
@@ -332,6 +280,12 @@ export class Game<C extends Controller<any> = Controller<any>> {
   paused: Accessor<boolean>
   setPaused: Setter<boolean>
   sounds: Record<string, HTMLAudioElement>
+  loading: Accessor<boolean>
+  setLoading: Setter<boolean>
+  loadingAssetCount: Accessor<number>
+  loadingAssetTotal: Accessor<number>
+  setLoadingAssetCount: Setter<number>
+  setLoadingAssetTotal: Setter<number>
 
   constructor(options: GameOptions) {
     // Store setup options
@@ -347,10 +301,19 @@ export class Game<C extends Controller<any> = Controller<any>> {
     })
 
     // Setup signals
+    const [loading, setLoading] = createSignal<boolean>(false)
+    const [loadingAssetCount, setLoadingAssetCount] = createSignal<number>(0)
+    const [loadingAssetTotal, setLoadingAssetTotal] = createSignal<number>(0)
     const [canvas, setCanvas] = createSignal<Canvas>(this.createCanvas())
     const [controllers, setControllers] = createSignal<CanvasControllers>({})
     const [active, setActive] = createSignal<boolean>(true)
     const [paused, setPaused] = createSignal<boolean>(false)
+    this.loading = loading
+    this.setLoading = setLoading
+    this.loadingAssetCount = loadingAssetCount
+    this.setLoadingAssetCount = setLoadingAssetCount
+    this.loadingAssetTotal = loadingAssetTotal
+    this.setLoadingAssetTotal = setLoadingAssetTotal
     this.canvas = canvas
     this.setCanvas = setCanvas
     this.active = active
@@ -400,7 +363,7 @@ export class Game<C extends Controller<any> = Controller<any>> {
   }
 
   isActive() {
-    return this.active() && !this.paused()
+    return this.active() && !this.paused() && !this.loading()
   }
 
   destroy() {
@@ -467,6 +430,53 @@ export class Game<C extends Controller<any> = Controller<any>> {
     if (!sound) return
     sound.pause()
     sound.currentTime = 0
+  }
+
+  async load() {
+    this.setLoading(true)
+    await this.preloadAssets()
+    this.setLoading(false)
+  }
+
+  async preloadAssets() {
+    const imageAssets = Object.values(this.controllers()).map(controllers => controllers.frames ?? []).flat()
+    const audioAssets = Object.values(this.sounds)
+    this.setLoadingAssetCount(0)
+    this.setLoadingAssetTotal(imageAssets.length + audioAssets.length)
+    const assetLoaded = () => this.setLoadingAssetCount(this.loadingAssetCount() + 1)
+    const images = imageAssets.map(asset => {
+      return new Promise<void>((resolve) => {
+        const img = new Image()
+        img.src = asset
+        img.onload = () => assetLoaded() && resolve()
+        img.onerror = () => assetLoaded() && resolve()
+      })
+    })
+    const sounds = audioAssets.map(audio => {
+      return new Promise<void>((resolve) => {
+        if (audio.readyState === HTMLMediaElement.HAVE_ENOUGH_DATA) {
+          assetLoaded()
+          resolve()
+          return
+        }
+        const done = () => {
+          cleanup()
+          assetLoaded()
+          resolve()
+        }
+    
+        const onCanPlay = () => done()
+        const onLoadedData = () => done()
+        const onError = () => done()
+    
+        const cleanup = () => {
+          audio.removeEventListener('canplay', onCanPlay);
+          audio.removeEventListener('loadeddata', onLoadedData);
+          audio.removeEventListener('error', onError);
+        }
+      })
+    })
+    await Promise.all([...images, ...sounds])
   }
 }
 

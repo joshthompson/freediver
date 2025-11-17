@@ -1,11 +1,12 @@
-import { createController, Key, playTone } from '@/utils/game'
-import { createSignal, useContext } from 'solid-js'
+import { createConnectedController, createController, Key, playTone } from '@/utils/game'
+import { createSignal } from 'solid-js'
 import { Sprite } from '@/game/core/Sprite'
-import seadiverFront from '@assets/sprites/seadiver/seadiver-front2.png'
+import seadiverFrontBody from '@assets/sprites/seadiver/seadiver-front-body.png'
+import seadiverFrontHead from '@assets/sprites/seadiver/seadiver-front-head.png'
 import { generateFrames } from '@/utils'
-import { GameStateContext } from '@/utils/GameStateContext'
 
-export type DiverSurfaceController = ReturnType<typeof createDiverSurfaceController>
+export type DiverSurfaceBodyController = ReturnType<typeof createDiverSurfaceBodyController>
+export type DiverSurfaceHeadController = ReturnType<typeof createDiverSurfaceHeadController>
 
 interface DiverSurfaceControllerProps {
   x?: number
@@ -18,10 +19,16 @@ const oxygenUpRate = 20
 const oxygenDownRate = 3
 
 export function createDiverSurfaceController(id: string, props?: DiverSurfaceControllerProps) {
-  const baseY = props?.y ?? 200
+  const body = createDiverSurfaceBodyController(id, props)
+  const head = createDiverSurfaceHeadController(body)
+  return [body, head]
+}
+
+function createDiverSurfaceBodyController(id: string, props?: DiverSurfaceControllerProps) {
+  const baseY = 400
   return createController(
     {
-      frames: generateFrames(seadiverFront, 638, 1578, 68, 7),
+      frames: generateFrames(seadiverFrontBody, 638, 1578, 68, 7),
       style: props?.style,
       init() {
         const [x, setX] = createSignal<number>(props?.x ?? 30)
@@ -37,6 +44,7 @@ export function createDiverSurfaceController(id: string, props?: DiverSurfaceCon
           y,
           setY,
           width: () => 200,
+          height: () => 374,
           oxygen,
           setOxygen,
           spaceTap,
@@ -65,4 +73,17 @@ export function createDiverSurfaceController(id: string, props?: DiverSurfaceCon
       },
     } as const,
   )
+}
+
+function createDiverSurfaceHeadController(body: DiverSurfaceBodyController) {
+  return createConnectedController({
+    type: 'head',
+    base: body,
+    frames: generateFrames(seadiverFrontHead, 184, 265, 70, 2),
+    width: () => 70,
+    rotation: (_, $age) => Math.sin($age / 10) * 3,
+    offset: { x: 93, y: -85 },
+    origin: { x: 43, y: 91 },
+    frame: $ => $.oxygen() > 0 ? 1 : 0,
+  })
 }

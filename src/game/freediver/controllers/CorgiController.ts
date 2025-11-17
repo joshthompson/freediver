@@ -9,6 +9,7 @@ import { generateFrames } from '@/utils'
 const bubbleFrequency = 20
 const maxSpeed = 10
 const minSpeed = 0
+let bubbleN = 0
 
 export function createCorgiController(
   id: string,
@@ -30,7 +31,7 @@ export function createCorgiController(
       const [speed, setSpeed] = createSignal<number>(0)
       const [state] = createSignal<Sprite['state']>('play')
       const [frameInterval, setFrameInterval] = createSignal(250)
-      const [bubbleLevel, setBubbleLevel] = createSignal(0)
+      const [bubbleLevel, setBubbleLevel] = createSignal(bubbleFrequency / 2)
       const followDistance = props?.mode === 'surface' ? 130 : 50
 
       return {
@@ -102,7 +103,7 @@ export function createCorgiController(
         if ($.bubbleLevel() > bubbleFrequency) {
           $.setBubbleLevel(0)
           $game.addController?.(
-            createBubbleController('corgi-bubble-' + $age / bubbleFrequency, {
+            createBubbleController('corgi-bubble-' + bubbleN++, {
               x: $.x() + $.width() / 2,
               y: $.y(),
             }),

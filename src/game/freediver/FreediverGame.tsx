@@ -12,7 +12,6 @@ import { GameStateContext } from '@/utils/GameStateContext'
 const local = window.location.hostname === 'localhost'
 
 export const FreediverGame: Component = () => {
-
   const [gameState, setGameState] = createStore({
     score: {
       total: 0,

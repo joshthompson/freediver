@@ -19,18 +19,15 @@ export const SurfaceScene: SceneComponent = props => {
     height: 700,
     setup($game: Game) {
       $game.addController(
-        createDiverSurfaceController('diver-surface', {
-          x: 0,
-          y: 330,
-        }),
+        ...createDiverSurfaceController('diver-surface'),
         createCorgiSurfaceController('corgi-surface', {
           x: 200,
           y: 380,
         }),
         createRopeController('rope', {
-          x: -40,
-          y: 420,
-          size: 2,
+          x: -70,
+          y: 410,
+          size: 2.5,
           mode: 'surface',
         })
       )

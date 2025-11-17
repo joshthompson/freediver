@@ -1,4 +1,4 @@
-import { Accessor, createSignal, For, JSX, onCleanup, Setter } from 'solid-js'
+import { Accessor, Component, For, JSX, onCleanup, Setter } from 'solid-js'
 import { css, cx } from '@style/css'
 import { Sprite } from './Sprite'
 import { Controller, Game } from '@/utils/game'
@@ -10,6 +10,7 @@ export type CanvasControllers = Record<string, Controller<any>>
 export interface CanvasProps {
   ref?: HTMLDivElement | undefined
   game: Game
+  loading?: Component<{ game: Game }>
   overlay?: JSX.Element
   underlay?: JSX.Element
   style?: JSX.CSSProperties
@@ -102,6 +103,7 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
           {controller => <Sprite {...controller.sprite()} id={controller.id} active={props.game.isActive()} />}
         </For>
         {props.overlay}
+        {props.game.loading() && props.loading && <props.loading game={props.game} />}
         {debugOn && <Debugger game={props.game} />}
       </div>
     </GameContext.Provider>
@@ -113,6 +115,5 @@ const styles = {
     position: 'relative',
     overflow: 'hidden',
     background: 'white',
-    imageRendering: 'pixelated',
   }),
 }

@@ -17,7 +17,7 @@ export function createCorgiSurfaceController(id: string, props?: CorgiSurfaceCon
       frames: [corgiFront],
       init() {
         const [x] = createSignal<number>(props?.x ?? 10)
-        const [y, setY] = createSignal<number>(props?.y ?? 40)
+        const [y, setY] = createSignal<number>(350)
 
         return {
           id,
@@ -25,7 +25,7 @@ export function createCorgiSurfaceController(id: string, props?: CorgiSurfaceCon
           x,
           y,
           setY,
-          width: () => 100,
+          width: () => 140,
         }
       },
       onEnterFrame({ $, $age }) {

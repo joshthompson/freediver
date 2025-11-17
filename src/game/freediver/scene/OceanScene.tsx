@@ -19,6 +19,7 @@ import { Bar } from "../ui/Bar"
 import { DivingWatch } from "../ui/DivingWatch"
 import { createStarfishController } from "../controllers/StarFishController"
 import { GameStateContext } from "@/utils/GameStateContext"
+import { LoadingScreen } from "../ui/LoadingScreen"
 
 export const OceanScene: SceneComponent = props => {
   const [gameState, setGameState] = useContext(GameStateContext)!
@@ -63,6 +64,7 @@ export const OceanScene: SceneComponent = props => {
         })
       ).sort((a, b) => b.data.y() - a.data.y())
       octopi.forEach(octopus => $game.addController(octopus))
+      $game.load()
     },
     sounds: {
       thud: import('@/assets/sounds/thud.mp3'),
@@ -84,6 +86,7 @@ export const OceanScene: SceneComponent = props => {
     <Canvas
       debug={props.debug}
       game={game}
+      loading={LoadingScreen}
       overlay={<GameOverlay game={game} exitToMenu={exitToMenu} />}
       underlay={<GameUnderlay game={game} />}
       class={styles.level}
