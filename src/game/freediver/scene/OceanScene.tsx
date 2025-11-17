@@ -7,13 +7,16 @@ import { createDiverController, DiverController } from "../controllers/DiverCont
 import { Game, SceneComponent } from "@/utils/game"
 import { createCorgiController } from "../controllers/CorgiController"
 import { createRopeController } from "../controllers/RopeController"
-import { Component, createEffect, Show, useContext } from "solid-js"
+import { Component, onCleanup, useContext } from "solid-js"
 import { css, cva } from "@style/css"
 import depth1 from '@assets/depth1.png'
 import depth2 from '@assets/depth2.png'
 import depth3 from '@assets/depth3.png'
 import surface from '@assets/surface.png'
 import sand from '@assets/sand.png'
+import thudSound from '@/assets/sounds/thud.mp3'
+import starfishSound from '@/assets/sounds/starfish.mp3'
+import equalisationSound from '@/assets/sounds/equalisation.mp3'
 import { PauseMenu } from "../ui/PauseMenu"
 import { Bar } from "../ui/Bar"
 import { DivingWatch } from "../ui/DivingWatch"
@@ -23,20 +26,22 @@ import { LoadingScreen } from "../ui/LoadingScreen"
 
 export const OceanScene: SceneComponent = props => {
   const [gameState, setGameState] = useContext(GameStateContext)!
-  const game = new Game({
+  const game = new Game('ocean', {
     gameState,
     setGameState,
     width: Math.min(700, window.innerWidth - 20),
     height: 700,
-    setup: ($game: Game) => {
+    setup($game: Game) {
       $game.addController(...createDiverController('diver', {
-        goToSurface: (speed: number) => {
-          $game.reset()
-          props.setScene('surface', { speed, })
+        goToSurface: () => {
+          props.setScene('surface')
         },
+        blackout: () => {
+          props.setScene('blackout')
+        }
       }))
       $game.addController(createCorgiController('corgi', { mode: 'ocean' }))
-      $game.addController(createRopeController('rope', { x: -50, mode: 'ocean' }))
+      $game.addController(createRopeController('rope'))
 
       Array(10).fill(null).forEach((_, n) => {
         $game.addController(createFishController('fish-' + n, {
@@ -50,12 +55,12 @@ export const OceanScene: SceneComponent = props => {
           x: Math.random() * 700,
         })
       ).sort((a, b) => a.data.y() - b.data.y())
-      crabs.forEach(sf => $game.addController(sf))
+      crabs.forEach(crab => $game.addController(crab))
 
       const starfish = Array(1).fill(null).map((_, n) => 
         createStarfishController('starfish-' + n)
       )
-      starfish.forEach(sf => $game.addController(sf))
+      starfish.forEach(star => $game.addController(star))
     
       const octopi = Array(4).fill(null).map((_, n) => 
         createOctopusController('octopus-' + n, {
@@ -64,60 +69,54 @@ export const OceanScene: SceneComponent = props => {
         })
       ).sort((a, b) => b.data.y() - a.data.y())
       octopi.forEach(octopus => $game.addController(octopus))
-      $game.load()
     },
     sounds: {
-      thud: import('@/assets/sounds/thud.mp3'),
-      starfish: import('@/assets/sounds/starfish.mp3'),
-      equalisation: import('@/assets/sounds/swoop.mp3'),
-    }
+      thud: thudSound,
+      starfish: starfishSound,
+      equalisation: equalisationSound,
+    },
+    images: [depth1, depth2, depth3, surface, sand],
   })
-
-  createEffect(() => {
-    game.setActive(props.active)
-  })
+  onCleanup(() => game.destroy())
 
   const exitToMenu = () => {
-    game.reset()
     props.setScene('menu')
   }
 
-  return <Show when={props.active}>
-    <Canvas
-      debug={props.debug}
-      game={game}
-      loading={LoadingScreen}
-      overlay={<GameOverlay game={game} exitToMenu={exitToMenu} />}
-      underlay={<GameUnderlay game={game} />}
-      class={styles.level}
-      style={{
-        'background-image': `
-          url(${sand}),
-          url(${depth1}),
-          url(${depth2}),
-          url(${depth3}),
-          linear-gradient(
-            0deg,
-            rgba(7, 0, 145, 1) 0%,
-            rgba(10, 182, 250, 1) 90%,
-            rgba(230, 240, 255, 1) 100%
-          )
-        `,
-        'background-position': `
-          ${-game.canvas().x()}px bottom,
-          ${-game.canvas().x() / 1.5}px 85%,
-          ${-game.canvas().x() / 2.0}px 85%,
-          ${-game.canvas().x() / 2.5}px 85%,
-          ${-game.canvas().x()}px bottom
-        `,
-      }}
-      onClick={event => {
-        if (!game.paused()) {
-          game.addController(createBubbleController('bubble-click-' + Date.now(), event))
-        }
-      }}
-    />
-  </Show>
+  return <Canvas
+    debug={game.gameState.options.debug}
+    game={game}
+    loading={LoadingScreen}
+    overlay={<GameOverlay game={game} exitToMenu={exitToMenu} />}
+    underlay={<GameUnderlay game={game} />}
+    class={styles.level}
+    style={{
+      'background-image': `
+        url(${sand}),
+        url(${depth1}),
+        url(${depth2}),
+        url(${depth3}),
+        linear-gradient(
+          0deg,
+          rgba(7, 0, 145, 1) 0%,
+          rgba(10, 182, 250, 1) 90%,
+          rgba(230, 240, 255, 1) 100%
+        )
+      `,
+      'background-position': `
+        ${-game.canvas().x()}px bottom,
+        ${-game.canvas().x() / 1.5}px 85%,
+        ${-game.canvas().x() / 2.0}px 85%,
+        ${-game.canvas().x() / 2.5}px 85%,
+        ${-game.canvas().x()}px bottom
+      `,
+    }}
+    onClick={event => {
+      if (!game.paused()) {
+        game.addController(createBubbleController('bubble-click-' + Date.now(), event))
+      }
+    }}
+  />
 }
 
 const GameOverlay: Component<{ game: Game, exitToMenu: () => void }> = props => {
@@ -141,13 +140,28 @@ const GameOverlay: Component<{ game: Game, exitToMenu: () => void }> = props => 
     return Math.min(100, holdSpace() / holdSpaceMax * 100)
   }
 
+  const blackoutWarning = () => {
+    const { oxygen } = props.game.gameState.diver
+    if (oxygen < 10) {
+      return (10 - oxygen) / 10
+    } else {
+      return 0
+    }
+  }
+
   return <>
-    <DivingWatch depth={depth()} />
     <div class={styles.equalisation({ warn: eqWarn() })}>
       <div class={styles.equalisationBackground({ paused: props.game.paused() })} />
       <div>Hold <div class={styles.key}>SPACE</div> to equalise</div>
       <Bar percent={eqBar()} />
     </div>
+    <div
+      class={styles.blackoutWarning({ warn: blackoutWarning() > 0 })}
+      style={{ '--percent': blackoutWarning() }}
+    >
+      Warning: Low Oxygen!
+    </div>
+    <DivingWatch depth={depth()} />
     {props.game.paused() && <PauseMenu game={props.game} exitToMenu={props.exitToMenu} />}
   </>
 }
@@ -223,5 +237,29 @@ const styles = {
     p: '0px 15px',
     lineHeight: '1.2em',
     mx: '0.15em',
+  }),
+  blackoutWarning: cva({
+    base: {
+      position: 'absolute',
+      inset: '0',
+      display: 'flex',
+      flexDirection: 'column',
+      pt: '100px',
+      alignItems: 'center',
+      fontSize: '3rem',
+      gap: '3rem',
+      transition: 'opacity 0.5s ease-in-out, box-shadow 0.5s ease-in-out',
+      opacity: 0,
+      p: '0.5rem',
+      textAlign: 'center',
+      boxShadow: 'inset 0 0 calc(200px * var(--percent)) calc(100px * var(--percent)) #000000',
+    },
+    variants: {
+      warn: {
+        true: {
+          opacity: 1,
+        },
+      },
+    },
   }),
 }

@@ -50,6 +50,10 @@ export default defineConfig({
       flash: {
         '0%, 100%': { opacity: 0 },
         '50%': { opacity: 0.2 },
+      },
+      fadeIn: {
+        from: { opacity: 0 },
+        to: { opacity: 1 },
       }
     },
   },

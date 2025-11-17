@@ -31,7 +31,9 @@ export interface Sprite {
   inner?: {
     rotation?: number
     origin?: { x: number; y: number }
+    style?: JSX.CSSProperties
   }
+  children?: JSX.Element
   onClick?: () => void
   onChangeFrame?: (frameIndex: number) => void
 }
@@ -149,11 +151,12 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
       onClick={props.onClick}
       onTouchStart={props.onClick}
     >
-      <div style={{
+      <div children={props.children} style={{
         width: '100%',
         height: '100%',
         rotate: props.inner?.rotation + 'deg',
         "transform-origin": props.inner?.origin ? `${props.inner.origin.x}px ${props.inner.origin.y}px` : 'center',
+        ...(props.inner?.style ?? {}),
         ...frameStyle(),
       }} />
     </div>

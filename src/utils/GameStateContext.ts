@@ -12,6 +12,7 @@ export interface GameState {
     oxygen: number
   }
   options: {
+    debug: boolean
     volume: number
   }
 }

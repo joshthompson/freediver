@@ -1,6 +1,6 @@
 import { Canvas } from "@/game/core/Canvas"
 import { Game, SceneComponent } from "@/utils/game"
-import { Show, useContext } from "solid-js"
+import { onCleanup, Show, useContext } from "solid-js"
 import menu from '@assets/menu.png'
 import { css, cva } from "@style/css"
 import { Button } from "../ui/Button"
@@ -8,44 +8,45 @@ import { GameStateContext } from "@/utils/GameStateContext"
 
 export const InstructionsScene: SceneComponent = props => {
   const [gameState, setGameState] = useContext(GameStateContext)!
-  const game = new Game({
+  const game = new Game('instructions', {
     gameState,
     setGameState,
     width: Math.min(700, window.innerWidth - 20),
     height: 700,
+    images: [menu],
   })
-  return <Show when={props.active}>
-    <Canvas
-      game={game}
-      style={{ background: `url(${menu})` }}
-      overlay={<div class={styles.overlay}>
-        <p class={styles.description}>Dive and explore with your friend Linkosha the corgi</p>
-        <div class={styles.keyboard}>
-          <div class={styles.key({ key: 'up' })}>
-            <div class={styles.keyName}>↑</div>
-            <div class={styles.keyDescription}>Swim forward</div>
-          </div>
-          <div class={styles.key({ key: 'down' })}>
-            <div class={styles.keyName}>↓</div>
-            <div class={styles.keyDescription}>Swim backwards</div>
-          </div>
-          <div class={styles.key({ key: 'left' })}>
-            <div class={styles.keyName}>←</div>
-            <div class={styles.keyDescription}>Rotate left</div>
-          </div>
-          <div class={styles.key({ key: 'right' })}>
-            <div class={styles.keyName}>→</div>
-            <div class={styles.keyDescription}>Rotate right</div>
-          </div>
-          <div class={styles.key({ key: 'space' })}>
-            <div class={styles.keyName}>Spacebar</div>
-            <div class={styles.keyDescription}>Breathe in / Equalise air pressure</div>
-          </div>
+  onCleanup(() => game.destroy())
+
+  return <Canvas
+    game={game}
+    style={{ background: `url(${menu})` }}
+    overlay={<div class={styles.overlay}>
+      <p class={styles.description}>Dive and explore with your friend Linkosha the corgi</p>
+      <div class={styles.keyboard}>
+        <div class={styles.key({ key: 'up' })}>
+          <div class={styles.keyName}>↑</div>
+          <div class={styles.keyDescription}>Swim forward</div>
         </div>
-        <Button onClick={() => props.setScene('menu')} size="small">Back</Button>
-      </div>}
-    />
-  </Show>
+        <div class={styles.key({ key: 'down' })}>
+          <div class={styles.keyName}>↓</div>
+          <div class={styles.keyDescription}>Swim backwards</div>
+        </div>
+        <div class={styles.key({ key: 'left' })}>
+          <div class={styles.keyName}>←</div>
+          <div class={styles.keyDescription}>Rotate left</div>
+        </div>
+        <div class={styles.key({ key: 'right' })}>
+          <div class={styles.keyName}>→</div>
+          <div class={styles.keyDescription}>Rotate right</div>
+        </div>
+        <div class={styles.key({ key: 'space' })}>
+          <div class={styles.keyName}>Spacebar</div>
+          <div class={styles.keyDescription}>Breathe in / Equalise air pressure</div>
+        </div>
+      </div>
+      <Button onClick={() => props.setScene('menu')} size="small">Back</Button>
+    </div>}
+  />
 }
 
 const styles = {

@@ -3,19 +3,13 @@ import { createSignal } from 'solid-js'
 import rope from '@assets/sprites/rope.png'
 
 export function createRopeController(
-  id: string,
-  props: {
-    x: number
-    y?: number
-    size?: number
-    mode: 'ocean' | 'surface'
-  },
+  id: string
 ) {
   return createController({
     frames: [rope],
     init() {
-      const [x, setX] = createSignal<number>(props.x)
-      const [y, setY] = createSignal<number>(props?.y ?? -10)
+      const [x, setX] = createSignal<number>(-50)
+      const [y, setY] = createSignal<number>(-70)
       const [rotation, setRotation] = createSignal<number>(0)
       return {
         id,
@@ -24,16 +18,15 @@ export function createRopeController(
         setX,
         y,
         setY,
-        size: props.size ?? 1,
-        width: () => 60 * (props.size ?? 1),
+        size: 1,
+        width: () => 60,
         rotation,
         setRotation,
         origin: () => ({ x: 30, y: 30 }),
-        mode: props.mode,
       }
     },
     onEnterFrame({ $, $age }) {
-      const float = Math.cos(10 + $age / 10) * ($.mode === 'ocean' ? 0.5 : 0.15) * $.size
+      const float = Math.cos(10 + $age / 10) * 0.5 * $.size
       $.setY($.y() + float)
       $.setRotation(Math.sin(10 + $age / 50) * 2 * $.size)
     }

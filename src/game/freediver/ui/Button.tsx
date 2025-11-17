@@ -31,7 +31,7 @@ const styles = {
       fontSize: '30px',
       lineHeight: '110%',
       color: 'white',
-      width: '180px',
+      minWidth: '180px',
       textShadow: `
         0.04em 0 0 black,
         -0.04em 0 0 black,

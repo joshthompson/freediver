@@ -7,12 +7,13 @@ import { InstructionsScene } from './scene/InstructionsScene'
 import { playSound } from '@/utils/game'
 import ocean1 from '@assets/sounds/ocean1.mp3'
 import { createStore } from 'solid-js/store'
-import { GameStateContext } from '@/utils/GameStateContext'
+import { GameState, GameStateContext } from '@/utils/GameStateContext'
+import { BlackoutScene } from './scene/BlackoutScene'
 
 const local = window.location.hostname === 'localhost'
 
 export const FreediverGame: Component = () => {
-  const [gameState, setGameState] = createStore({
+  const [gameState, setGameState] = createStore<GameState>({
     score: {
       total: 0,
       currentDive: 0,
@@ -20,14 +21,15 @@ export const FreediverGame: Component = () => {
     },
     diver: {
       x: 0,
-      oxygen: 0,
+      oxygen: 100,
     },
     options: {
+      debug: local,
       volume: JSON.parse(window.localStorage.getItem('game-volume') || '1'),
     },
   })
 
-  const [scene, _setScene] = createSignal<string>(local ? 'menu' : 'menu')
+  const [scene, _setScene] = createSignal<string>(local ? 'blackout' : 'menu')
   const [sceneData, setSceneData] = createSignal<any>(null)
   const setScene = (newScene: string, data?: any) => {
     if (['ocean', 'surface'].includes(newScene) && !music()) {
@@ -50,15 +52,11 @@ export const FreediverGame: Component = () => {
   return (
     <GameStateContext.Provider value={[gameState, setGameState]}>
       <div class={styles.page}>
-        <MenuScene debug={local} active={scene() === 'menu'} setScene={setScene} />
-        <InstructionsScene
-          debug={local}
-          active={scene() === 'instructions'}
-          setScene={setScene}
-          sceneData={sceneData}
-        />
-        <OceanScene debug={local} active={scene() === 'ocean'} setScene={setScene} />
-        <SurfaceScene debug={local} active={scene() === 'surface'} setScene={setScene} />
+        {scene() === 'menu' && <MenuScene setScene={setScene} />}
+        {scene() === 'instructions' && <InstructionsScene setScene={setScene} sceneData={sceneData} />}
+        {scene() === 'surface' && <SurfaceScene setScene={setScene} />}
+        {scene() === 'ocean' && <OceanScene setScene={setScene} />}
+        {scene() === 'blackout' && <BlackoutScene setScene={setScene} />}
       </div>
     </GameStateContext.Provider>
   )

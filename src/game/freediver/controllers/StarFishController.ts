@@ -1,9 +1,7 @@
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
 import starfish from '@assets/sprites/starfish.png'
-import { DiverArmController, DiverController } from './DiverController'
-import { playSound } from '@/utils/game'
-import starfishSound from '@assets/sounds/starfish.mp3'
+import { DiverArmController } from './DiverController'
 
 export function createStarfishController(
   id: string,
@@ -55,6 +53,9 @@ export function createStarfishController(
         $.setY(Math.random() * $game.canvas().height * 0.35 + $game.canvas().height * 0.6)
         $.setHue(Math.random() * 360)
         $.setWidth(Math.random() * 24 + 24)
+
+        // Increase score
+        $game.setGameState('score', 'currentDive', (score) => score + 1)
       }
     },
   })

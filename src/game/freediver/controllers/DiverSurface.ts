@@ -81,7 +81,7 @@ function createDiverSurfaceHeadController(body: DiverSurfaceBodyController) {
     base: body,
     frames: generateFrames(seadiverFrontHead, 184, 265, 70, 2),
     width: () => 70,
-    rotation: (_, $age) => Math.sin($age / 10) * 3,
+    rotation: (_, $age) => Math.sin($age / 7) * 3,
     offset: { x: 93, y: -85 },
     origin: { x: 43, y: 91 },
     frame: $ => $.oxygen() > 0 ? 1 : 0,

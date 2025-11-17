@@ -34,8 +34,6 @@ export interface Canvas<T extends CanvasControllers = CanvasControllers> {
 export function Canvas<T extends CanvasControllers = CanvasControllers>(
   props: CanvasProps,
 ) {
-  const debugOn = !!props.debug
-
   onCleanup(() => {
     Object.values(props.game.controllers()).forEach(controller =>
       controller.destroy(),
@@ -86,6 +84,7 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
     <GameContext.Provider value={props.game}>
       <div
         ref={props.ref}
+        data-game-scene={props.game.id}
         class={cx(styles.canvas, props.class)}
         style={{
           width: `${props.game.canvas().width}px`,
@@ -104,7 +103,7 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
         </For>
         {props.overlay}
         {props.game.loading() && props.loading && <props.loading game={props.game} />}
-        {debugOn && <Debugger game={props.game} />}
+        {!!props.debug && <Debugger game={props.game} />}
       </div>
     </GameContext.Provider>
   )

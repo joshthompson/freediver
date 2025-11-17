@@ -7,6 +7,8 @@ export const Debugger: Component<{ game: Game }> = props => {
     <div>
       <div>Controllers:</div>
       <div>{Object.keys(props.game.controllers()).length}</div>
+      <div>Assets Loaded:</div>
+      <div>{props.game.loadingAssetCount()} / {props.game.loadingAssetTotal()}</div>
     </div>
   </div>
 }

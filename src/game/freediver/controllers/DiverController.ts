@@ -15,7 +15,8 @@ interface DiverControllerProps {
   x?: number
   y?: number
   style?: Sprite['style']
-  goToSurface?: (speed: number) => void
+  goToSurface?: () => void
+  blackout?: () => void
 }
 
 const bubbleFrequency = 20
@@ -39,6 +40,7 @@ export function createDiverController(id: string, props?: DiverControllerProps) 
 
 function createDiver(id: string, props?: DiverControllerProps) {
   const goToSurface = props?.goToSurface ?? (() => {})
+  const blackout = props?.blackout ?? (() => {})
 
   return createController(
     {
@@ -102,6 +104,7 @@ function createDiver(id: string, props?: DiverControllerProps) {
           holdSpaceMax: 20,
           makeBubble,
           goToSurface,
+          blackout,
           depth: () => Math.max(0, Math.floor(y() / pxInMeter - 0.5)),
         }
       },
@@ -111,6 +114,18 @@ function createDiver(id: string, props?: DiverControllerProps) {
         const up = () => Key.isDown('ArrowUp') || Key.isDown('w')
         const down = () => Key.isDown('ArrowDown') || Key.isDown('s')
         const space = () => Key.isDown(' ')
+
+        if ($age % 20 === 0) {
+          const oxygen = $game.gameState.diver.oxygen
+          let consumption = 0.5 + 0.5 * Math.abs($.speed()) / $.maxSpeed
+          if ($.eqLevel() > $.eqTolerance) consumption *= 2
+
+          $game.setGameState('diver', 'oxygen', Math.max(0, oxygen - consumption))
+
+          if ($game.gameState.diver.oxygen <= 0) {
+            $.blackout()
+          }
+        }
 
         const initY = $.y()
 
@@ -156,8 +171,11 @@ function createDiver(id: string, props?: DiverControllerProps) {
         const yMax = $game.canvas().height - 160
 
         if ($.y() < yMin) {
-          $.goToSurface(ySpeed)
+          $.goToSurface()
           $.setY(yMin)
+          const { total, maxDive, currentDive } = $game.gameState.score
+          $game.setGameState('score', 'total', total + currentDive)
+          $game.setGameState('score', 'maxDive', Math.max(maxDive, currentDive))
         }
         if ($.y() > yMax) {
           $.setY(yMax)

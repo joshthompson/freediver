@@ -1,7 +1,7 @@
 import { Canvas, CanvasControllers } from '@/game/core/Canvas'
 import { Sprite } from '@/game/core/Sprite'
 import { cx } from '@style/css'
-import { Accessor, Component, createMemo, createSignal, Setter } from 'solid-js'
+import { Accessor, Component, createMemo, createSignal, JSX, Setter } from 'solid-js'
 import { SetStoreFunction } from 'solid-js/store'
 import { GameState } from './GameStateContext'
 
@@ -9,14 +9,8 @@ type Accessorise<T> = {
   [K in keyof T]: Accessor<T[K]>
 }
 
-export type SceneComponent<
-  T extends {} = any,
-  D extends {} = any,
-> = Component<{
-  active: boolean
-  debug: boolean
-  setScene: (scene: string, data?: D) => void
-  sceneData?: D
+export type SceneComponent<T extends {} = any> = Component<{
+  setScene: (scene: string) => void
 } & T>
 
 class KeyController {
@@ -187,6 +181,7 @@ export function createController<
         rotation: data.rotation?.() ?? 0,
         state: data.state?.(),
         frameInterval: data.frameInterval?.(),
+        children: data.children?.(),
         inner: {
           rotation: data.inner?.rotation?.(),
           origin: data.inner?.origin?.(),
@@ -264,19 +259,17 @@ interface GameOptions {
   x?: number,
   y?: number,
   setup?: (game: Game) => void
-  sounds?: Record<string, string | Promise<typeof import("*.mp3")>>
+  sounds?: Record<string, string>
+  images?: string[] // These are other assets that are not in controllers
 }
 
 export class Game<C extends Controller<any> = Controller<any>> {
-  options: GameOptions
   gameState: GameState
   setGameState: SetStoreFunction<GameState>
   canvas: Accessor<Canvas>
   setCanvas: Setter<Canvas>
   controllers: Accessor<CanvasControllers>
   setControllers: Setter<CanvasControllers>
-  active: Accessor<boolean>
-  setActive: Setter<boolean>
   paused: Accessor<boolean>
   setPaused: Setter<boolean>
   sounds: Record<string, HTMLAudioElement>
@@ -287,17 +280,15 @@ export class Game<C extends Controller<any> = Controller<any>> {
   setLoadingAssetCount: Setter<number>
   setLoadingAssetTotal: Setter<number>
 
-  constructor(options: GameOptions) {
+  constructor(public id: string, public options: GameOptions) {
     // Store setup options
-    this.options = options
     this.gameState = options.gameState
     this.setGameState = options.setGameState
 
     // Setup sounds
     this.sounds = {}
-    Object.entries(options.sounds ?? {}).forEach(async ([name, path]) => {
-      let resolvedPath = typeof path === 'object' ? (await path).default : path
-      this.sounds[name] = new Audio(resolvedPath)
+    Object.entries(options.sounds ?? {}).forEach(([name, path]) => {
+      this.sounds[name] = new Audio(path)
     })
 
     // Setup signals
@@ -306,7 +297,6 @@ export class Game<C extends Controller<any> = Controller<any>> {
     const [loadingAssetTotal, setLoadingAssetTotal] = createSignal<number>(0)
     const [canvas, setCanvas] = createSignal<Canvas>(this.createCanvas())
     const [controllers, setControllers] = createSignal<CanvasControllers>({})
-    const [active, setActive] = createSignal<boolean>(true)
     const [paused, setPaused] = createSignal<boolean>(false)
     this.loading = loading
     this.setLoading = setLoading
@@ -316,8 +306,6 @@ export class Game<C extends Controller<any> = Controller<any>> {
     this.setLoadingAssetTotal = setLoadingAssetTotal
     this.canvas = canvas
     this.setCanvas = setCanvas
-    this.active = active
-    this.setActive = setActive
     this.paused = paused
     this.setPaused = setPaused
     this.controllers = controllers
@@ -358,12 +346,11 @@ export class Game<C extends Controller<any> = Controller<any>> {
   }
 
   togglePause() {
-    if (!this.active()) return
     this.setPaused(!this.paused())
   }
 
   isActive() {
-    return this.active() && !this.paused() && !this.loading()
+    return !this.paused() && !this.loading()
   }
 
   destroy() {
@@ -385,23 +372,12 @@ export class Game<C extends Controller<any> = Controller<any>> {
     }
   }
   
-  setup() {
+  async setup() {
     this.options.setup?.(this)
     Object.values(this.controllers()).forEach(controller => {
       controller.setGame(this)
     })
-  }
-
-  reset() {
-    Object.values(this.controllers()).forEach(controller => {
-      controller.destroy()
-    })
-    this.setControllers({})
-    requestAnimationFrame(() => {
-      this.setup()
-      this.setPaused(false)
-      this.setCanvas(this.createCanvas())
-    })
+    this.load()
   }
 
   playSound(name: string, options?: {
@@ -439,8 +415,13 @@ export class Game<C extends Controller<any> = Controller<any>> {
   }
 
   async preloadAssets() {
-    const imageAssets = Object.values(this.controllers()).map(controllers => controllers.frames ?? []).flat()
-    const audioAssets = Object.values(this.sounds)
+    const frameAssets = Object.values(this.controllers())
+      .map(controllers => controllers.frames ?? [])
+      .flat()
+      .map(frame => frame.split('#')[0])
+
+    const imageAssets = [...new Set([...frameAssets, ...(this.options.images ?? [])])]
+    const audioAssets = Object.values(this.options.sounds ?? {})
     this.setLoadingAssetCount(0)
     this.setLoadingAssetTotal(imageAssets.length + audioAssets.length)
     const assetLoaded = () => this.setLoadingAssetCount(this.loadingAssetCount() + 1)
@@ -452,28 +433,19 @@ export class Game<C extends Controller<any> = Controller<any>> {
         img.onerror = () => assetLoaded() && resolve()
       })
     })
-    const sounds = audioAssets.map(audio => {
+    const sounds = audioAssets.map(path => {
       return new Promise<void>((resolve) => {
-        if (audio.readyState === HTMLMediaElement.HAVE_ENOUGH_DATA) {
-          assetLoaded()
-          resolve()
-          return
-        }
+        const audio = new Audio(path)
         const done = () => {
-          cleanup()
+          audio.removeEventListener('canplay', done)
+          audio.removeEventListener('loadeddata', done)
+          audio.removeEventListener('error', done)
           assetLoaded()
           resolve()
         }
-    
-        const onCanPlay = () => done()
-        const onLoadedData = () => done()
-        const onError = () => done()
-    
-        const cleanup = () => {
-          audio.removeEventListener('canplay', onCanPlay);
-          audio.removeEventListener('loadeddata', onLoadedData);
-          audio.removeEventListener('error', onError);
-        }
+        audio.addEventListener('canplay', done)
+        audio.addEventListener('loadeddata', done)
+        audio.addEventListener('error', done)
       })
     })
     await Promise.all([...images, ...sounds])
