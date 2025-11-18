@@ -131,13 +131,13 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
   onCleanup(() => clearTimeout(enterFrameTimeout))
 
   const render = () => {
-    if (props.x + width() * 1.5 < 0) return false
-    if (props.x - width() * -0.5 > game.canvas().width) return false
+    // if (props.x + width() * 1.5 < 0) return false
+    // if (props.x - width() * -0.5 > game.canvas().width) return false
     return true
   }
 
   return (
-    render() && <div
+    render && <div
       data-controller-id={props.id}
       ref={props.ref}
       class={cx(styles.sprite, props.class)}
