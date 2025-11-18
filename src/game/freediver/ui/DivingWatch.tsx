@@ -1,10 +1,10 @@
-import { Component, useContext } from "solid-js"
+import { Component } from "solid-js"
 import watch from '@assets/sprites/watch/watch.png'
 import { css, cx } from "@style/css"
-import { GameStateContext } from "@/utils/GameStateContext"
+import { useGameState } from "@/utils/GameStateContext"
 
 export const DivingWatch: Component<{ depth: number }> = props => {
-  const [gameState] = useContext(GameStateContext)!
+  const { gameState } = useGameState()!
   return <div class={styles.watch} style={{ 'background-image': `url(${watch})` }}>
     <div class={styles.data}>
       <div class={styles.key}>{props.depth}</div>

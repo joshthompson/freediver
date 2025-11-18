@@ -20,7 +20,7 @@ export function createWhaleController(id: string) {
         speed: () => 1,
         width: () => width,
         state: () => 'play',
-        style: () => ({ filter: `brightness(0)`, opacity: 0.2 }),
+        style: () => ({ filter: `brightness(0.3)`, opacity: 0.2 }),
         frameInterval: () => 40,
         parallax: () => 1 / 3.5,
       }

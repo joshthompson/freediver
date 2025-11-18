@@ -7,7 +7,7 @@ import { createDiverController, DiverController } from "../controllers/DiverCont
 import { Game, SceneComponent } from "@/utils/game"
 import { createCorgiController } from "../controllers/CorgiController"
 import { createRopeController } from "../controllers/RopeController"
-import { Component, onCleanup, useContext } from "solid-js"
+import { Component, onCleanup } from "solid-js"
 import { css, cva } from "@style/css"
 import depth1 from '@assets/depth1.png'
 import depth2 from '@assets/depth2.png'
@@ -16,20 +16,18 @@ import surface from '@assets/surface.png'
 import sand from '@assets/sand.png'
 import thudSound from '@/assets/sounds/thud.mp3'
 import starfishSound from '@/assets/sounds/starfish.mp3'
-import equalisationSound from '@/assets/sounds/equalisation.mp3'
+import equalisationSound from '@/assets/sounds/swoop.mp3'
 import { PauseMenu } from "../ui/PauseMenu"
 import { Bar } from "../ui/Bar"
 import { DivingWatch } from "../ui/DivingWatch"
 import { createStarfishController } from "../controllers/StarFishController"
-import { GameStateContext } from "@/utils/GameStateContext"
+import { useGameState } from "@/utils/GameStateContext"
 import { LoadingScreen } from "../ui/LoadingScreen"
 import { createWhaleController } from "../controllers/WhaleController"
 
 export const OceanScene: SceneComponent = props => {
-  const [gameState, setGameState] = useContext(GameStateContext)!
   const game = new Game('ocean', {
-    gameState,
-    setGameState,
+      ...useGameState()!,
     width: Math.min(700, window.innerWidth - 20),
     height: 700,
     setup($game: Game) {

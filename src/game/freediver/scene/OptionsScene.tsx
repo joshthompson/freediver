@@ -6,9 +6,10 @@ import { css } from "@style/css"
 import { Button } from "../ui/Button"
 import { useGameState } from "@/utils/GameStateContext"
 
-export const MenuScene: SceneComponent = props => {
-  const game = new Game('menu', {
-      ...useGameState()!,
+export const OptionsScene: SceneComponent = props => {
+  const state = useGameState()!
+  const game = new Game('options', {
+    ...state,
     width: Math.min(700, window.innerWidth - 20),
     height: 700,
     images: [menu],
@@ -19,10 +20,19 @@ export const MenuScene: SceneComponent = props => {
     game={game}
     style={{ background: `url(${menu})` }}
     overlay={<div class={styles.overlay}>
-      <Button onClick={() => props.setScene('surface')}>Start</Button>
-      <Button onClick={() => props.setScene('instructions')} size="small">Instructions</Button>
-      <Button onClick={() => props.setScene('options')} size="small">Options</Button>
-      <div class={styles.credits}>A game by Josh Thompson and Olesya Vasileva</div>
+      <div class={styles.options}>
+        <div>
+          <Button onClick={state.gameStateActions.toggleVolume}>
+            Volume: { state.gameState.options.volume > 0 ? 'On' : 'Off' }
+          </Button>
+        </div>
+        <div>
+          <Button onClick={state.gameStateActions.clearScoreData}>
+            Clear Score Data
+          </Button>
+          </div>
+      </div>
+      <Button onClick={() => props.setScene('menu')} size="small">Back</Button>
     </div>}
   />
 }
@@ -35,15 +45,19 @@ const styles = {
     justifyContent: 'flex-end',
     alignItems: 'center',
     flexDirection: 'column',
-    gap: '10px',
-    pb: '100px',
+    gap: '5px',
+    pb: '10px',
+    fontSize: '20px',
   }),
-  credits: css({
+  options: css({
     position: 'absolute',
-    bottom: 0,
+    top: '50%',
     left: 0,
     right: 0,
-    textAlign: 'center',
-    p: '10px',
+    fontSize: '32px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '20px',
   }),
 }

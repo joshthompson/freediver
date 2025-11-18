@@ -55,7 +55,7 @@ export function createStarfishController(
         $.setWidth(Math.random() * 24 + 24)
 
         // Increase score
-        $game.setGameState('score', 'currentDive', (score) => score + 1)
+        $game.gameStateActions.score(1)
       }
     },
   })

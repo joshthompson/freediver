@@ -3,7 +3,7 @@ import { Sprite } from '@/game/core/Sprite'
 import { cx } from '@style/css'
 import { Accessor, Component, createMemo, createSignal, JSX, Setter } from 'solid-js'
 import { SetStoreFunction } from 'solid-js/store'
-import { GameState } from './GameStateContext'
+import { GameState, GameStateActions } from './GameStateContext'
 
 type Accessorise<T> = {
   [K in keyof T]: Accessor<T[K]>
@@ -255,6 +255,7 @@ export function createConnectedController<C extends Controller<any>>(options: {
 interface GameOptions {
   gameState: GameState
   setGameState: SetStoreFunction<GameState>
+  gameStateActions: GameStateActions,
   width: number
   height: number
   x?: number,
@@ -267,6 +268,7 @@ interface GameOptions {
 export class Game<C extends Controller<any> = Controller<any>> {
   gameState: GameState
   setGameState: SetStoreFunction<GameState>
+  gameStateActions: GameStateActions
   canvas: Accessor<Canvas>
   setCanvas: Setter<Canvas>
   controllers: Accessor<CanvasControllers>
@@ -285,6 +287,7 @@ export class Game<C extends Controller<any> = Controller<any>> {
     // Store setup options
     this.gameState = options.gameState
     this.setGameState = options.setGameState
+    this.gameStateActions = options.gameStateActions
 
     // Setup sounds
     this.sounds = {}

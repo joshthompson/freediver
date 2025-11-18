@@ -1,22 +1,22 @@
 import { Canvas } from "@/game/core/Canvas"
 import { Game, SceneComponent } from "@/utils/game"
-import { createEffect, onCleanup, useContext } from "solid-js"
+import { createEffect, onCleanup } from "solid-js"
 import { css, cva } from "@style/css"
 import { PauseMenu } from "../ui/PauseMenu"
 import { DivingWatch } from "../ui/DivingWatch"
 import { Bar } from "../ui/Bar"
 import { createDiverSurfaceController } from "../controllers/DiverSurface"
 import { createCorgiSurfaceController } from "../controllers/CorgiSurface"
-import { GameStateContext } from "@/utils/GameStateContext"
+import { useGameState } from "@/utils/GameStateContext"
 import { LoadingScreen } from "../ui/LoadingScreen"
 import { createBoatController } from "../controllers/BoatController"
 import { createSignController } from "../controllers/SignController"
+import { createCloudController } from "../controllers/CloudController"
 
 export const SurfaceScene: SceneComponent = props => {
-  const [gameState, setGameState] = useContext(GameStateContext)!
+  const state = useGameState()!
   const game = new Game('surface', {
-    gameState,
-    setGameState,
+    ...state,
     width: Math.min(700, window.innerWidth - 20),
     height: 700,
     setup($game: Game) {
@@ -28,6 +28,10 @@ export const SurfaceScene: SceneComponent = props => {
           x: 200,
           y: 380,
         }),
+        createCloudController('cloud-1', { x: -100, y: 50, flip: false, size: 1 }),
+        createCloudController('cloud-2', { x: 100, y: 20, flip: false, size: 2 }),
+        createCloudController('cloud-3', { x: 300, y: 30, flip: true, size: 0.8 }),
+        createCloudController('cloud-4', { x: 500, y: 10, flip: true, size: 1.5 }),
       )
     },
   })
@@ -41,8 +45,8 @@ export const SurfaceScene: SceneComponent = props => {
 
   createEffect(() => {
     if (oxygen() > 100) {
-      setGameState('score', 'currentDive', 0)
-      setGameState('diver', 'oxygen', 100)
+      state.setGameState('score', 'currentDive', 0)
+      state.setGameState('diver', 'oxygen', 100)
       props.setScene('ocean')
     }
   })
@@ -69,13 +73,15 @@ const styles = {
     backgroundImage: `linear-gradient(
       0deg,
       #399cdc 0%,
-      #399cdc 70%,
+      #399cdc 60%,
+      #2a7db3 70%,
       #c6fff8 70%,
-      #aefff5 100%
+      #3ea8ff 100%
     )`,
     backgroundSize: 'cover',
   }),
   instructions: css({
+    position: 'relative',
     p: '40px 20px',
     textAlign: 'center',
     fontSize: '32px',

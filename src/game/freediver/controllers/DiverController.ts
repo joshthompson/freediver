@@ -48,9 +48,9 @@ function createDiver(id: string, props?: DiverControllerProps) {
       style: props?.style,
       init() {
         const [x, setX] = createSignal<number>(props?.x ?? 30)
-        const [y, setY] = createSignal<number>(props?.y ?? 15 + 100)
+        const [y, setY] = createSignal<number>(props?.y ?? 15)
         const [xScale, setXScale] = createSignal<number>(1)
-        const [rotation, setRotation] = createSignal<number>(180 - 180)
+        const [rotation, setRotation] = createSignal<number>(180)
         const [rotationSpeed] = createSignal<number>(5)
         const [acceleration] = createSignal<number>(0.5)
         const [speed, setSpeed] = createSignal<number>(0)
@@ -173,9 +173,7 @@ function createDiver(id: string, props?: DiverControllerProps) {
         if ($.y() < yMin) {
           $.goToSurface()
           $.setY(yMin)
-          const { total, maxDive, currentDive } = $game.gameState.score
-          $game.setGameState('score', 'total', total + currentDive)
-          $game.setGameState('score', 'maxDive', Math.max(maxDive, currentDive))
+          $game.gameStateActions.registerCurrentDive()
         }
         if ($.y() > yMax) {
           $.setY(yMax)

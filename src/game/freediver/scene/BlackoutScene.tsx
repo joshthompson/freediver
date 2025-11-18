@@ -1,16 +1,16 @@
 import { Canvas } from "@/game/core/Canvas"
 import { Game, SceneComponent } from "@/utils/game"
-import { onCleanup, useContext } from "solid-js"
+import { onCleanup } from "solid-js"
 import { css } from "@style/css"
-import { GameStateContext } from "@/utils/GameStateContext"
-import { defineKeyframes } from "@pandacss/dev"
+import { useGameState } from "@/utils/GameStateContext"
 import { Button } from "../ui/Button"
 
 export const BlackoutScene: SceneComponent = props => {
-  const [gameState, setGameState] = useContext(GameStateContext)!
+  const { gameState, setGameState, gameStateActions } = useGameState()!
   const game = new Game('blackout', {
     gameState,
     setGameState,
+    gameStateActions,
     width: Math.min(700, window.innerWidth - 20),
     height: 700,
   })

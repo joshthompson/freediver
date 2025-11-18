@@ -2,14 +2,15 @@ import { Component, JSX, useContext } from "solid-js"
 import { cva } from "@style/css"
 import { playSound } from "@/utils/game"
 import clickSound from "@assets/sounds/click.mp3"
-import { GameStateContext } from "@/utils/GameStateContext"
+import { useGameState } from "@/utils/GameStateContext"
 
 export const Button: Component<{
   size?: 'medium' | 'small'
   onClick?: (event: MouseEvent) => void
   children?: JSX.Element
 }> = props => {
-  const volume = useContext(GameStateContext)?.[0]?.options.volume ?? 1
+
+  const volume = useGameState()?.gameState.options.volume ?? 1
   const onClick = (event: MouseEvent) => {
     playSound(clickSound, { volume })
     props.onClick?.(event)

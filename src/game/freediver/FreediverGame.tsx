@@ -9,12 +9,14 @@ import ocean1 from '@assets/sounds/ocean1.mp3'
 import { createStore } from 'solid-js/store'
 import { GameState, GameStateContext } from '@/utils/GameStateContext'
 import { BlackoutScene } from './scene/BlackoutScene'
+import { OptionsScene } from './scene/OptionsScene'
 
 const local = window.location.hostname === 'localhost'
 
 export const FreediverGame: Component = () => {
+  const savedGameState = JSON.parse(window.localStorage.getItem('game-state') ?? '{}')
   const [gameState, setGameState] = createStore<GameState>({
-    score: {
+    score: savedGameState?.score ?? {
       total: 0,
       currentDive: 0,
       maxDive: 0,
@@ -25,13 +27,12 @@ export const FreediverGame: Component = () => {
     },
     options: {
       debug: local,
-      volume: JSON.parse(window.localStorage.getItem('game-volume') || '1'),
+      volume: savedGameState?.volume ?? 1,
     },
   })
 
-  const [scene, _setScene] = createSignal<string>(local ? 'ocean' : 'menu')
-  const [sceneData, setSceneData] = createSignal<any>(null)
-  const setScene = (newScene: string, data?: any) => {
+  const [scene, _setScene] = createSignal<string>(local ? 'menu' : 'menu')
+  const setScene = (newScene: string) => {
     if (['ocean', 'surface'].includes(newScene) && !music()) {
       startMusic()
     }
@@ -41,7 +42,6 @@ export const FreediverGame: Component = () => {
       setMusic(undefined)
     }
     _setScene(newScene)
-    setSceneData(data ?? null)
   }
 
   const [music, setMusic] = createSignal<HTMLAudioElement | undefined>(undefined)
@@ -53,7 +53,8 @@ export const FreediverGame: Component = () => {
     <GameStateContext.Provider value={[gameState, setGameState]}>
       <div class={styles.page}>
         {scene() === 'menu' && <MenuScene setScene={setScene} />}
-        {scene() === 'instructions' && <InstructionsScene setScene={setScene} sceneData={sceneData} />}
+        {scene() === 'instructions' && <InstructionsScene setScene={setScene} />}
+        {scene() === 'options' && <OptionsScene setScene={setScene} />}
         {scene() === 'surface' && <SurfaceScene setScene={setScene} />}
         {scene() === 'ocean' && <OceanScene setScene={setScene} />}
         {scene() === 'blackout' && <BlackoutScene setScene={setScene} />}
