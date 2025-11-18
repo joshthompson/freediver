@@ -1,7 +1,7 @@
 import { generateFrames, randomItem } from '@/utils'
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
-import crab from '@assets/sprites/crab.png'
+import crab from '@assets/sprites/crab/crab.png'
 import { DiverController } from './DiverController'
 import { Sprite } from '@/game/core/Sprite'
 
@@ -18,7 +18,7 @@ export function createCrabController(
   },
 ) {
   return createController({
-    frames: generateFrames(crab, 144, 112, 48, 4),
+    frames: generateFrames(crab, 150, 127, 48, 4),
     init() {
       const initY = 630 + Math.random() * 30
       const [x, setX] = createSignal<number>(props.x)
@@ -90,7 +90,7 @@ export function createCrabController(
         const dy = Math.abs(diver.data.y() - $.y())
         const distance = Math.hypot(dx, dy)
 
-        if (distance < 150 && $.y() === $.initY) {
+        if (distance < 200 && $.y() === $.initY) {
           $.setJump(Math.round(5 + Math.random() * 10))
         }
       }

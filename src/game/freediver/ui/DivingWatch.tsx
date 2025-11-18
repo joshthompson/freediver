@@ -2,17 +2,20 @@ import { Component } from "solid-js"
 import watch from '@assets/sprites/watch/watch.png'
 import { css, cx } from "@style/css"
 import { useGameState } from "@/utils/GameStateContext"
+import { translations } from "@/utils/Translations"
 
 export const DivingWatch: Component<{ depth: number }> = props => {
   const { gameState } = useGameState()!
+  const t = () => translations[gameState.options.locale]
+
   return <div class={styles.watch} style={{ 'background-image': `url(${watch})` }}>
     <div class={styles.data}>
       <div class={styles.key}>{props.depth}</div>
-      <div class={styles.value}>m</div>
+      <div class={styles.value}>{t().watch.meters}</div>
     </div>
     <div class={styles.data}>
       <div class={styles.key}>{Math.ceil(gameState.diver.oxygen)}</div>
-      <div class={styles.value}>O<sub>2</sub></div>
+      <div class={styles.value}>{t().watch.oxygen}</div>
     </div>
     <div class={styles.data}>
       <div class={styles.key}>{gameState.score.currentDive}</div>

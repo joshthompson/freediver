@@ -49,6 +49,7 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
     'fish',
     'octopus',
     'crab',
+    'wreck',
     'whale',
   ]
   const sprites = () => {

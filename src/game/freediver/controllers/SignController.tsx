@@ -1,10 +1,12 @@
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
 import rope from '@assets/sprites/rope.png'
-import { css } from '@style/css'
-import { GameState } from '@/utils/GameStateContext'
+import { cva } from '@style/css'
+import { GameState, useGameState } from '@/utils/GameStateContext'
+import { translations } from '@/utils/Translations'
 
 export function createSignController(id: string) {
+  
   const baseY = 240
   return createController({
     frames: [rope],
@@ -28,11 +30,15 @@ export function createSignController(id: string) {
         setScore,
         width: () => 170,
         origin: () => ({ x: 85, y: 200 }),
-        children: () => <div class={styles.sign}>
-          <div>Last Dive: {score().currentDive}</div>
-          <div>Best Dive: {score().maxDive}</div>
-          <div>Total Score: {score().total}</div>
-        </div>,
+        children: () => {
+          const { gameState } = useGameState()!
+          const t = () => translations[gameState.options.locale]
+          return <div class={styles.sign({ locale: gameState.options.locale })}>
+            <div>{t().score.lastDive}: {score().currentDive}</div>
+            <div>{t().score.bestDive}: {score().maxDive}</div>
+            <div>{t().score.totalScore}: {score().total}</div>
+          </div>
+        },
       }
     },
     onEnterFrame({ $, $game, $age }) {
@@ -45,22 +51,30 @@ export function createSignController(id: string) {
 }
 
 const styles = {
-  sign: css({
-    fontFamily: '"Rye", serif',
-    position: 'absolute',
-    top: '23px',
-    right: '20px',
-    left: '25px',
-    height: '80px',
-    // outline: '2px solid red',
-    pointerEvents: 'none',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '10px',
-    overflow: 'hidden',
-    lineHeight: '0.6em',
-    fontSize: '12px',
+  sign: cva({
+    base: {
+      fontFamily: '"Rye", serif',
+      position: 'absolute',
+      top: '23px',
+      right: '20px',
+      left: '25px',
+      height: '80px',
+      pointerEvents: 'none',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '10px',
+      overflow: 'hidden',
+      lineHeight: '0.6em',
+      fontSize: '12px',
+    },
+    variants: {
+      locale: {
+        en: {},
+        sv: {},
+        ru: { fontFamily: 'Arial', fontWeight: 'bold' },
+      },
+    },
   }),
 }

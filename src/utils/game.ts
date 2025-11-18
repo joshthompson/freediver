@@ -167,7 +167,7 @@ export function createController<
     data,
     sprite: createMemo(
       (): Sprite => ({
-        frames: options.frames ?? [],
+        frames: data?.frames?.() ?? options.frames ?? [],
         frame: data?.frame?.(),
         randomStartFrame: options.randomStartFrame ?? false,
         class: cx(options.class, data.class?.()),
@@ -221,6 +221,7 @@ export function createConnectedController<C extends Controller<any>>(options: {
   rotation?: ($: ExtractControllerType<C>, $age: number) => number,
   onEnterFrame?: ControllerProps<ExtractControllerType<C>>['onEnterFrame'],
   frame?: ($: ExtractControllerType<C>) => number,
+  style?: ($: ExtractControllerType<C>) => JSX.CSSProperties,
 }) {
   return createController({
     frames: options.frames,
@@ -245,6 +246,7 @@ export function createConnectedController<C extends Controller<any>>(options: {
           rotation: () => options.rotation?.(baseData, options.base.age()) ?? 0,
           origin: () => ({ x: options.origin?.x ?? 0, y: options.origin?.y ?? 0 }),
         },
+        style: () => options.style?.(baseData),
       } as ExtractControllerType<C>
     },
     onEnterFrame: options.onEnterFrame,

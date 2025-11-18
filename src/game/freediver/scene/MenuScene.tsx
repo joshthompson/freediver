@@ -5,6 +5,7 @@ import menu from '@assets/menu.png'
 import { css } from "@style/css"
 import { Button } from "../ui/Button"
 import { useGameState } from "@/utils/GameStateContext"
+import { flags, translations } from "@/utils/Translations"
 
 export const MenuScene: SceneComponent = props => {
   const game = new Game('menu', {
@@ -14,15 +15,21 @@ export const MenuScene: SceneComponent = props => {
     images: [menu],
   })
   onCleanup(() => game.destroy())
+  const t = () => translations[game.gameState.options.locale]
 
   return <Canvas
     game={game}
     style={{ background: `url(${menu})` }}
     overlay={<div class={styles.overlay}>
-      <Button onClick={() => props.setScene('surface')}>Start</Button>
-      <Button onClick={() => props.setScene('instructions')} size="small">Instructions</Button>
-      <Button onClick={() => props.setScene('options')} size="small">Options</Button>
-      <div class={styles.credits}>A game by Josh Thompson and Olesya Vasileva</div>
+      <img
+      src={flags[game.gameState.options.locale]}
+      class={styles.flag}
+      onClick={game.gameStateActions.toggleLanguage}
+    />
+      <Button onClick={() => props.setScene('surface')}>{t().menu.start}</Button>
+      <Button onClick={() => props.setScene('instructions')} size="small">{t().menu.instructions}</Button>
+      <Button onClick={() => props.setScene('options')} size="small">{t().menu.options}</Button>
+      <div class={styles.credits}>{t().menu.credits}</div>
     </div>}
   />
 }
@@ -45,5 +52,15 @@ const styles = {
     right: 0,
     textAlign: 'center',
     p: '10px',
+  }),
+  flag: css({
+    position: 'absolute',
+    top: '10px',
+    right: '10px',
+    height: '40px',
+    width: '40px',
+    borderRadius: '50%',
+    border: '2px solid white',
+    cursor: 'pointer',
   }),
 }

@@ -5,6 +5,7 @@ import menu from '@assets/menu.png'
 import { css } from "@style/css"
 import { Button } from "../ui/Button"
 import { useGameState } from "@/utils/GameStateContext"
+import { flags, languageNames, translations } from "@/utils/Translations"
 
 export const OptionsScene: SceneComponent = props => {
   const state = useGameState()!
@@ -15,6 +16,7 @@ export const OptionsScene: SceneComponent = props => {
     images: [menu],
   })
   onCleanup(() => game.destroy())
+  const t = () => translations[state.gameState.options.locale]
 
   return <Canvas
     game={game}
@@ -23,16 +25,26 @@ export const OptionsScene: SceneComponent = props => {
       <div class={styles.options}>
         <div>
           <Button onClick={state.gameStateActions.toggleVolume}>
-            Volume: { state.gameState.options.volume > 0 ? 'On' : 'Off' }
+            {state.gameState.options.volume > 0
+              ? t().common.volumeOn
+              : t().common.volumeOff}
           </Button>
         </div>
         <div>
           <Button onClick={state.gameStateActions.clearScoreData}>
-            Clear Score Data
+            {t().options.clearScoreData}
           </Button>
-          </div>
+        </div>
+        <div>
+          <Button onClick={state.gameStateActions.toggleLanguage}>
+            <div class={styles.localePicker}>
+              {languageNames[state.gameState.options.locale]}
+              <img src={flags[state.gameState.options.locale]} class={styles.flag} />
+            </div>
+          </Button>
+        </div>
       </div>
-      <Button onClick={() => props.setScene('menu')} size="small">Back</Button>
+      <Button onClick={() => props.setScene('menu')} size="small">{t().common.back}</Button>
     </div>}
   />
 }
@@ -59,5 +71,17 @@ const styles = {
     flexDirection: 'column',
     alignItems: 'center',
     gap: '20px',
+  }),
+  localePicker: css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+  }),
+  flag: css({
+    height: '1.5rem',
+    width: '1.5rem',
+    borderRadius: '50%',
+    border: '2px solid white',
+    mr: '-10px'
   }),
 }

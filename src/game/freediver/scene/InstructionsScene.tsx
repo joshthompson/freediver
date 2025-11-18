@@ -5,6 +5,7 @@ import menu from '@assets/menu.png'
 import { css, cva } from "@style/css"
 import { Button } from "../ui/Button"
 import { useGameState } from "@/utils/GameStateContext"
+import { translations } from "@/utils/Translations"
 
 export const InstructionsScene: SceneComponent = props => {
   const game = new Game('instructions', {
@@ -14,35 +15,36 @@ export const InstructionsScene: SceneComponent = props => {
     images: [menu],
   })
   onCleanup(() => game.destroy())
+  const t = () => translations[game.gameState.options.locale]
 
   return <Canvas
     game={game}
     style={{ background: `url(${menu})` }}
     overlay={<div class={styles.overlay}>
-      <p class={styles.description}>Dive and explore with your friend Linkosha the corgi</p>
+      <p class={styles.description}>{t().instructions.description}</p>
       <div class={styles.keyboard}>
         <div class={styles.key({ key: 'up' })}>
           <div class={styles.keyName}>↑</div>
-          <div class={styles.keyDescription}>Swim forward</div>
+          <div class={styles.keyDescription}>{t().instructions.up}</div>
         </div>
         <div class={styles.key({ key: 'down' })}>
           <div class={styles.keyName}>↓</div>
-          <div class={styles.keyDescription}>Swim backwards</div>
+          <div class={styles.keyDescription}>{t().instructions.down}</div>
         </div>
         <div class={styles.key({ key: 'left' })}>
           <div class={styles.keyName}>←</div>
-          <div class={styles.keyDescription}>Rotate left</div>
+          <div class={styles.keyDescription}>{t().instructions.left}</div>
         </div>
         <div class={styles.key({ key: 'right' })}>
           <div class={styles.keyName}>→</div>
-          <div class={styles.keyDescription}>Rotate right</div>
+          <div class={styles.keyDescription}>{t().instructions.right}</div>
         </div>
         <div class={styles.key({ key: 'space' })}>
-          <div class={styles.keyName}>Spacebar</div>
-          <div class={styles.keyDescription}>Breathe in / Equalise air pressure</div>
+          <div class={styles.keyName}>{t().instructions.spacebar}</div>
+          <div class={styles.keyDescription}>{t().instructions.space}</div>
         </div>
       </div>
-      <Button onClick={() => props.setScene('menu')} size="small">Back</Button>
+      <Button onClick={() => props.setScene('menu')} size="small">{t().common.back}</Button>
     </div>}
   />
 }
@@ -72,7 +74,7 @@ const styles = {
     display: 'grid',
     gridTemplateColumns: 'repeat(3, 70px)',
     gridTemplateRows: 'repeat(3, auto)',
-    gap: '15px 10px',
+    gap: '20px 15px',
     mb: '20px',
     '--key-size': '70px',
   }),

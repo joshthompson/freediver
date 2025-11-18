@@ -1,9 +1,9 @@
 [x] Shared game state
-    [ ] Total breath
+    [x] Total breath
     [x] Points - collect star fish
-    [ ] Diver position
-[ ] Points - collect star fish
 [x] Music
 [x] Sound effects
-[ ] Enemy that chases you
 [x] Scene loading
+[x] Light sparkles into ocean
+[ ] Enemy that chases you
+[ ] More starfish and better positioning

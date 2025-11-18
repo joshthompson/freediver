@@ -3,7 +3,6 @@ import { Game, SceneComponent } from "@/utils/game"
 import { createEffect, onCleanup } from "solid-js"
 import { css, cva } from "@style/css"
 import { PauseMenu } from "../ui/PauseMenu"
-import { DivingWatch } from "../ui/DivingWatch"
 import { Bar } from "../ui/Bar"
 import { createDiverSurfaceController } from "../controllers/DiverSurface"
 import { createCorgiSurfaceController } from "../controllers/CorgiSurface"
@@ -12,6 +11,7 @@ import { LoadingScreen } from "../ui/LoadingScreen"
 import { createBoatController } from "../controllers/BoatController"
 import { createSignController } from "../controllers/SignController"
 import { createCloudController } from "../controllers/CloudController"
+import { translations } from "@/utils/Translations"
 
 export const SurfaceScene: SceneComponent = props => {
   const state = useGameState()!
@@ -35,6 +35,7 @@ export const SurfaceScene: SceneComponent = props => {
       )
     },
   })
+  const t = () => translations[game.gameState.options.locale]
   onCleanup(() => game.destroy())
 
   const exitToMenu = () => {
@@ -58,8 +59,7 @@ export const SurfaceScene: SceneComponent = props => {
     class={styles.canvas}
     overlay={
       <>
-        <DivingWatch depth={0} />
-        <div class={styles.instructions}>Relax!<br />Once you are ready, tap SPACE to breathe in</div>
+        <div class={styles.instructions}>{t().surface.relax}<br />{t().surface.getReady}</div>
         <Bar percent={oxygen()} class={styles.bar({ show: oxygen() > 0 })} />
         <div class={styles.surfaceLayer} />
         {game.paused() && <PauseMenu game={game} exitToMenu={exitToMenu} />}

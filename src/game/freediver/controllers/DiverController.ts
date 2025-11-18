@@ -23,8 +23,10 @@ const bubbleFrequency = 20
 const pxInMeter = 40
 const eqTolerance = 4
 let bubbleN = 0
+const maxSpeed = 10
+const minSpeed = -2.5
 
-export function createDiverController(id: string, props?: DiverControllerProps) {
+export function createDiverController(id: string, props: DiverControllerProps) {
   const diver = createDiver(id, props)
   const diverHead = createDiverHead(diver)
   const diverLeftArm = createDiverArm(diver, 'left')
@@ -38,29 +40,27 @@ export function createDiverController(id: string, props?: DiverControllerProps) 
   ]
 }
 
-function createDiver(id: string, props?: DiverControllerProps) {
-  const goToSurface = props?.goToSurface ?? (() => {})
-  const blackout = props?.blackout ?? (() => {})
+function createDiver(id: string, props: DiverControllerProps) {
+  const goToSurface = props.goToSurface ?? (() => {})
+  const blackout = props.blackout ?? (() => {})
 
   return createController(
     {
       frames: generateFrames(seadiverBody, 952 / 7, 315, 68, 7),
-      style: props?.style,
+      style: props.style,
       init() {
-        const [x, setX] = createSignal<number>(props?.x ?? 30)
-        const [y, setY] = createSignal<number>(props?.y ?? 15)
+        const [x, setX] = createSignal<number>(props.x ?? 30)
+        const [y, setY] = createSignal<number>(props.y ?? 15)
         const [xScale, setXScale] = createSignal<number>(1)
         const [rotation, setRotation] = createSignal<number>(180)
         const [rotationSpeed] = createSignal<number>(5)
         const [acceleration] = createSignal<number>(0.5)
-        const [speed, setSpeed] = createSignal<number>(0)
+        const [speed, setSpeed] = createSignal<number>(maxSpeed / 2)
         const [state] = createSignal<Sprite['state']>('play')
         const [frameInterval, setFrameInterval] = createSignal(250)
         const [bubbleLevel, setBubbleLevel] = createSignal(0)
         const [eqLevel, setEqLevel] = createSignal(1)
         const [holdSpace, setHoldSpace] = createSignal(1)
-        const maxSpeed = 10
-        const minSpeed = -2.5
 
         const makeBubble = (xShift: number, yShift: number, xSpeed?: number, speed?: number) => {
           return createBubbleController('diver-bubble-' + bubbleN++, {
@@ -87,8 +87,6 @@ function createDiver(id: string, props?: DiverControllerProps) {
           acceleration,
           speed,
           setSpeed,
-          maxSpeed,
-          minSpeed,
           width: () => 68,
           height: () => 157,
           state,
@@ -117,7 +115,7 @@ function createDiver(id: string, props?: DiverControllerProps) {
 
         if ($age % 20 === 0) {
           const oxygen = $game.gameState.diver.oxygen
-          let consumption = 0.5 + 0.5 * Math.abs($.speed()) / $.maxSpeed
+          let consumption = 0.5 + 0.5 * Math.abs($.speed()) / maxSpeed
           if ($.eqLevel() > $.eqTolerance) consumption *= 2
 
           $game.setGameState('diver', 'oxygen', Math.max(0, oxygen - consumption))
@@ -133,9 +131,9 @@ function createDiver(id: string, props?: DiverControllerProps) {
         else if (down()) $.setSpeed($.speed() - $.acceleration())
         else if ($.speed() > 0) $.setSpeed($.speed() - $.acceleration() / 2)
         else if ($.speed() < 0) $.setSpeed($.speed() + $.acceleration() / 2)
-        $.setSpeed(Math.max($.minSpeed, Math.min($.maxSpeed, $.speed())))
+        $.setSpeed(Math.max(minSpeed, Math.min(maxSpeed, $.speed())))
 
-        $.setFrameInterval(250 - 150 * ($.speed() / $.maxSpeed))
+        $.setFrameInterval(250 - 150 * ($.speed() / maxSpeed))
 
         // Rotation
         let rotation = $.rotation()
@@ -213,15 +211,13 @@ function createDiver(id: string, props?: DiverControllerProps) {
   )
 }
 
-function createDiverHead(
-  diver: DiverController
-) {
+function createDiverHead(diver: DiverController) {
   return createConnectedController({
     type: 'head',
     base: diver,
     frames: [seadiverHead],
     width: () => 20,
-    rotation: $ => -70 * $.speed() / $.maxSpeed,
+    rotation: $ => -70 * $.speed() / maxSpeed,
     offset: { x: 42, y: -19 },
     origin: { x: 8, y: 29 },
   })

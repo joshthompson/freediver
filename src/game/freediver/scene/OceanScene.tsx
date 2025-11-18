@@ -24,30 +24,39 @@ import { createStarfishController } from "../controllers/StarFishController"
 import { useGameState } from "@/utils/GameStateContext"
 import { LoadingScreen } from "../ui/LoadingScreen"
 import { createWhaleController } from "../controllers/WhaleController"
+import { translations } from "@/utils/Translations"
+import { createLightRayController } from "../controllers/LightRayController"
+import { createWreckController } from "../controllers/WreckController"
 
 export const OceanScene: SceneComponent = props => {
+  const state = useGameState()!
   const game = new Game('ocean', {
-      ...useGameState()!,
+    ...state!,
     width: Math.min(700, window.innerWidth - 20),
     height: 700,
     setup($game: Game) {
       $game.addController(createWhaleController('whale'))
+      $game.addController(createWreckController('wreck'))
       $game.addController(...createDiverController('diver', {
         goToSurface: () => {
           props.setScene('surface')
         },
         blackout: () => {
           props.setScene('blackout')
-        }
+        },
       }))
       $game.addController(createCorgiController('corgi', { mode: 'ocean' }))
       $game.addController(createRopeController('rope'))
 
-      Array(10).fill(null).forEach((_, n) => {
+      Array(20).fill(null).forEach((_, n) => {
         $game.addController(createFishController('fish-' + n, {
           x: Math.random() * 500 + 100,
           y: Math.random() * 500 + 100,
         }))
+      })
+
+      Array(10).fill(null).forEach((_, n) => {
+        $game.addController(createLightRayController('light-' + n, { x: n * 70 }))
       })
     
       const crabs = Array(3).fill(null).map((_, n) => 
@@ -120,6 +129,7 @@ export const OceanScene: SceneComponent = props => {
 }
 
 const GameOverlay: Component<{ game: Game, exitToMenu: () => void }> = props => {
+  const t = () => translations[props.game.gameState.options.locale]
   const depth = () => {
     const diver = props.game.getController<DiverController>('diver')
     if (!diver) return 0
@@ -152,14 +162,14 @@ const GameOverlay: Component<{ game: Game, exitToMenu: () => void }> = props => 
   return <>
     <div class={styles.equalisation({ warn: eqWarn() })}>
       <div class={styles.equalisationBackground({ paused: props.game.paused() })} />
-      <div>Hold <div class={styles.key}>SPACE</div> to equalise</div>
+      <div class={styles.key}>{t().ocean.holdSpace}</div>
       <Bar percent={eqBar()} />
     </div>
     <div
       class={styles.blackoutWarning({ warn: blackoutWarning() > 0, superWarn: blackoutWarning() > 0.9 })}
       style={{ '--percent': blackoutWarning() }}
     >
-      Warning: Low Oxygen!
+      {t().ocean.warningLowOxygen}
     </div>
     <DivingWatch depth={depth()} />
     {props.game.paused() && <PauseMenu game={props.game} exitToMenu={props.exitToMenu} />}
@@ -231,12 +241,15 @@ const styles = {
     opacity: '0.5',
   }),
   key: css({
-    display: 'inline-block',
-    background: 'white',
-    color: 'black',
-    p: '0px 15px',
-    lineHeight: '1.2em',
-    mx: '0.15em',
+    '& > em': {
+      display: 'inline-block',
+      background: 'white',
+      color: 'black',
+      p: '0px 15px',
+      lineHeight: '1.2em',
+      mx: '0.15em',
+      fontStyle: 'normal',
+    },
   }),
   blackoutWarning: cva({
     base: {

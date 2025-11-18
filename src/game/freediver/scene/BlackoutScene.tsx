@@ -4,6 +4,7 @@ import { onCleanup } from "solid-js"
 import { css } from "@style/css"
 import { useGameState } from "@/utils/GameStateContext"
 import { Button } from "../ui/Button"
+import { translations } from "@/utils/Translations"
 
 export const BlackoutScene: SceneComponent = props => {
   const { gameState, setGameState, gameStateActions } = useGameState()!
@@ -15,12 +16,15 @@ export const BlackoutScene: SceneComponent = props => {
     height: 700,
   })
   onCleanup(() => game.destroy())
+  const t = () => translations[gameState.options.locale]
 
   return <Canvas
     game={game}
     overlay={<div class={styles.overlay}>
-      <div class={styles.text}>You blacked out</div>
-      <div class={styles.button}><Button onClick={props.setScene('menu')}>Exit to menu</Button></div>
+      <div class={styles.text}>{t().blackout.youBlackedOut}</div>
+      <div class={styles.button}><Button onClick={props.setScene('menu')}>
+        {t().common.exitToMenu}
+      </Button></div>
     </div>}
   />
 }

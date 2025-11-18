@@ -3,17 +3,21 @@ import { Component } from "solid-js";
 import { Button } from "./Button";
 import { css } from "@style/css";
 import { useGameState } from "@/utils/GameStateContext";
+import { translations } from "@/utils/Translations";
 
 export const PauseMenu: Component<{ game: Game, exitToMenu: () => void }> = props => {
   const { gameState, gameStateActions } = useGameState()!
+    const t = () => translations[gameState.options.locale]
 
   return <div class={styles.paused}>
-    <div>PAUSED</div>
-    <Button onClick={() => props.game.togglePause()} size="small">Resume</Button>
+    <div>{t().pause.title}</div>
+    <Button onClick={() => props.game.togglePause()} size="small">{t().pause.resume}</Button>
     <Button onClick={gameStateActions.toggleVolume} size="small">
-     Volume: { gameState.options.volume > 0 ? 'On' : 'Off' }
+      {gameState.options.volume > 0
+        ? t().common.volumeOn
+        : t().common.volumeOff}
     </Button>
-    <Button onClick={() => props.exitToMenu()} size="small">Exit to menu</Button>
+    <Button onClick={() => props.exitToMenu()} size="small">{t().common.exitToMenu}</Button>
   </div>
 }
 
@@ -28,5 +32,6 @@ const styles = {
     fontSize: '3rem',
     flexDirection: 'column',
     gap: '10px',
+    color: 'white',
   }),
 }

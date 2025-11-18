@@ -54,7 +54,11 @@ export default defineConfig({
       fadeIn: {
         from: { opacity: 0 },
         to: { opacity: 1 },
-      }
+      },
+      lightRay: {
+        '0%, 100%': { opacity: 0 },
+        '50%': { opacity: 0.2 },
+      },
     },
   },
 

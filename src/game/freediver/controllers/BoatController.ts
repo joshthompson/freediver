@@ -3,9 +3,7 @@ import { createSignal } from 'solid-js'
 import boat from '@assets/sprites/boat.png'
 import { css } from '@style/css'
 
-export function createBoatController(
-  id: string,
-) {
+export function createBoatController(id: string) {
   const baseY = 300
   return createController({
     frames: [boat],

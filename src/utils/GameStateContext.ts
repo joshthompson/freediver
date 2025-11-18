@@ -1,5 +1,6 @@
 import { createContext, useContext } from "solid-js"
 import { SetStoreFunction } from "solid-js/store"
+import { Locale } from "./Translations"
 
 export interface GameState {
   score: {
@@ -12,6 +13,7 @@ export interface GameState {
     oxygen: number
   }
   options: {
+    locale: Locale
     debug: boolean
     volume: number
   }
@@ -31,6 +33,7 @@ export const useGameState = () => {
     window.localStorage.setItem('game-state', JSON.stringify({
       volume: gameState.options.volume,
       score: gameState.score,
+      locale: gameState.options.locale,
     }))
   }
 
@@ -69,7 +72,16 @@ export const useGameState = () => {
           maxDive: 0,
         })
         saveState()
-      }
+      },
+      toggleLanguage: () => {
+        const nextLocale: Record<Locale, Locale> = {
+          en: 'ru',
+          ru: 'sv',
+          sv: 'en',
+        }
+        setGameState('options', 'locale', nextLocale[gameState.options.locale])
+        saveState()
+      },
     }
   }
 }

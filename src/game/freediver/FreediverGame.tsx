@@ -1,5 +1,5 @@
 import { Component, createSignal } from 'solid-js'
-import { css } from '@style/css'
+import { cva } from '@style/css'
 import { OceanScene } from './scene/OceanScene'
 import { SurfaceScene } from './scene/SurfaceScene'
 import { MenuScene } from './scene/MenuScene'
@@ -26,12 +26,13 @@ export const FreediverGame: Component = () => {
       oxygen: 100,
     },
     options: {
+      locale: savedGameState?.locale ?? 'en',
       debug: local,
       volume: savedGameState?.volume ?? 1,
     },
   })
 
-  const [scene, _setScene] = createSignal<string>(local ? 'menu' : 'menu')
+  const [scene, _setScene] = createSignal<string>(local ? 'ocean' : 'menu')
   const setScene = (newScene: string) => {
     if (['ocean', 'surface'].includes(newScene) && !music()) {
       startMusic()
@@ -51,7 +52,7 @@ export const FreediverGame: Component = () => {
 
   return (
     <GameStateContext.Provider value={[gameState, setGameState]}>
-      <div class={styles.page}>
+      <div class={styles.page({ locale: gameState.options.locale })}>
         {scene() === 'menu' && <MenuScene setScene={setScene} />}
         {scene() === 'instructions' && <InstructionsScene setScene={setScene} />}
         {scene() === 'options' && <OptionsScene setScene={setScene} />}
@@ -64,15 +65,26 @@ export const FreediverGame: Component = () => {
 }
 
 const styles = {
-  page: css({
-    '--u': 'min(1dvh, 1dvw)',
-    '--size': 'calc(80 * var(--u))',
-    width: '100dvw',
-    position: 'relative',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'column',
-    fontFamily: '"Jersey 10", sans-serif',
+  page: cva({
+    base: {
+      '--u': 'min(1dvh, 1dvw)',
+      '--size': 'calc(80 * var(--u))',
+      width: '100dvw',
+      position: 'relative',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      flexDirection: 'column',
+      fontFamily: '"Jersey 10", sans-serif',
+    },
+    variants: {
+      locale: {
+        en: {},
+        ru: {
+          fontFamily: '"Tiny5", sans-serif',
+        },
+        sv: {},
+      },
+    }
   }),
 }

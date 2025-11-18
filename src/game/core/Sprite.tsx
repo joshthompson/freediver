@@ -81,10 +81,9 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
   )
   const width = createMemo(() => props.width ? props.width : imageSize().width)
 
-  const size = createMemo(() =>
-    frames()[0].width
+  const size = createMemo(() => frames()[0].width
       ? { width: frames()[0].width, height: frames()[0].height }
-      : imageSize(),
+      : imageSize()
   )
 
   const frameStyle = createMemo(() => {
@@ -131,8 +130,14 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
 
   onCleanup(() => clearTimeout(enterFrameTimeout))
 
+  const render = () => {
+    if (props.x + width() * 1.5 < 0) return false
+    if (props.x - width() * -0.5 > game.canvas().width) return false
+    return true
+  }
+
   return (
-    <div
+    render() && <div
       data-controller-id={props.id}
       ref={props.ref}
       class={cx(styles.sprite, props.class)}
