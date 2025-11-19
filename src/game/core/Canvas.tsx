@@ -51,6 +51,7 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
     'crab',
     'wreck',
     'whale',
+    'statue',
   ]
   const sprites = () => {
     return props.game.controllers()

@@ -23,12 +23,11 @@ export function createWhaleController(id: string) {
         parallax: () => 1 / 3.5,
       }
     },
-    onEnterFrame({ $, $game }) {
+    onEnterFrame({ $, $game, $controller }) {
       $.setX($.x() - $.speed())
-      const xMin = $game.canvas().x() - 3000
-      const xMax = $game.canvas().width + 4000
-      if ($.x() > xMax) $.setX(xMin)
-      if ($.x() < xMin) $.setX(xMax)
+      if ($game.getController('diver')?.hitTest($controller)) {
+        $game.gameStateActions.achievement('whale')
+      }
     },
   })
 }

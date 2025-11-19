@@ -2,11 +2,11 @@ import { Component } from "solid-js"
 import watch from '@assets/sprites/watch/watch.png'
 import { css, cx } from "@style/css"
 import { useGameState } from "@/utils/GameStateContext"
-import { translations } from "@/utils/Translations"
+import { Translations } from "@/utils/Translations"
 
 export const DivingWatch: Component<{ depth: number }> = props => {
   const { gameState } = useGameState()!
-  const t = () => translations[gameState.options.locale]
+  const t = () => Translations[gameState.options.locale]
 
   return <div class={styles.watch} style={{ 'background-image': `url(${watch})` }}>
     <div class={styles.data}>

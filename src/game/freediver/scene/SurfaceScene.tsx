@@ -11,7 +11,7 @@ import { LoadingScreen } from "../ui/LoadingScreen"
 import { createBoatController } from "../controllers/BoatController"
 import { createSignController } from "../controllers/SignController"
 import { createCloudController } from "../controllers/CloudController"
-import { translations } from "@/utils/Translations"
+import { Translations } from "@/utils/Translations"
 
 export const SurfaceScene: SceneComponent = props => {
   const state = useGameState()!
@@ -35,7 +35,7 @@ export const SurfaceScene: SceneComponent = props => {
       )
     },
   })
-  const t = () => translations[game.gameState.options.locale]
+  const t = () => Translations[game.gameState.options.locale]
   onCleanup(() => game.destroy())
 
   const exitToMenu = () => {
@@ -49,6 +49,7 @@ export const SurfaceScene: SceneComponent = props => {
       state.setGameState('score', 'currentDive', 0)
       state.setGameState('diver', 'oxygen', 100)
       props.setScene('ocean')
+      game.gameStateActions.achievement('firstDive')
     }
   })
   

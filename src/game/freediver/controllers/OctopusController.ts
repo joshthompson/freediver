@@ -1,7 +1,7 @@
 import { generateFrames, randomItem } from '@/utils'
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
-import octopus from '@assets/sprites/octopus.png'
+import octopus from '@assets/sprites/octopus/octopus.png'
 import { DiverController } from './DiverController'
 
 export function createOctopusController(
@@ -12,11 +12,12 @@ export function createOctopusController(
   },
 ) {
   return createController({
-    frames: generateFrames(octopus, 232, 264 , 30, 10),
+    frames: generateFrames(octopus, 271, 309 , 30, 10),
+    randomStartFrame: true,
     init() {
       const [x, setX] = createSignal<number>(props.x)
       const [y, setY] = createSignal<number>(props.y)
-      const [size, setSize] = createSignal(Math.random() + 0.5)
+      const [size, setSize] = createSignal(Math.random() * 1.5 + 0.5)
       const [speed, setSpeed] = createSignal(size() * 2)
       const [direction, setDirection] = createSignal(randomItem([-1, 1]))
       const [hue, setHue] = createSignal(Math.random() * 360)
@@ -56,7 +57,7 @@ export function createOctopusController(
       const xMax = $game.canvas().width + $game.canvas().x() + 30
       if ($.x() > xMax || $.x() < xMin) {
         $.setY(Math.random() * 500 + 100)
-        $.setSize(Math.random() + 0.5)
+        $.setSize(Math.random() * 2 + 0.5)
         $.setDirection(randomItem([-1, 1]))
         $.setHue(Math.random() * 360)
       }

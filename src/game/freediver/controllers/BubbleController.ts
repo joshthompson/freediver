@@ -1,6 +1,6 @@
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
-import bubble from '@assets/bubble2.png'
+import bubble from '@assets/sprites/bubble.png'
 import { css } from '@style/css'
 
 const acceleration = 0.1

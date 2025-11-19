@@ -4,7 +4,7 @@ import { onCleanup } from "solid-js"
 import { css } from "@style/css"
 import { useGameState } from "@/utils/GameStateContext"
 import { Button } from "../ui/Button"
-import { translations } from "@/utils/Translations"
+import { Translations } from "@/utils/Translations"
 
 export const BlackoutScene: SceneComponent = props => {
   const { gameState, setGameState, gameStateActions } = useGameState()!
@@ -16,7 +16,7 @@ export const BlackoutScene: SceneComponent = props => {
     height: 700,
   })
   onCleanup(() => game.destroy())
-  const t = () => translations[gameState.options.locale]
+  const t = () => Translations[gameState.options.locale]
 
   return <Canvas
     game={game}

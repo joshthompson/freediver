@@ -1,5 +1,5 @@
 import { Component, createSignal } from 'solid-js'
-import { cva } from '@style/css'
+import { css, cva } from '@style/css'
 import { OceanScene } from './scene/OceanScene'
 import { SurfaceScene } from './scene/SurfaceScene'
 import { MenuScene } from './scene/MenuScene'
@@ -7,9 +7,12 @@ import { InstructionsScene } from './scene/InstructionsScene'
 import { playSound } from '@/utils/game'
 import ocean1 from '@assets/sounds/ocean1.mp3'
 import { createStore } from 'solid-js/store'
-import { GameState, GameStateContext } from '@/utils/GameStateContext'
+import { Achievement, GameState, GameStateContext, saveState } from '@/utils/GameStateContext'
 import { BlackoutScene } from './scene/BlackoutScene'
 import { OptionsScene } from './scene/OptionsScene'
+import alert from '@assets/sprites/alert.png'
+import { Translations } from '@/utils/Translations'
+import { AchievementsScene } from './scene/AchievementsScene'
 
 const local = window.location.hostname === 'localhost'
 
@@ -24,15 +27,18 @@ export const FreediverGame: Component = () => {
     diver: {
       x: 0,
       oxygen: 100,
+      showDamage: false,
     },
     options: {
       locale: savedGameState?.locale ?? 'en',
       debug: local,
       volume: savedGameState?.volume ?? 1,
     },
+    achievements: savedGameState?.achievements ?? {},
   })
+  const t = () => Translations[gameState.options.locale]
 
-  const [scene, _setScene] = createSignal<string>(local ? 'ocean' : 'menu')
+  const [scene, _setScene] = createSignal<string>(local ? 'menu' : 'menu')
   const setScene = (newScene: string) => {
     if (['ocean', 'surface'].includes(newScene) && !music()) {
       startMusic()
@@ -50,15 +56,37 @@ export const FreediverGame: Component = () => {
     setMusic(playSound(ocean1, { loop: true, mute: gameState.options.volume === 0 }))
   }
 
+  const achievementDuration = 5000
+  const newAchievement = () => {
+    const achievement = Object.entries(gameState.achievements)
+      .find(([, state]) => state === 'new')?.[0] as Achievement | undefined
+    if (achievement) {
+      setTimeout(() => {
+        setGameState('achievements', achievement, 'shown')
+        saveState(gameState)
+      }, achievementDuration)
+    }
+    return achievement
+  }
+
   return (
     <GameStateContext.Provider value={[gameState, setGameState]}>
       <div class={styles.page({ locale: gameState.options.locale })}>
         {scene() === 'menu' && <MenuScene setScene={setScene} />}
         {scene() === 'instructions' && <InstructionsScene setScene={setScene} />}
         {scene() === 'options' && <OptionsScene setScene={setScene} />}
+        {scene() === 'achievements' && <AchievementsScene setScene={setScene} />}
         {scene() === 'surface' && <SurfaceScene setScene={setScene} />}
         {scene() === 'ocean' && <OceanScene setScene={setScene} />}
         {scene() === 'blackout' && <BlackoutScene setScene={setScene} />}
+        {newAchievement() && <>
+          <div class={styles.achievement} style={{ 'background-image': `url(${alert})` }}>
+            <div class={styles.achievementInner}>
+              <small>{t().achievements.new}</small>
+              <div>{(t().achievements as any)[newAchievement()!]}</div>
+            </div>
+          </div>
+        </>}
       </div>
     </GameStateContext.Provider>
   )
@@ -69,7 +97,8 @@ const styles = {
     base: {
       '--u': 'min(1dvh, 1dvw)',
       '--size': 'calc(80 * var(--u))',
-      width: '100dvw',
+      width: '700px',
+      mx: 'auto',
       position: 'relative',
       display: 'flex',
       justifyContent: 'center',
@@ -86,5 +115,26 @@ const styles = {
         sv: {},
       },
     }
+  }),
+  achievement: css({
+    position: 'absolute',
+    bottom: '20px',
+    right: '20px',
+    width: '288px',
+    height: '100px',
+    backgroundSize: 'cover',
+    p: '25px 35px 30px 35px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    filter: 'drop-shadow(0 0 5px white) drop-shadow(0 0 100px #FFFFFF88)',
+  }),
+  achievementInner: css({
+    rotate: '-1deg',
+    maxHeight: '90px',
+    overflow: 'hidden',
+    textAlign: 'center',
+    fontSize: '26px',
+    lineHeight: '0.7em',
   }),
 }

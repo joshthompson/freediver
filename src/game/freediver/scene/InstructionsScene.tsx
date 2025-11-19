@@ -5,7 +5,7 @@ import menu from '@assets/menu.png'
 import { css, cva } from "@style/css"
 import { Button } from "../ui/Button"
 import { useGameState } from "@/utils/GameStateContext"
-import { translations } from "@/utils/Translations"
+import { Translations } from "@/utils/Translations"
 
 export const InstructionsScene: SceneComponent = props => {
   const game = new Game('instructions', {
@@ -15,7 +15,7 @@ export const InstructionsScene: SceneComponent = props => {
     images: [menu],
   })
   onCleanup(() => game.destroy())
-  const t = () => translations[game.gameState.options.locale]
+  const t = () => Translations[game.gameState.options.locale]
 
   return <Canvas
     game={game}

@@ -1,6 +1,7 @@
 import enFlag from '@assets/flags/en.png'
 import svFlag from '@assets/flags/sv.png'
 import ruFlag from '@assets/flags/ru.png'
+import { Achievement } from './GameStateContext'
 
 const baseTranslations = {
   common: {
@@ -18,6 +19,7 @@ const baseTranslations = {
   },
   options: {
     clearScoreData: 'Clear Score Data',
+    clearAchievements: 'Clear Achievements',
   },
   surface: {
     relax: 'Relax!',
@@ -52,6 +54,25 @@ const baseTranslations = {
     space: 'Breathe in / Equalise air pressure',
     spacebar: 'SPACEBAR',
   },
+  achievements: {
+    new: 'New Achievement!',
+    title: 'Achievements',
+    firstDive: 'First Dive',
+    whale: 'Whale Whisperer',
+    wreck: 'Wreck Explorer',
+    almostFaint: 'Almost Fainted',
+    crabJump: 'Crab Jumper',
+    total100: '100 Total',
+    total500: '500 Total',
+    total1000: '1000 Total',
+    dive10: 'Good Dive',
+    dive25: 'Great Dive',
+    dive50: 'Amazing Dive',
+    bilingual: 'Bilingual',
+    surviveTitanTriggerFish: 'Titan Trigger Survivor',
+    prequalisation: 'Prequalisaion', // Pre-eualisation: equalising before nescessary
+    statue: 'All hail Linkosha',
+  } satisfies Record<Achievement | 'new' | 'title', string>,
 }
 
 export const languageNames: Record<Locale, string> = {
@@ -66,10 +87,10 @@ export const flags: Record<Locale, string> = {
   ru: ruFlag,
 }
 
-export type Locale = keyof typeof translations
+export type Locale = keyof typeof Translations
 type TranslationSet = typeof baseTranslations
 
-export const translations = {
+export const Translations = {
   en: baseTranslations,
   ru: {
     common: {
@@ -87,6 +108,7 @@ export const translations = {
     },
     options: {
       clearScoreData: 'Очистить данные счета',
+      clearAchievements: 'Очистить достижения',
     },
     surface: {
       relax: 'Расслабься!',
@@ -121,6 +143,25 @@ export const translations = {
       space: 'Вдохнуть / Выровнять давление',
       spacebar: 'ПРОБЕЛ',
     },
+    achievements: {
+      new: 'Новое достижение!',
+      title: 'Достижения',
+      firstDive: 'Первое погружение',
+      whale: 'Шепчущий кит',
+      wreck: 'По обломкам',
+      almostFaint: 'Почти потерял сознание',
+      crabJump: 'Прыжок краба',
+      total100: '100 Всего',
+      total500: '500 Всего',
+      total1000: '1000 Всего',
+      dive10: 'Хорошее погружение',
+      dive25: 'Отличное погружение',
+      dive50: 'Потрясающее погружение',
+      bilingual: 'Двуязычный',
+      surviveTitanTriggerFish: 'Выживший после титана - триггера',
+      prequalisation: 'Предвыравнивание',
+      statue: 'Да здравствует Линкоша!',
+    },
   },
   sv: {
     common: {
@@ -138,6 +179,7 @@ export const translations = {
     },
     options: {
       clearScoreData: 'Rensa Poängdata',
+      clearAchievements: 'Rensa Prestationer',
     },
     surface: {
       relax: 'Koppla av!',
@@ -171,6 +213,25 @@ export const translations = {
       right: 'Rotera höger',
       space: 'Andas in / Tryckutjämna',
       spacebar: 'MELLANSLAG',
+    },
+    achievements: {
+      new: 'Ny Prestation!',
+      title: 'Prestationer',
+      firstDive: 'Första dyket',
+      whale: 'Valviskare',
+      wreck: 'Vrakutforskare',
+      almostFaint: 'Svimma nästan',
+      crabJump: 'Krabphoppare',
+      total100: '100 Totalt',
+      total500: '500 Totalt',
+      total1000: '1000 Totalt',
+      dive10: 'Bra dyk',
+      dive25: 'Utmärkt dyk',
+      dive50: 'Otroligt dyk',
+      bilingual: 'Tvåspråkig',
+      surviveTitanTriggerFish: 'Överlevare av Titan Triggerfish',
+      prequalisation: 'Förtryckutjämning',
+      statue: 'Heja Linkosha!',
     },
   }
 } as const satisfies  Record<string, TranslationSet>

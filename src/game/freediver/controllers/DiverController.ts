@@ -21,10 +21,11 @@ interface DiverControllerProps {
 
 const bubbleFrequency = 20
 const pxInMeter = 40
-const eqTolerance = 4
+const eqTolerance = 5
 let bubbleN = 0
 const maxSpeed = 10
 const minSpeed = -2.5
+const maxShowDamageLevel = 60
 
 export function createDiverController(id: string, props: DiverControllerProps) {
   const diver = createDiver(id, props)
@@ -61,6 +62,7 @@ function createDiver(id: string, props: DiverControllerProps) {
         const [bubbleLevel, setBubbleLevel] = createSignal(0)
         const [eqLevel, setEqLevel] = createSignal(1)
         const [holdSpace, setHoldSpace] = createSignal(1)
+        const [showDamageLevel, setShowDamageLevel] = createSignal(0)
 
         const makeBubble = (xShift: number, yShift: number, xSpeed?: number, speed?: number) => {
           return createBubbleController('diver-bubble-' + bubbleN++, {
@@ -103,7 +105,17 @@ function createDiver(id: string, props: DiverControllerProps) {
           makeBubble,
           goToSurface,
           blackout,
+          showDamageLevel,
+          setShowDamageLevel,
           depth: () => Math.max(0, Math.floor(y() / pxInMeter - 0.5)),
+          style: () => (showDamageLevel() ? {
+            filter: `
+              sepia(${showDamageLevel() / maxShowDamageLevel})
+              saturate(${1 + 4 * showDamageLevel() / maxShowDamageLevel})
+              hue-rotate(${-50 * showDamageLevel() / maxShowDamageLevel}deg)
+              brightness(${1 + 0.3 * showDamageLevel() / maxShowDamageLevel})
+            `,
+          } : {}),
         }
       },
       onEnterFrame({ $, $game, $age }) {
@@ -112,6 +124,13 @@ function createDiver(id: string, props: DiverControllerProps) {
         const up = () => Key.isDown('ArrowUp') || Key.isDown('w')
         const down = () => Key.isDown('ArrowDown') || Key.isDown('s')
         const space = () => Key.isDown(' ')
+
+        if ($game.gameState.diver.showDamage) {
+          $.setShowDamageLevel(maxShowDamageLevel)
+          $game.setGameState('diver', 'showDamage', false)
+        } else if ($.showDamageLevel() > 0) {
+          $.setShowDamageLevel($.showDamageLevel() - 1)
+        }
 
         if ($age % 20 === 0) {
           const oxygen = $game.gameState.diver.oxygen
@@ -194,6 +213,7 @@ function createDiver(id: string, props: DiverControllerProps) {
 
           $.setHoldSpace($.holdSpace() + 1)
           if ($.holdSpace() === $.holdSpaceMax) {
+            if ($.depth() < 2) $game.gameStateActions.achievement('prequalisation')
             $.setEqLevel(0)
             Array(10).fill(null).forEach(() => {
               $game.addController($.makeBubble(0, 0, Math.random() * 2 - 1, Math.random() * 2 - 1))
@@ -220,6 +240,7 @@ function createDiverHead(diver: DiverController) {
     rotation: $ => -70 * $.speed() / maxSpeed,
     offset: { x: 42, y: -19 },
     origin: { x: 8, y: 29 },
+    style: $ => ({ filter: $.style().filter }),
   })
 }
 
@@ -240,5 +261,6 @@ function createDiverArm(
     },
     offset: { x: 49, y: 7 },
     origin: { x: 5.5, y: 6 },
+    style: $ => ({ filter: $.style().filter }),
   })
 }

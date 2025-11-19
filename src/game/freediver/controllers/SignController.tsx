@@ -3,7 +3,7 @@ import { createSignal } from 'solid-js'
 import rope from '@assets/sprites/rope.png'
 import { cva } from '@style/css'
 import { GameState, useGameState } from '@/utils/GameStateContext'
-import { translations } from '@/utils/Translations'
+import { Translations } from '@/utils/Translations'
 
 export function createSignController(id: string) {
   
@@ -32,7 +32,7 @@ export function createSignController(id: string) {
         origin: () => ({ x: 85, y: 200 }),
         children: () => {
           const { gameState } = useGameState()!
-          const t = () => translations[gameState.options.locale]
+          const t = () => Translations[gameState.options.locale]
           return <div class={styles.sign({ locale: gameState.options.locale })}>
             <div>{t().score.lastDive}: {score().currentDive}</div>
             <div>{t().score.bestDive}: {score().maxDive}</div>

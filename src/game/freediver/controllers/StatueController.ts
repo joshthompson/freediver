@@ -1,22 +1,22 @@
 import { createController } from '@/utils/game'
-import wreck from '@assets/sprites/wreck.png'
+import statue from '@assets/sprites/statue.png'
 
-export function createWreckController(id: string) {
+export function createStatueController(id: string) {
   return createController({
-    frames: [wreck],
+    frames: [statue],
     randomStartFrame: true,
     init() {
       return {
         id,
-        type: 'wreck',
-        x: () => -3000,
-        y: () => 150,
-        width: () => 400,
+        type: 'statue',
+        x: () => 8000,
+        y: () => 220,
+        width: () => 360,
       }
     },
     onEnterFrame({ $game, $controller }) {
       if ($game.getController('diver')?.hitTest($controller)) {
-        $game.gameStateActions.achievement('wreck')
+        $game.gameStateActions.achievement('statue')
       }
     }
   })

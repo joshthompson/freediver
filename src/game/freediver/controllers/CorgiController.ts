@@ -16,12 +16,10 @@ export function createCorgiController(
   props?: {
     x?: number
     y?: number
-    mode: 'ocean' | 'surface'
   },
 ) {
   return createController({
     frames: generateFrames(corgi, 634, 394, 70, 3, true),
-    // frames: generateFrames(corgi, 70, 66, 76, 2),
     init() {
       const [x, setX] = createSignal<number>(props?.x ?? 10)
       const [y, setY] = createSignal<number>(props?.y ?? 40)
@@ -32,7 +30,7 @@ export function createCorgiController(
       const [state] = createSignal<Sprite['state']>('play')
       const [frameInterval, setFrameInterval] = createSignal(250)
       const [bubbleLevel, setBubbleLevel] = createSignal(bubbleFrequency / 2)
-      const followDistance = props?.mode === 'surface' ? 130 : 50
+      const followDistance = 50
 
       return {
         id,
@@ -55,7 +53,6 @@ export function createCorgiController(
         setFrameInterval,
         bubbleLevel,
         setBubbleLevel,
-        mode: props?.mode ?? 'ocean',
         followDistance,
       }
     },
@@ -63,8 +60,8 @@ export function createCorgiController(
       const diver = $game?.getController('diver') as DiverController
       if (!diver) return
 
-      const targetX = diver.data.x() + ($.mode === 'ocean' ? 0 : 30)
-      const targetY = diver.data.y() + ($.mode === 'ocean' ? 80 : 0)
+      const targetX = diver.data.x()
+      const targetY = diver.data.y() + 80
       const distance = Math.hypot($.x() - targetX, $.y() - targetY)
       const direction = Math.atan2($.y() - targetY, $.x() - targetX)
 
@@ -95,20 +92,18 @@ export function createCorgiController(
         if ($.rotation() < -10 || $.rotation() > 180) $.setRotation($.rotation() + 1.5)
       }
 
-      const float = Math.cos($age / 10 - 0.5) * ($.mode === 'ocean' ? 1 : 0.5)
+      const float = Math.cos($age / 10 - 0.5)
       $.setY($.y() + float)
 
-      if ($.mode === 'ocean') {
-        $.setBubbleLevel($.bubbleLevel() + $.speed() / 4 + 0.5)
-        if ($.bubbleLevel() > bubbleFrequency) {
-          $.setBubbleLevel(0)
-          $game.addController?.(
-            createBubbleController('corgi-bubble-' + bubbleN++, {
-              x: $.x() + $.width() / 2,
-              y: $.y(),
-            }),
-          )
-        }
+      $.setBubbleLevel($.bubbleLevel() + $.speed() / 4 + 0.5)
+      if ($.bubbleLevel() > bubbleFrequency) {
+        $.setBubbleLevel(0)
+        $game.addController?.(
+          createBubbleController('corgi-bubble-' + bubbleN++, {
+            x: $.x() + $.width() / 2,
+            y: $.y(),
+          }),
+        )
       }
     },
   })

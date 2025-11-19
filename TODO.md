@@ -5,5 +5,7 @@
 [x] Sound effects
 [x] Scene loading
 [x] Light sparkles into ocean
-[ ] Enemy that chases you
+[x] Enemy that chases you
 [ ] More starfish and better positioning
+[ ] More achievements
+[x] View achievements

@@ -24,9 +24,11 @@ import { createStarfishController } from "../controllers/StarFishController"
 import { useGameState } from "@/utils/GameStateContext"
 import { LoadingScreen } from "../ui/LoadingScreen"
 import { createWhaleController } from "../controllers/WhaleController"
-import { translations } from "@/utils/Translations"
+import { Translations } from "@/utils/Translations"
 import { createLightRayController } from "../controllers/LightRayController"
 import { createWreckController } from "../controllers/WreckController"
+import { createTriggerFishController } from "../controllers/TriggerFishController"
+import { createStatueController } from "../controllers/StatueController"
 
 export const OceanScene: SceneComponent = props => {
   const state = useGameState()!
@@ -37,16 +39,22 @@ export const OceanScene: SceneComponent = props => {
     setup($game: Game) {
       $game.addController(createWhaleController('whale'))
       $game.addController(createWreckController('wreck'))
+      $game.addController(createStatueController('statue'))
       $game.addController(...createDiverController('diver', {
         goToSurface: () => {
           props.setScene('surface')
+          if ($game.gameState.diver.oxygen <= 1) {
+            game.gameStateActions.achievement('almostFaint')
+          }
         },
         blackout: () => {
           props.setScene('blackout')
         },
       }))
-      $game.addController(createCorgiController('corgi', { mode: 'ocean' }))
+      $game.addController(createCorgiController('corgi'))
       $game.addController(createRopeController('rope'))
+      $game.addController(createTriggerFishController('triggerfish-1', { x: 7000 }))
+      $game.addController(createTriggerFishController('triggerfish-2', { x: -5000 }))
 
       Array(20).fill(null).forEach((_, n) => {
         $game.addController(createFishController('fish-' + n, {
@@ -61,7 +69,7 @@ export const OceanScene: SceneComponent = props => {
     
       const crabs = Array(3).fill(null).map((_, n) => 
         createCrabController('crab-' + n, {
-          x: Math.random() * 700,
+          x: -100 + n * 200 + Math.random() * 200,
         })
       ).sort((a, b) => a.data.y() - b.data.y())
       crabs.forEach(crab => $game.addController(crab))
@@ -129,7 +137,7 @@ export const OceanScene: SceneComponent = props => {
 }
 
 const GameOverlay: Component<{ game: Game, exitToMenu: () => void }> = props => {
-  const t = () => translations[props.game.gameState.options.locale]
+  const t = () => Translations[props.game.gameState.options.locale]
   const depth = () => {
     const diver = props.game.getController<DiverController>('diver')
     if (!diver) return 0

@@ -92,6 +92,7 @@ export function createCrabController(
 
         if (distance < 200 && $.y() === $.initY) {
           $.setJump(Math.round(5 + Math.random() * 10))
+          $game.gameStateActions.achievement('crabJump')
         }
       }
     },

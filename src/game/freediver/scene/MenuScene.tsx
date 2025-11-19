@@ -5,7 +5,7 @@ import menu from '@assets/menu.png'
 import { css } from "@style/css"
 import { Button } from "../ui/Button"
 import { useGameState } from "@/utils/GameStateContext"
-import { flags, translations } from "@/utils/Translations"
+import { flags, Translations } from "@/utils/Translations"
 
 export const MenuScene: SceneComponent = props => {
   const game = new Game('menu', {
@@ -15,7 +15,7 @@ export const MenuScene: SceneComponent = props => {
     images: [menu],
   })
   onCleanup(() => game.destroy())
-  const t = () => translations[game.gameState.options.locale]
+  const t = () => Translations[game.gameState.options.locale]
 
   return <Canvas
     game={game}
@@ -28,6 +28,7 @@ export const MenuScene: SceneComponent = props => {
     />
       <Button onClick={() => props.setScene('surface')}>{t().menu.start}</Button>
       <Button onClick={() => props.setScene('instructions')} size="small">{t().menu.instructions}</Button>
+      <Button onClick={() => props.setScene('achievements')} size="small">{t().achievements.title}</Button>
       <Button onClick={() => props.setScene('options')} size="small">{t().menu.options}</Button>
       <div class={styles.credits}>{t().menu.credits}</div>
     </div>}

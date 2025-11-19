@@ -5,7 +5,7 @@ import menu from '@assets/menu.png'
 import { css } from "@style/css"
 import { Button } from "../ui/Button"
 import { useGameState } from "@/utils/GameStateContext"
-import { flags, languageNames, translations } from "@/utils/Translations"
+import { flags, languageNames, Translations } from "@/utils/Translations"
 
 export const OptionsScene: SceneComponent = props => {
   const state = useGameState()!
@@ -16,7 +16,7 @@ export const OptionsScene: SceneComponent = props => {
     images: [menu],
   })
   onCleanup(() => game.destroy())
-  const t = () => translations[state.gameState.options.locale]
+  const t = () => Translations[state.gameState.options.locale]
 
   return <Canvas
     game={game}
@@ -33,6 +33,11 @@ export const OptionsScene: SceneComponent = props => {
         <div>
           <Button onClick={state.gameStateActions.clearScoreData}>
             {t().options.clearScoreData}
+          </Button>
+        </div>
+        <div>
+          <Button onClick={state.gameStateActions.clearAchievements}>
+            {t().options.clearAchievements}
           </Button>
         </div>
         <div>
