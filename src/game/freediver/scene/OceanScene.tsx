@@ -29,8 +29,15 @@ import { createLightRayController } from "../controllers/LightRayController"
 import { createWreckController } from "../controllers/WreckController"
 import { createTriggerFishController } from "../controllers/TriggerFishController"
 import { createStatueController } from "../controllers/StatueController"
+import { createFriedEggFishController } from "../controllers/FriedEggFish"
+import { createBoneController } from "../controllers/BoneController"
+import { createSharkController } from "../controllers/SharkController"
+import { createWhaleSharkController } from "../controllers/WhaleSharkController"
+import { createWallController } from "../controllers/WallController"
 
 export const OceanScene: SceneComponent = props => {
+  const minX = -10000
+  const maxX = 10000
   const state = useGameState()!
   const game = new Game('ocean', {
     ...state!,
@@ -38,6 +45,8 @@ export const OceanScene: SceneComponent = props => {
     height: 700,
     setup($game: Game) {
       $game.addController(createWhaleController('whale'))
+      $game.addController(createWhaleSharkController('whale-shark'))
+      $game.addController(createSharkController('shark'))
       $game.addController(createWreckController('wreck'))
       $game.addController(createStatueController('statue'))
       $game.addController(...createDiverController('diver', {
@@ -49,16 +58,44 @@ export const OceanScene: SceneComponent = props => {
         },
         blackout: () => {
           props.setScene('blackout')
+          game.gameStateActions.achievement('blackout')
         },
+        maxX,
+        minX,
       }))
+      $game.addController(createWallController('wall-left', { x: minX - 500 }))
+      $game.addController(createWallController('wall-right', { x: maxX + 40 }))
       $game.addController(createCorgiController('corgi'))
       $game.addController(createRopeController('rope'))
-      $game.addController(createTriggerFishController('triggerfish-1', { x: 7000 }))
+      $game.addController(createFriedEggFishController('fried-egg-fish-1', { x: -7000 }))
+      $game.addController(createFriedEggFishController('fried-egg-fish-2', { x: 4000 }))
+      $game.addController(createFriedEggFishController('fried-egg-fish-3', { x: 9000 }))
+      $game.addController(createTriggerFishController('triggerfish-1', { x: 8000 }))
       $game.addController(createTriggerFishController('triggerfish-2', { x: -5000 }))
+      
+      const totalBones = 20
+      const boneGap = 1000
+      Array(totalBones).fill(null).forEach((_, n) => {
+        const x = n < totalBones / 2
+          ? 0 + (n + 1) * boneGap
+          : 0 - (n - totalBones / 2 + 1) * boneGap
+        $game.addController(createBoneController('bone-' + n, { x: x + Math.random() * 200 - 100 }) )
+      })
+
+      const totalStarfish = 30
+      const starfishMargin = 500
+      Array(totalStarfish).fill(null).forEach((_, n) => {
+        const totalSpace = maxX - minX - starfishMargin * 2
+        const gap = totalSpace / (totalStarfish - 1)
+        const x = minX + starfishMargin + n * gap
+        $game.addController(createStarfishController('starfish-' + n, {
+          x: x + Math.random() * 300 - 150,
+        }) )
+      })
 
       Array(20).fill(null).forEach((_, n) => {
         $game.addController(createFishController('fish-' + n, {
-          x: Math.random() * 500 + 100,
+          x: Math.random() * 700 - 350,
           y: Math.random() * 500 + 100,
         }))
       })
@@ -73,19 +110,21 @@ export const OceanScene: SceneComponent = props => {
         })
       ).sort((a, b) => a.data.y() - b.data.y())
       crabs.forEach(crab => $game.addController(crab))
-
-      const starfish = Array(1).fill(null).map((_, n) => 
-        createStarfishController('starfish-' + n)
-      )
-      starfish.forEach(star => $game.addController(star))
     
       const octopi = Array(4).fill(null).map((_, n) => 
         createOctopusController('octopus-' + n, {
-          x: Math.random() * 500 + 100,
+          x: Math.random() * 700 - 350,
           y: Math.random() * 500 + 100,
         })
       ).sort((a, b) => b.data.y() - a.data.y())
       octopi.forEach(octopus => $game.addController(octopus))
+    },
+    afterEnterFrames: ({ $game }) => {
+      const diver = $game.getControllerById<DiverController>('diver')
+      // Center camera
+      if (diver) {
+        $game.canvas().setX(diver.data.x() - $game.canvas().width / 2 + diver.data.width() / 2)
+      }
     },
     sounds: {
       thud: thudSound,
@@ -139,20 +178,20 @@ export const OceanScene: SceneComponent = props => {
 const GameOverlay: Component<{ game: Game, exitToMenu: () => void }> = props => {
   const t = () => Translations[props.game.gameState.options.locale]
   const depth = () => {
-    const diver = props.game.getController<DiverController>('diver')
+    const diver = props.game.getControllerById<DiverController>('diver')
     if (!diver) return 0
     return diver.data.depth()
   }
 
   const eqWarn = () => {
-    const diver = props.game.getController<DiverController>('diver')
+    const diver = props.game.getControllerById<DiverController>('diver')
     if (!diver) return false
     const { eqLevel, eqTolerance } = diver.data
     return eqLevel() > eqTolerance
   }
 
   const eqBar = () => {
-    const diver = props.game.getController<DiverController>('diver')
+    const diver = props.game.getControllerById<DiverController>('diver')
     if (!diver) return 0
     const { holdSpace, holdSpaceMax } = diver.data
     return Math.min(100, holdSpace() / holdSpaceMax * 100)

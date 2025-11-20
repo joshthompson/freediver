@@ -47,11 +47,17 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
     'diver',
     'diver-arm-right',
     'fish',
+    'triggerfish',
+    'friedeggfish',
     'octopus',
     'crab',
+    'bone',
     'wreck',
-    'whale',
     'statue',
+    'wall',
+    'shark',
+    'whale-shark',
+    'whale',
   ]
   const sprites = () => {
     return props.game.controllers()

@@ -4,7 +4,6 @@ import wreck from '@assets/sprites/wreck.png'
 export function createWreckController(id: string) {
   return createController({
     frames: [wreck],
-    randomStartFrame: true,
     init() {
       return {
         id,
@@ -15,7 +14,7 @@ export function createWreckController(id: string) {
       }
     },
     onEnterFrame({ $game, $controller }) {
-      if ($game.getController('diver')?.hitTest($controller)) {
+      if ($game.getControllerById('diver')?.hitTest($controller)) {
         $game.gameStateActions.achievement('wreck')
       }
     }

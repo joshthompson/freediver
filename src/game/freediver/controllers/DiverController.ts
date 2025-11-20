@@ -17,6 +17,8 @@ interface DiverControllerProps {
   style?: Sprite['style']
   goToSurface?: () => void
   blackout?: () => void
+  maxX: number
+  minX: number
 }
 
 const bubbleFrequency = 20
@@ -26,6 +28,7 @@ let bubbleN = 0
 const maxSpeed = 10
 const minSpeed = -2.5
 const maxShowDamageLevel = 60
+const maxShowHealLevel = 60
 
 export function createDiverController(id: string, props: DiverControllerProps) {
   const diver = createDiver(id, props)
@@ -63,6 +66,7 @@ function createDiver(id: string, props: DiverControllerProps) {
         const [eqLevel, setEqLevel] = createSignal(1)
         const [holdSpace, setHoldSpace] = createSignal(1)
         const [showDamageLevel, setShowDamageLevel] = createSignal(0)
+        const [showHealLevel, setShowHealLevel] = createSignal(0)
 
         const makeBubble = (xShift: number, yShift: number, xSpeed?: number, speed?: number) => {
           return createBubbleController('diver-bubble-' + bubbleN++, {
@@ -107,6 +111,8 @@ function createDiver(id: string, props: DiverControllerProps) {
           blackout,
           showDamageLevel,
           setShowDamageLevel,
+          showHealLevel,
+          setShowHealLevel,
           depth: () => Math.max(0, Math.floor(y() / pxInMeter - 0.5)),
           style: () => (showDamageLevel() ? {
             filter: `
@@ -114,6 +120,13 @@ function createDiver(id: string, props: DiverControllerProps) {
               saturate(${1 + 4 * showDamageLevel() / maxShowDamageLevel})
               hue-rotate(${-50 * showDamageLevel() / maxShowDamageLevel}deg)
               brightness(${1 + 0.3 * showDamageLevel() / maxShowDamageLevel})
+            `,
+          } : showHealLevel() ? {
+            filter: `
+              sepia(${showHealLevel() / maxShowHealLevel})
+              saturate(${1 + 4 * showHealLevel() / maxShowHealLevel})
+              hue-rotate(${+50 * showHealLevel() / maxShowHealLevel}deg)
+              brightness(${1 + 0.3 * showHealLevel() / maxShowHealLevel})
             `,
           } : {}),
         }
@@ -132,6 +145,13 @@ function createDiver(id: string, props: DiverControllerProps) {
           $.setShowDamageLevel($.showDamageLevel() - 1)
         }
 
+        if ($game.gameState.diver.showHeal) {
+          $.setShowHealLevel(maxShowHealLevel)
+          $game.setGameState('diver', 'showHeal', false)
+        } else if ($.showHealLevel() > 0) {
+          $.setShowHealLevel($.showHealLevel() - 1)
+        }
+
         if ($age % 20 === 0) {
           const oxygen = $game.gameState.diver.oxygen
           let consumption = 0.5 + 0.5 * Math.abs($.speed()) / maxSpeed
@@ -144,6 +164,7 @@ function createDiver(id: string, props: DiverControllerProps) {
           }
         }
 
+        const initX = $.x()
         const initY = $.y()
 
         if (up()) $.setSpeed($.speed() + $.acceleration())
@@ -184,17 +205,29 @@ function createDiver(id: string, props: DiverControllerProps) {
         const float = Math.cos($age / 10)
         $.setY($.y() + float)
 
-        const yMin = -50
-        const yMax = $game.canvas().height - 160
+        const minY = -50
+        const maxY = $game.canvas().height - 160
 
-        if ($.y() < yMin) {
+        if ($.y() < minY) {
           $.goToSurface()
-          $.setY(yMin)
+          $.setY(minY)
           $game.gameStateActions.registerCurrentDive()
         }
-        if ($.y() > yMax) {
-          $.setY(yMax)
-          $game.playSound('thud')
+        if ($.y() > maxY) {
+          $.setY(maxY)
+          if ($.y() !== initY) $game.playSound('thud')
+        }
+
+        if ($.x() > props.maxX) {
+          $game.gameStateActions.achievement('endOfTheWorld')
+          $.setX(props.maxX)
+          if ($.x() !== initX) $game.playSound('thud')
+        }
+
+        if ($.x() < props.minX) {
+          $game.gameStateActions.achievement('endOfTheWorld')
+          $.setX(props.minX)
+          if ($.x() !== initX) $game.playSound('thud')
         }
 
         $.setBubbleLevel($.bubbleLevel() + Math.abs($.speed()) / 3 + 0.5)
@@ -223,9 +256,6 @@ function createDiver(id: string, props: DiverControllerProps) {
           $.setHoldSpace(0)
           $game.stopSound('equalisation')
         }
-
-        // Center camera
-        $game.canvas().setX($.x() - $game.canvas().width / 2 + $.width() / 2)
       },
     } as const,
   )

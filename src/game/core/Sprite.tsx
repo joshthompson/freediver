@@ -130,22 +130,26 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
 
   onCleanup(() => clearTimeout(enterFrameTimeout))
 
-  const render = () => {
-    // if (props.x + width() * 1.5 < 0) return false
-    // if (props.x - width() * -0.5 > game.canvas().width) return false
-    return true
-  }
+  const left = createMemo(() => {
+    if (props.id?.startsWith('fish'))
+    console.log(
+      'x', props.x,
+      'canvas x', game.canvas().x(), 
+      'left', (props.x - game.canvas().x() * (props.parallax ?? 1)) + 'px',
+    )
+    return (props.x - game.canvas().x() * (props.parallax ?? 1)) + 'px'
+  })
 
   return (
-    render && <div
+    <div
       data-controller-id={props.id}
       ref={props.ref}
       class={cx(styles.sprite, props.class)}
       style={{
         display: loading() ? 'none' : 'block',
         'aspect-ratio': `${size().width} / ${size().height}`,
-        top: (props.y - game.canvas().y() * (props.parallax ?? 1)) + 'px',
-        left: (props.x - game.canvas().x() * (props.parallax ?? 1)) + 'px',
+        top: (props.y - 0 * (props.parallax ?? 1)) + 'px',
+        left: left(),
         transform: `scale(${(props.xScale ?? 1).toString()}, ${(props.yScale ?? 1).toString()})`,
         width: width() + 'px',
         'pointer-events': props.onClick ? 'auto' : 'none',

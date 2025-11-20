@@ -115,7 +115,6 @@ interface ControllerProps<T extends ControllerBaseType> {
   randomStartFrame?: Sprite['randomStartFrame']
   class?: Sprite['class']
   style?: Sprite['style']
-  frameRate?: number
   onEnterFrame?: (data: OnEnterFrameData<T>) => void
 }
 
@@ -125,8 +124,7 @@ export interface Controller<
   type: string
   id: string
   frames?: Sprite['frames']
-  frameRate: number
-  onEnterFrame: (data: OnEnterFrameData<CP>) => void
+  onEnterFrame: () => void
   destroy: () => void
   hitTest: (other: Controller<any>) => boolean
   setGame: (game: Game) => void
@@ -141,12 +139,9 @@ export function createController<
 
   const [age, setAge] = createSignal<number>(0)
   const onEnterFrame = options.onEnterFrame ?? (() => {})
-  const frameRate = options.frameRate ?? 40
   const [currentFrame, setCurrentFrame] = createSignal<number>(0)
   const data: CP = options.init()
-  const destroy = () => {
-    clearInterval(interval)
-  }
+  const destroy = () => {}
   const setGame = (game: Game) => (data.game = game)
   const hitTest = (other: Controller<any>) => {
     const ref1 = document.querySelector(`[data-controller-id="${data.id}"]`) as HTMLElement
@@ -158,8 +153,19 @@ export function createController<
     id: data.id,
     type: data.type,
     frames: options.frames,
-    frameRate,
-    onEnterFrame,
+    onEnterFrame: () => {
+      if (data.game && data.game?.isActive()) {
+        if (data.type === 'fish') console.log('===========')
+        onEnterFrame({
+          $: data,
+          $game: data.game,
+          $age: age(),
+          $currentFrame: currentFrame(),
+          $controller: controller
+        })
+        setAge(age() + 1)
+      }
+    },
     destroy,
     hitTest,
     setGame,
@@ -191,19 +197,6 @@ export function createController<
       }),
     ),
   }
-
-  const interval = setInterval(() => {
-    if (data.game && data.game?.isActive()) {
-      onEnterFrame({
-        $: data,
-        $game: data.game,
-        $age: age(),
-        $currentFrame: currentFrame(),
-        $controller: controller
-      })
-      setAge(age() + 1)
-    }
-  }, frameRate)
 
   return controller
 }
@@ -263,8 +256,10 @@ interface GameOptions {
   x?: number,
   y?: number,
   setup?: (game: Game) => void
+  afterEnterFrames?: (data: { $game: Game }) => void
   sounds?: Record<string, string>
   images?: string[] // These are other assets that are not in controllers
+  frameRate?: number
 }
 
 export class Game<C extends Controller<any> = Controller<any>> {
@@ -284,6 +279,7 @@ export class Game<C extends Controller<any> = Controller<any>> {
   loadingAssetTotal: Accessor<number>
   setLoadingAssetCount: Setter<number>
   setLoadingAssetTotal: Setter<number>
+  interval: number
 
   constructor(public id: string, public options: GameOptions) {
     // Store setup options
@@ -317,6 +313,12 @@ export class Game<C extends Controller<any> = Controller<any>> {
     this.controllers = controllers
     this.setControllers = setControllers
 
+    // Setup onEnterFrame functions for controllers
+    this.interval = window.setInterval(() => {
+      this.controllers().forEach(({ controller }) => controller.onEnterFrame())
+      this.options.afterEnterFrames?.({ $game: this })
+    }, this.options.frameRate ?? 40)
+
     // Set window event listeners
     window.addEventListener('keydown', this.handleWindowKeydown.bind(this))
 
@@ -339,8 +341,12 @@ export class Game<C extends Controller<any> = Controller<any>> {
     this.setControllers(this.controllers().filter(({ id: name }) => name !== id))
   }
 
-  getController<T = Controller<any>>(id: string) {
+  getControllerById<T = Controller<any>>(id: string) {
     return this.controllers().find(c => c.id === id)?.controller as T | undefined
+  }
+
+  getControllersByType<T = Controller<any>>(type: string) {
+    return this.controllers().filter(c => c.controller.type === type).map(c => c.controller as T) as T[]
   }
 
   handleWindowKeydown(event: KeyboardEvent) {
@@ -358,6 +364,7 @@ export class Game<C extends Controller<any> = Controller<any>> {
   }
 
   destroy() {
+    clearInterval(this.interval)
     window.removeEventListener('keydown', this.handleWindowKeydown.bind(this))
   }
 

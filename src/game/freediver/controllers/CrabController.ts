@@ -84,7 +84,7 @@ export function createCrabController(
         $.setJump(0)
       }
 
-      const diver = $game?.getController('diver') as DiverController
+      const diver = $game.getControllerById('diver') as DiverController
       if (diver) {
         const dx = Math.abs(diver.data.x() - $.x())
         const dy = Math.abs(diver.data.y() - $.y())

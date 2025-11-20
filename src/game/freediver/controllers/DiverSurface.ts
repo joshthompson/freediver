@@ -38,7 +38,7 @@ function createDiverSurfaceBodyController(id: string, props?: DiverSurfaceContro
 
         return {
           id,
-          type: 'diver',
+          type: 'diver-surface',
           x,
           setX,
           y,
@@ -67,9 +67,6 @@ function createDiverSurfaceBodyController(id: string, props?: DiverSurfaceContro
         }
       
         $.setOxygen(Math.max($.oxygen() - oxygenDownRate, 0))
-      
-        // Center camera
-        $game.canvas().setX($.x() - $game.canvas().width / 2 + $.width() / 2 + 80)
       },
     } as const,
   )

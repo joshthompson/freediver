@@ -5,21 +5,18 @@ import { css } from "@style/css";
 import { useGameState } from "@/utils/GameStateContext";
 import { Translations } from "@/utils/Translations";
 import { Achievements } from "./Achievements";
+import { Options } from "./Options";
 
 export const PauseMenu: Component<{ game: Game, exitToMenu: () => void }> = props => {
   const [view, setView] = createSignal<'main' | 'achievements'>('main')
-  const { gameState, gameStateActions } = useGameState()!
+  const { gameState } = useGameState()!
     const t = () => Translations[gameState.options.locale]
 
   return <div class={styles.paused}>
     {view() === 'main' && <>
       <div>{t().pause.title}</div>
       <Button onClick={() => props.game.togglePause()} size="small">{t().pause.resume}</Button>
-      <Button onClick={gameStateActions.toggleVolume} size="small">
-        {gameState.options.volume > 0
-          ? t().common.volumeOn
-          : t().common.volumeOff}
-      </Button>
+      <Options mode="pause" />
       <Button onClick={() => setView('achievements')} size="small">{t().achievements.title}</Button>
       <Button onClick={() => props.exitToMenu()} size="small">{t().common.exitToMenu}</Button>
     </>}

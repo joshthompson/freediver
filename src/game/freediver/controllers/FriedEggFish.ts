@@ -1,16 +1,19 @@
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
-import evilfish from '@assets/sprites/fish/evil.png'
+import eggfish from '@assets/sprites/fish/egg.png'
 import { DiverController } from './DiverController'
+import { createBubbleController } from './BubbleController'
 
-export function createTriggerFishController(
+let bubbleN = 0
+
+export function createFriedEggFishController(
   id: string,
   props: {
     x: number
   },
 ) {
   return createController({
-    frames: [evilfish],
+    frames: [eggfish],
     init() {
       const [x, setX] = createSignal<number>(props.x)
       const [y, setY] = createSignal<number>(Math.random() * 500 + 100)
@@ -18,10 +21,10 @@ export function createTriggerFishController(
       const [speed, setSpeed] = createSignal(5)
       const [jitter, setJitter] = createSignal({ x: 0, y: 0 })
       const [rotation, setRotation] = createSignal<number>(0)
-      const [attack, setAttack] = createSignal(false)
+      const [canGiveHealth, setCanGiveHealth] = createSignal(true)
       return {
         id,
-        type: 'triggerfish',
+        type: 'friedeggfish',
         x,
         setX,
         y,
@@ -32,8 +35,8 @@ export function createTriggerFishController(
         xScale,
         setXScale,
         setJitter,
-        attack,
-        setAttack,
+        canGiveHealth,
+        setCanGiveHealth,
         rotation,
         setRotation,
         style: () => ({
@@ -52,31 +55,31 @@ export function createTriggerFishController(
       const distance = Math.hypot($.x() - targetX, $.y() - targetY)
       const direction = Math.atan2($.y() - targetY, $.x() - targetX)
 
-      if (distance < 300) {
-        $.setAttack(true)
-        $.setSpeed((distance < 200 ? 8 : 5) * (Math.random() * 0.4 + 0.8))
+      if (distance < 300 && $.canGiveHealth()) {
+        $.setSpeed(4)
         $.setRotation((direction * 180 / Math.PI) + 180)
-        $.setXScale(1)
+        $.setX($.x() - $.speed() * Math.cos(direction))
+        $.setY($.y() - $.speed() * Math.sin(direction))
       } else {
-        $.setSpeed(1.5)
-        if ($.attack()) {
-          $.setAttack(false)
-          $game.gameStateActions.achievement('surviveTitanTriggerFish')
-        }
+        $.setSpeed(1)
+        $.setX($.x() + $.speed())
+        $.setRotation(0)
       }
 
-      $.setX($.x() - $.speed() * Math.cos(direction))
-      $.setY($.y() - $.speed() * Math.sin(direction))
       $.setJitter({
         x: Math.random() * $.speed() - $.speed() / 2,
         y: Math.random() * $.speed() - $.speed() / 2,
       })
 
-      if (distance < 10) {
-        $game.gameStateActions.damage(5)
-        $game.playSound('thud', { unique: true })
-        $.setX($.x() + 10 * $.speed() * Math.cos(direction))
-        $.setY($.y() + 10 * $.speed() * Math.sin(direction))
+      if (distance < 10 && $.canGiveHealth()) {
+        $game.gameStateActions.heal(50)
+        $game.gameStateActions.achievement('eggFishKiss')
+        $.setCanGiveHealth(false)
+        $game.addController(createBubbleController('egg-fish-kiss-' + bubbleN++, {
+          x: $.x(),
+          y: $.y(),
+          type: 'kiss',
+        }))
       }
     },
   })

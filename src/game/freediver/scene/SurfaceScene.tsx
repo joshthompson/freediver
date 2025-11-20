@@ -4,7 +4,7 @@ import { createEffect, onCleanup } from "solid-js"
 import { css, cva } from "@style/css"
 import { PauseMenu } from "../ui/PauseMenu"
 import { Bar } from "../ui/Bar"
-import { createDiverSurfaceController } from "../controllers/DiverSurface"
+import { createDiverSurfaceController, DiverSurfaceBodyController } from "../controllers/DiverSurface"
 import { createCorgiSurfaceController } from "../controllers/CorgiSurface"
 import { useGameState } from "@/utils/GameStateContext"
 import { LoadingScreen } from "../ui/LoadingScreen"
@@ -34,6 +34,14 @@ export const SurfaceScene: SceneComponent = props => {
         createCloudController('cloud-4', { x: 500, y: 10, flip: true, size: 1.5 }),
       )
     },
+    afterEnterFrames: ({ $game }) => {
+      const diver = $game.getControllerById<DiverSurfaceBodyController>('diver-surface')
+      // Center camera
+      if (diver) {
+        $game.canvas().setX(diver.data.x() - $game.canvas().width / 2 + diver.data.width() / 2)
+        $game.canvas().setX(diver.data.x() - $game.canvas().width / 2 + diver.data.width() / 2 + 80)
+      }
+    },
   })
   const t = () => Translations[game.gameState.options.locale]
   onCleanup(() => game.destroy())
@@ -42,7 +50,7 @@ export const SurfaceScene: SceneComponent = props => {
     props.setScene('menu')
   }
 
-  const oxygen = () => game.getController('diver-surface')?.data.oxygen() ?? 0
+  const oxygen = () => game.getControllerById('diver-surface')?.data.oxygen() ?? 0
 
   createEffect(() => {
     if (oxygen() > 100) {

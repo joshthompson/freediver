@@ -4,7 +4,6 @@ import statue from '@assets/sprites/statue.png'
 export function createStatueController(id: string) {
   return createController({
     frames: [statue],
-    randomStartFrame: true,
     init() {
       return {
         id,
@@ -15,7 +14,7 @@ export function createStatueController(id: string) {
       }
     },
     onEnterFrame({ $game, $controller }) {
-      if ($game.getController('diver')?.hitTest($controller)) {
+      if ($game.getControllerById('diver')?.hitTest($controller)) {
         $game.gameStateActions.achievement('statue')
       }
     }

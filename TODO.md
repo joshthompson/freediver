@@ -6,6 +6,9 @@
 [x] Scene loading
 [x] Light sparkles into ocean
 [x] Enemy that chases you
-[ ] More starfish and better positioning
-[ ] More achievements
+[x] More starfish and better positioning
+[x] Options in the pause menu
+[x] More achievements
 [x] View achievements
+[x] Dog bone + achievement
+[x] Gift every 3 achievements

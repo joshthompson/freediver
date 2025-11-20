@@ -1,6 +1,7 @@
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
 import bubble from '@assets/sprites/bubble.png'
+import kiss from '@assets/sprites/kiss.png'
 import { css } from '@style/css'
 
 const acceleration = 0.1
@@ -12,14 +13,15 @@ export function createBubbleController(
     y: number
     xSpeed?: number,
     speed?: number
+    type?: 'bubble' | 'kiss'
   },
 ) {
   return createController({
-    frames: [bubble],
+    frames: [props.type === 'kiss' ? kiss : bubble],
     init() {
       const [x, setX] = createSignal<number>(props.x)
       const [y, setY] = createSignal<number>(props.y)
-      const [size, setSize] = createSignal(Math.random())
+      const [size, setSize] = createSignal(props.type === 'kiss' ? 1 : Math.random())
       const [speed, setSpeed] = createSignal<number>((props.speed ?? 0.5) * (size() * 0.5 + 0.5))
       const [xSpeed, setXSpeed] = createSignal<number>(props.xSpeed ?? 0)
       return {
@@ -37,7 +39,7 @@ export function createBubbleController(
         xScale: size,
         yScale: size,
         setSize,
-        width: () => 10,
+        width: () => props.type === 'kiss' ? 30 : 10,
         class: () => css({ opacity: 0.5 }),
       }
     },
@@ -48,7 +50,7 @@ export function createBubbleController(
       $.setSize($.xScale() * 1.01)
       $.setXSpeed($.xSpeed() * 0.99)
 
-      if ($.y() < -30) {
+      if ($.y() < -50) {
         $game.removeController($.id)
       }
     },

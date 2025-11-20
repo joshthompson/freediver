@@ -19,6 +19,11 @@ export const Debugger: Component<{ game: Game }> = props => {
       <div>{rendered()}</div>
       <div>Assets Loaded:</div>
       <div>{props.game.loadingAssetCount()} / {props.game.loadingAssetTotal()}</div>
+      <div>Canvas:</div>
+      <div>
+        {Math.round(props.game.canvas().x())},
+        {Math.round(props.game.canvas().y())}
+      </div>
     </div>
   </div>
 }

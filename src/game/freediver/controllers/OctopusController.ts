@@ -64,7 +64,7 @@ export function createOctopusController(
       if ($.x() > xMax) $.setX(xMin)
       if ($.x() < xMin) $.setX(xMax)
 
-      const diver = $game?.getController('diver') as DiverController
+      const diver = $game.getControllerById('diver') as DiverController
       if (diver) {
         const dx = Math.abs(diver.data.x() - $.x())
         const dy = Math.abs(diver.data.y() - $.y())

@@ -1,31 +1,46 @@
 import { Canvas } from "@/game/core/Canvas"
 import { Game, SceneComponent } from "@/utils/game"
 import { onCleanup } from "solid-js"
-import menu from '@assets/menu.png'
+import menu1 from '@assets/menu1.png'
+import logoAlisa from '@assets/logo-alisa.png'
+import logoFreediver from '@assets/logo-freediver.png'
+import logoAlisaRu from '@assets/logo-alisa-ru.png'
+import logoFreediverRu from '@assets/logo-freediver-ru.png'
 import { css } from "@style/css"
 import { Button } from "../ui/Button"
 import { useGameState } from "@/utils/GameStateContext"
-import { flags, Translations } from "@/utils/Translations"
+import { LocaleFlags, Translations } from "@/utils/Translations"
 
 export const MenuScene: SceneComponent = props => {
   const game = new Game('menu', {
       ...useGameState()!,
     width: Math.min(700, window.innerWidth - 20),
     height: 700,
-    images: [menu],
+    images: [
+      menu1,
+      logoAlisa,
+      logoFreediver,
+      logoAlisaRu,
+      logoFreediverRu,
+    ],
   })
   onCleanup(() => game.destroy())
-  const t = () => Translations[game.gameState.options.locale]
+  const locale = () => game.gameState.options.locale
+  const t = () => Translations[locale()]
 
   return <Canvas
     game={game}
-    style={{ background: `url(${menu})` }}
+    style={{ background: `url(${menu1})`, 'background-size': 'cover' }}
     overlay={<div class={styles.overlay}>
+      <div  class={styles.logo}>
+        <img src={locale() === 'ru' ? logoAlisaRu : logoAlisa} class={styles.logoTop} />
+        <img src={locale() === 'ru' ? logoFreediverRu : logoFreediver} class={styles.logoBottom} />
+      </div>
       <img
-      src={flags[game.gameState.options.locale]}
-      class={styles.flag}
-      onClick={game.gameStateActions.toggleLanguage}
-    />
+        src={LocaleFlags[game.gameState.options.locale]}
+        class={styles.flag}
+        onClick={game.gameStateActions.toggleLanguage}
+      />
       <Button onClick={() => props.setScene('surface')}>{t().menu.start}</Button>
       <Button onClick={() => props.setScene('instructions')} size="small">{t().menu.instructions}</Button>
       <Button onClick={() => props.setScene('achievements')} size="small">{t().achievements.title}</Button>
@@ -44,7 +59,7 @@ const styles = {
     alignItems: 'center',
     flexDirection: 'column',
     gap: '10px',
-    pb: '100px',
+    pb: '75px',
   }),
   credits: css({
     position: 'absolute',
@@ -53,6 +68,24 @@ const styles = {
     right: 0,
     textAlign: 'center',
     p: '10px',
+    color: 'white',
+  }),
+  logo: css({
+    position: 'absolute',
+    width: '300px',
+    top: '20px',
+    right: '80px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '10px',
+  }),
+  logoTop: css({
+    width: '100%',
+    filter: 'drop-shadow(2px 4px 0 black)',
+  }),
+  logoBottom: css({
+    width: '80%',
   }),
   flag: css({
     position: 'absolute',

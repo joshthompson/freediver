@@ -34,7 +34,6 @@ export function createFishController(
 ) {
   return createController({
     frames: chooseFishFrames(),
-    randomStartFrame: true,
     init() {
       const [x, setX] = createSignal<number>(props.x)
       const [y, setY] = createSignal<number>(props.y)
@@ -71,20 +70,22 @@ export function createFishController(
       }
     },
     onEnterFrame({ $, $game }) {
-      $.setX($.x() + $.speed() * $.direction())
+      let x = $.x() + $.speed() * $.direction()
       $.setJitter({ x: Math.random() * 5 - 2.5, y: Math.random() * 5 - 2.5 })
 
       const xMin = $game.canvas().x() - 30
       const xMax = $game.canvas().width + $game.canvas().x() + 30
-      if ($.x() > xMax || $.x() < xMin) {
+      if (x > xMax || x < xMin) {
         $.setY(Math.random() * 500 + 100)
         $.setSize(Math.random() + 0.5)
         $.setDirection(randomItem([-1, 1]))
         $.setHue(Math.random() * 360)
         $.setFrames(chooseFishFrames())
       }
-      if ($.x() > xMax) $.setX(xMin)
-      if ($.x() < xMin) $.setX(xMax)
+      if (x > xMax) x = xMin
+      if (x < xMin) x = xMax
+
+      $.setX(x)
     },
   })
 }

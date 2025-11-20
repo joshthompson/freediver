@@ -1,4 +1,4 @@
-import { Component, createSignal } from 'solid-js'
+import { Component, createEffect, createSignal, For, Show } from 'solid-js'
 import { css, cva } from '@style/css'
 import { OceanScene } from './scene/OceanScene'
 import { SurfaceScene } from './scene/SurfaceScene'
@@ -6,11 +6,12 @@ import { MenuScene } from './scene/MenuScene'
 import { InstructionsScene } from './scene/InstructionsScene'
 import { playSound } from '@/utils/game'
 import ocean1 from '@assets/sounds/ocean1.mp3'
+import alert from '@assets/sprites/alert.png'
+import gift from '@assets/sprites/gift.png'
 import { createStore } from 'solid-js/store'
-import { Achievement, GameState, GameStateContext, saveState } from '@/utils/GameStateContext'
+import { Achievement, AchievementsRecord, GameState, GameStateContext } from '@/utils/GameStateContext'
 import { BlackoutScene } from './scene/BlackoutScene'
 import { OptionsScene } from './scene/OptionsScene'
-import alert from '@assets/sprites/alert.png'
 import { Translations } from '@/utils/Translations'
 import { AchievementsScene } from './scene/AchievementsScene'
 
@@ -19,22 +20,28 @@ const local = window.location.hostname === 'localhost'
 export const FreediverGame: Component = () => {
   const savedGameState = JSON.parse(window.localStorage.getItem('game-state') ?? '{}')
   const [gameState, setGameState] = createStore<GameState>({
-    score: savedGameState?.score ?? {
-      total: 0,
+    score: {
       currentDive: 0,
-      maxDive: 0,
+      total: savedGameState?.score?.total ?? 0,
+      maxDive: savedGameState?.score?.maxDive ?? 0,
     },
     diver: {
       x: 0,
       oxygen: 100,
       showDamage: false,
+      showHeal: false,
     },
     options: {
-      locale: savedGameState?.locale ?? 'en',
       debug: local,
+      locale: savedGameState?.locale ?? 'en',
       volume: savedGameState?.volume ?? 1,
     },
-    achievements: savedGameState?.achievements ?? {},
+    achievements:
+      Object.fromEntries(
+        Object.entries((savedGameState?.achievements ?? {}) as AchievementsRecord)
+          .map(([key, value]) => [key as Achievement, value === 'new' ? 'shown' : value])
+      ),
+    showGift: false,
   })
   const t = () => Translations[gameState.options.locale]
 
@@ -56,18 +63,17 @@ export const FreediverGame: Component = () => {
     setMusic(playSound(ocean1, { loop: true, mute: gameState.options.volume === 0 }))
   }
 
-  const achievementDuration = 5000
   const newAchievement = () => {
-    const achievement = Object.entries(gameState.achievements)
-      .find(([, state]) => state === 'new')?.[0] as Achievement | undefined
-    if (achievement) {
-      setTimeout(() => {
-        setGameState('achievements', achievement, 'shown')
-        saveState(gameState)
-      }, achievementDuration)
-    }
-    return achievement
+    return Object.entries(gameState.achievements)
+      .filter(([, state]) => state === 'new')
+      .map(([achievement]) => achievement) as Achievement[]
   }
+
+  createEffect(() => {
+    if (gameState.showGift) {
+      setTimeout(() => setGameState('showGift', false), 2000)
+    }
+  })
 
   return (
     <GameStateContext.Provider value={[gameState, setGameState]}>
@@ -79,14 +85,19 @@ export const FreediverGame: Component = () => {
         {scene() === 'surface' && <SurfaceScene setScene={setScene} />}
         {scene() === 'ocean' && <OceanScene setScene={setScene} />}
         {scene() === 'blackout' && <BlackoutScene setScene={setScene} />}
-        {newAchievement() && <>
-          <div class={styles.achievement} style={{ 'background-image': `url(${alert})` }}>
+        {newAchievement().length > 0 && <div class={styles.achievements}>
+          <For each={newAchievement()}>
+            {achievement => (<div class={styles.achievement} style={{ 'background-image': `url(${alert})` }}>
             <div class={styles.achievementInner}>
               <small>{t().achievements.new}</small>
-              <div>{(t().achievements as any)[newAchievement()!]}</div>
+              <div>{t().achievements[achievement]}</div>
             </div>
-          </div>
-        </>}
+          </div>)}
+          </For>
+        </div>}
+        <Show when={gameState.showGift}>
+          <div class={styles.gift} style={{ 'background-image': `url(${gift})`}} />
+        </Show>
       </div>
     </GameStateContext.Provider>
   )
@@ -98,7 +109,7 @@ const styles = {
       '--u': 'min(1dvh, 1dvw)',
       '--size': 'calc(80 * var(--u))',
       width: '700px',
-      mx: 'auto',
+      m: '20px auto',
       position: 'relative',
       display: 'flex',
       justifyContent: 'center',
@@ -116,18 +127,22 @@ const styles = {
       },
     }
   }),
-  achievement: css({
+  achievements: css({
     position: 'absolute',
     bottom: '20px',
     right: '20px',
-    width: '288px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '15px',
+  }),
+  achievement: css({
     height: '100px',
+    aspectRatio: '1323 / 510',
     backgroundSize: 'cover',
     p: '25px 35px 30px 35px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    filter: 'drop-shadow(0 0 5px white) drop-shadow(0 0 100px #FFFFFF88)',
   }),
   achievementInner: css({
     rotate: '-1deg',
@@ -136,5 +151,18 @@ const styles = {
     textAlign: 'center',
     fontSize: '26px',
     lineHeight: '0.7em',
+  }),
+  gift: css({
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    filter: 'drop-shadow(0 0 30px #FFFFFF) drop-shadow(0 0 30px #FFFFFF)',
+    width: '150px',
+    height: '150px',
+    backgroundImage: 'url(/assets/sprites/gift.png)',
+    backgroundSize: 'contain',
+    backgroundRepeat: 'no-repeat',
+    pointerEvents: 'none',
+    animation: 'gift 2s ease-in forwards',
   }),
 }

@@ -3,6 +3,20 @@ import svFlag from '@assets/flags/sv.png'
 import ruFlag from '@assets/flags/ru.png'
 import { Achievement } from './GameStateContext'
 
+export type Locale = keyof typeof Translations
+
+export const LocaleNames: Record<Locale, string> = {
+  en: 'English',
+  ru: 'Русский',
+  sv: 'Svenska',
+}
+
+export const LocaleFlags: Record<Locale, string> = {
+  en: enFlag,
+  sv: svFlag,
+  ru: ruFlag,
+}
+
 const baseTranslations = {
   common: {
     back: 'Back',
@@ -18,8 +32,7 @@ const baseTranslations = {
     credits: 'A game by Josh Thompson and Olesya Vasileva',
   },
   options: {
-    clearScoreData: 'Clear Score Data',
-    clearAchievements: 'Clear Achievements',
+    clearGameData: 'Clear Game Data',
   },
   surface: {
     relax: 'Relax!',
@@ -46,7 +59,7 @@ const baseTranslations = {
     resume: 'Resume',
   },
   instructions: {
-    description: 'Dive and explore with your friend Linkosha the corgi',
+    description: 'Dive and explore with your friend Linkosha the corgi!',
     up: 'Swim forward',
     down: 'Swim backwards',
     left: 'Rotate left',
@@ -59,36 +72,24 @@ const baseTranslations = {
     title: 'Achievements',
     firstDive: 'First Dive',
     whale: 'Whale Whisperer',
+    whaleShark: 'Whale Shark Sighter',
+    shark: 'Shark Spotter',
     wreck: 'Wreck Explorer',
     almostFaint: 'Almost Fainted',
     crabJump: 'Crab Jumper',
     total100: '100 Total',
-    total500: '500 Total',
-    total1000: '1000 Total',
     dive10: 'Good Dive',
-    dive25: 'Great Dive',
-    dive50: 'Amazing Dive',
+    dive30: 'Amazing Dive',
     bilingual: 'Bilingual',
     surviveTitanTriggerFish: 'Titan Trigger Survivor',
-    prequalisation: 'Prequalisaion', // Pre-eualisation: equalising before nescessary
+    prequalisation: 'Prequalisaion',
     statue: 'All hail Linkosha',
+    eggFishKiss: 'Fried Egg Fish Kiss',
+    blackout: 'Blackout',
+    bone: 'Give A Dog A Bone',
+    endOfTheWorld: 'Reach The End of the World',
   } satisfies Record<Achievement | 'new' | 'title', string>,
 }
-
-export const languageNames: Record<Locale, string> = {
-  en: 'English',
-  ru: 'Русский',
-  sv: 'Svenska',
-}
-
-export const flags: Record<Locale, string> = {
-  en: enFlag,
-  sv: svFlag,
-  ru: ruFlag,
-}
-
-export type Locale = keyof typeof Translations
-type TranslationSet = typeof baseTranslations
 
 export const Translations = {
   en: baseTranslations,
@@ -107,8 +108,7 @@ export const Translations = {
       credits: 'Игра от Джоша Томпсона и Олеси Васильевой',
     },
     options: {
-      clearScoreData: 'Очистить данные счета',
-      clearAchievements: 'Очистить достижения',
+      clearGameData: 'Очистить данные игры',
     },
     surface: {
       relax: 'Расслабься!',
@@ -135,7 +135,7 @@ export const Translations = {
       resume: 'Продолжить',
     },
     instructions: {
-      description: 'Ныряй и исследуй вместе со своим другом корги Линкошей',
+      description: 'Ныряй и исследуй вместе со своим другом корги Линкошей!',
       up: 'Вперед',
       down: 'Назад',
       left: 'Повернуть влево',
@@ -148,19 +148,22 @@ export const Translations = {
       title: 'Достижения',
       firstDive: 'Первое погружение',
       whale: 'Шепчущий кит',
+      whaleShark: 'Наблюдатель китовой акулы',
+      shark: 'Наблюдатель акул',
       wreck: 'По обломкам',
       almostFaint: 'Почти потерял сознание',
       crabJump: 'Прыжок краба',
       total100: '100 Всего',
-      total500: '500 Всего',
-      total1000: '1000 Всего',
       dive10: 'Хорошее погружение',
-      dive25: 'Отличное погружение',
-      dive50: 'Потрясающее погружение',
+      dive30: 'Потрясающее погружение',
       bilingual: 'Двуязычный',
       surviveTitanTriggerFish: 'Выживший после титана - триггера',
       prequalisation: 'Предвыравнивание',
       statue: 'Да здравствует Линкоша!',
+      eggFishKiss: 'Поцелуй рыбки-яичницы',
+      blackout: 'Потеря сознания',
+      bone: 'Дай Собачке кость',
+      endOfTheWorld: 'Конец Света',
     },
   },
   sv: {
@@ -178,8 +181,7 @@ export const Translations = {
       credits: 'Ett spel av Josh Thompson och Olesya Vasileva',
     },
     options: {
-      clearScoreData: 'Rensa Poängdata',
-      clearAchievements: 'Rensa Prestationer',
+      clearGameData: 'Rensa speldata',
     },
     surface: {
       relax: 'Koppla av!',
@@ -206,7 +208,7 @@ export const Translations = {
       resume: 'Återuppta',
     },
     instructions: {
-      description: 'Dyk och utforska med din vän corgin Linkosha',
+      description: 'Dyk och utforska med din vän corgin Linkosha!',
       up: 'Simma framåt',
       down: 'Simma bakåt',
       left: 'Rotera vänster',
@@ -218,20 +220,23 @@ export const Translations = {
       new: 'Ny Prestation!',
       title: 'Prestationer',
       firstDive: 'Första dyket',
-      whale: 'Valviskare',
+      whale: 'Valviskaren',
+      whaleShark: 'Valhajsspanare',
+      shark: 'Hajspanaren',
       wreck: 'Vrakutforskare',
       almostFaint: 'Svimma nästan',
       crabJump: 'Krabphoppare',
       total100: '100 Totalt',
-      total500: '500 Totalt',
-      total1000: '1000 Totalt',
       dive10: 'Bra dyk',
-      dive25: 'Utmärkt dyk',
-      dive50: 'Otroligt dyk',
+      dive30: 'Otroligt dyk',
       bilingual: 'Tvåspråkig',
       surviveTitanTriggerFish: 'Överlevare av Titan Triggerfish',
       prequalisation: 'Förtryckutjämning',
       statue: 'Heja Linkosha!',
+      eggFishKiss: 'Kyss av en Stekt Äggfisk',
+      blackout: 'Blackout',
+      bone: 'Ge Hunden Ett Ben',
+      endOfTheWorld: 'Världens ände',
     },
   }
-} as const satisfies  Record<string, TranslationSet>
+} as const satisfies  Record<string, typeof baseTranslations>

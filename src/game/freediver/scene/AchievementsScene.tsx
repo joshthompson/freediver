@@ -2,7 +2,8 @@ import { Canvas } from "@/game/core/Canvas"
 import { Game, SceneComponent } from "@/utils/game"
 import { onCleanup } from "solid-js"
 import trophy from '@assets/sprites/trophy.png'
-import { css, cva } from "@style/css"
+import { css } from "@style/css"
+import menu2 from '@assets/menu2.png'
 import { Button } from "../ui/Button"
 import { useGameState } from "@/utils/GameStateContext"
 import { Translations } from "@/utils/Translations"
@@ -14,13 +15,14 @@ export const AchievementsScene: SceneComponent = props => {
     ...state,
     width: Math.min(700, window.innerWidth - 20),
     height: 700,
-    images: [trophy],
+    images: [trophy, menu2],
   })
   onCleanup(() => game.destroy())
   const t = () => Translations[state.gameState.options.locale]
 
   return <Canvas
     game={game}
+    style={{ background: `url(${menu2})`, 'background-size': 'cover' }}
     overlay={<div class={styles.overlay}>
       <div class={styles.title}>{t().achievements.title}</div>
       <Achievements />
@@ -40,13 +42,6 @@ const styles = {
     gap: '5px',
     pb: '10px',
     fontSize: '20px',
-    backgroundImage: `linear-gradient(
-      0deg,
-      #399cdc 0%,
-      #399cdc 20%,
-      #c6fff8 50%,
-      #3ea8ff 100%
-    )`,
   }),
   title: css({
     fontSize: '2rem',

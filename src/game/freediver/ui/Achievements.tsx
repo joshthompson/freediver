@@ -19,7 +19,7 @@ export const Achievements: Component = () => {
       {achievement => (
         <div class={styles.achievement({ unlocked: achievement.unlocked })}>
           <img src={trophy} />
-          <div>{achievement.unlocked ? achievement.name : '???'}</div>
+          <div>{achievement.unlocked || 1 ? achievement.name : '???'}</div>
         </div>
       )}
     </For>
@@ -36,7 +36,7 @@ const styles = {
       display: 'grid',
       gap: '10px',
       m: '2rem 1rem',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
       fontSize: '20px',
       wordBreak: 'break-word',
     },
@@ -53,13 +53,15 @@ const styles = {
   }),
   achievement: cva({
     base: {
-      backgroundColor: '#00000030',
+      backgroundColor: '#00000070',
+      color: 'white',
       p: '10px',
       borderRadius: '10px',
       textAlign: 'center',
+      backdropFilter: 'blur(3px)',
 
       '& img': {
-        filter: 'brightness(0)',
+        filter: 'brightness(0) invert(1) ',
         opacity: '0.4',
       },
     },

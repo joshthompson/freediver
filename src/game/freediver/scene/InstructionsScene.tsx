@@ -1,7 +1,7 @@
 import { Canvas } from "@/game/core/Canvas"
 import { Game, SceneComponent } from "@/utils/game"
 import { onCleanup } from "solid-js"
-import menu from '@assets/menu.png'
+import menu2 from '@assets/menu2.png'
 import { css, cva } from "@style/css"
 import { Button } from "../ui/Button"
 import { useGameState } from "@/utils/GameStateContext"
@@ -12,36 +12,62 @@ export const InstructionsScene: SceneComponent = props => {
     ...useGameState()!,
     width: Math.min(700, window.innerWidth - 20),
     height: 700,
-    images: [menu],
+    images: [menu2],
   })
   onCleanup(() => game.destroy())
   const t = () => Translations[game.gameState.options.locale]
 
   return <Canvas
     game={game}
-    style={{ background: `url(${menu})` }}
+    style={{ background: `url(${menu2})`, 'background-size': 'cover' }}
     overlay={<div class={styles.overlay}>
-      <p class={styles.description}>{t().instructions.description}</p>
-      <div class={styles.keyboard}>
-        <div class={styles.key({ key: 'up' })}>
-          <div class={styles.keyName}>↑</div>
-          <div class={styles.keyDescription}>{t().instructions.up}</div>
+      <div class={styles.description}>
+        <div>{t().instructions.description}</div>
+      </div>
+      <div class={styles.alternative}>
+        <div class={styles.keyboard}>
+          <div class={styles.key({ key: 'up' })}>
+            <div class={styles.keyName}>↑</div>
+            <div class={styles.keyDescription}>{t().instructions.up}</div>
+          </div>
+          <div class={styles.key({ key: 'down' })}>
+            <div class={styles.keyName}>↓</div>
+            <div class={styles.keyDescription}>{t().instructions.down}</div>
+          </div>
+          <div class={styles.key({ key: 'left' })}>
+            <div class={styles.keyName}>←</div>
+            <div class={styles.keyDescription}>{t().instructions.left}</div>
+          </div>
+          <div class={styles.key({ key: 'right' })}>
+            <div class={styles.keyName}>→</div>
+            <div class={styles.keyDescription}>{t().instructions.right}</div>
+          </div>
+          <div class={styles.key({ key: 'space' })}>
+            <div class={styles.keyName}>{t().instructions.spacebar}</div>
+            <div class={styles.keyDescription}>{t().instructions.space}</div>
+          </div>
         </div>
-        <div class={styles.key({ key: 'down' })}>
-          <div class={styles.keyName}>↓</div>
-          <div class={styles.keyDescription}>{t().instructions.down}</div>
-        </div>
-        <div class={styles.key({ key: 'left' })}>
-          <div class={styles.keyName}>←</div>
-          <div class={styles.keyDescription}>{t().instructions.left}</div>
-        </div>
-        <div class={styles.key({ key: 'right' })}>
-          <div class={styles.keyName}>→</div>
-          <div class={styles.keyDescription}>{t().instructions.right}</div>
-        </div>
-        <div class={styles.key({ key: 'space' })}>
-          <div class={styles.keyName}>{t().instructions.spacebar}</div>
-          <div class={styles.keyDescription}>{t().instructions.space}</div>
+        <div class={styles.keyboard}>
+          <div class={styles.key({ key: 'up' })}>
+            <div class={styles.keyName}>W</div>
+            <div class={styles.keyDescription}>{t().instructions.up}</div>
+          </div>
+          <div class={styles.key({ key: 'down' })}>
+            <div class={styles.keyName}>S</div>
+            <div class={styles.keyDescription}>{t().instructions.down}</div>
+          </div>
+          <div class={styles.key({ key: 'left' })}>
+            <div class={styles.keyName}>A</div>
+            <div class={styles.keyDescription}>{t().instructions.left}</div>
+          </div>
+          <div class={styles.key({ key: 'right' })}>
+            <div class={styles.keyName}>D</div>
+            <div class={styles.keyDescription}>{t().instructions.right}</div>
+          </div>
+          <div class={styles.key({ key: 'space' })}>
+            <div class={styles.keyName}>{t().instructions.spacebar}</div>
+            <div class={styles.keyDescription}>{t().instructions.space}</div>
+          </div>
         </div>
       </div>
       <Button onClick={() => props.setScene('menu')} size="small">{t().common.back}</Button>
@@ -57,7 +83,7 @@ const styles = {
     justifyContent: 'flex-end',
     alignItems: 'center',
     flexDirection: 'column',
-    gap: '5px',
+    gap: '150px',
     pb: '10px',
     fontSize: '20px',
   }),
@@ -70,6 +96,10 @@ const styles = {
     textAlign: 'center',
     fontSize: '32px',
   }),
+  alternative: css({
+    display: 'flex',
+    gap: '10px',
+  }),
   keyboard: css({
     display: 'grid',
     gridTemplateColumns: 'repeat(3, 70px)',
@@ -77,6 +107,10 @@ const styles = {
     gap: '20px 15px',
     mb: '20px',
     '--key-size': '70px',
+    background: '#00000090',
+    borderRadius: '12px',
+    color: 'white',
+    p: '40px',
   }),
   key: cva({
     base: {
@@ -122,6 +156,7 @@ const styles = {
   }),
   keyName: css({
     m: '20px',
+    color: 'black',
   }),
   keyDescription: css({
     position: 'absolute',
