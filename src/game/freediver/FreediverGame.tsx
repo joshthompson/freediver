@@ -49,7 +49,7 @@ export const FreediverGame: Component = () => {
   })
   const t = () => Translations[gameState.options.locale]
 
-  const [scene, _setScene] = createSignal<string>(local ? 'menu' : 'menu')
+  const [scene, _setScene] = createSignal<string>(local ? 'ocean' : 'menu')
   const setScene = (newScene: string) => {
     if (['ocean', 'surface'].includes(newScene) && !music()) {
       startMusic()

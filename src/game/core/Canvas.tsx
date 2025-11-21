@@ -45,6 +45,7 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
     'corgi',
     'diver-arm-left',
     'diver',
+    'diver-head',
     'diver-arm-right',
     'fish',
     'triggerfish',

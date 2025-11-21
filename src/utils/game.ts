@@ -222,6 +222,8 @@ export function createConnectedController<C extends Controller<any>>(options: {
   width: ($: ExtractControllerType<C>) => number,
   xScale?: ($: ExtractControllerType<C>) => number,
   rotation?: ($: ExtractControllerType<C>, $age: number) => number,
+  frameInterval?: ($: ExtractControllerType<C>) => number,
+  state?: ($: ExtractControllerType<C>) => Sprite['state'],
   onEnterFrame?: ControllerProps<ExtractControllerType<C>>['onEnterFrame'],
   frame?: ($: ExtractControllerType<C>) => number,
   style?: ($: ExtractControllerType<C>) => JSX.CSSProperties,
@@ -233,11 +235,13 @@ export function createConnectedController<C extends Controller<any>>(options: {
 
       return {
         id: `${options.base.id}-${options.type}`,
-        type: options.type,
+        type: `${options.base.type}-${options.type}`,
 
         x: () => baseData.x() + options.offset.x,
         y: () => baseData.y() + options.offset.y,
         frame: () => options.frame?.(baseData),
+        frameInterval: () => options.frameInterval?.(baseData),
+        state: () => options.state?.(baseData),
         width: options.width,
         rotation: baseData.rotation,
         xScale: baseData.xScale,

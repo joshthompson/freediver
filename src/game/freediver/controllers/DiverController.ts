@@ -33,8 +33,8 @@ const maxShowHealLevel = 60
 export function createDiverController(id: string, props: DiverControllerProps) {
   const diver = createDiver(id, props)
   const diverHead = createDiverHead(diver)
-  const diverLeftArm = createDiverArm(diver, 'left')
-  const diverRightArm = createDiverArm(diver, 'right')
+  const diverLeftArm = createDiverArm2(diver, 'left')
+  const diverRightArm = createDiverArm2(diver, 'right')
 
   return [
     diverLeftArm,
@@ -60,7 +60,6 @@ function createDiver(id: string, props: DiverControllerProps) {
         const [rotationSpeed] = createSignal<number>(5)
         const [acceleration] = createSignal<number>(0.5)
         const [speed, setSpeed] = createSignal<number>(maxSpeed / 2)
-        const [state] = createSignal<Sprite['state']>('play')
         const [frameInterval, setFrameInterval] = createSignal(250)
         const [bubbleLevel, setBubbleLevel] = createSignal(0)
         const [eqLevel, setEqLevel] = createSignal(1)
@@ -95,7 +94,7 @@ function createDiver(id: string, props: DiverControllerProps) {
           setSpeed,
           width: () => 68,
           height: () => 157,
-          state,
+          state: () => 'play',
           frameInterval,
           setFrameInterval,
           bubbleLevel,
@@ -292,5 +291,31 @@ function createDiverArm(
     offset: { x: 49, y: 7 },
     origin: { x: 5.5, y: 6 },
     style: $ => ({ filter: $.style().filter }),
+  })
+}
+
+import armFront from '@assets/sprites/seadiver/arm-front.png'
+import armBack from '@assets/sprites/seadiver/arm-back.png'
+
+function createDiverArm2(
+  diver: DiverController,
+  arm: 'left' | 'right',
+) {
+  const width = 80
+  const frames = arm === 'left'
+    ? generateFrames(armFront, 200, 172, width, 6, true)
+    : generateFrames(armBack, 200, 152, width, 6, true)
+
+  return createConnectedController({
+    type: 'arm-' + arm,
+    base: diver,
+    frames,
+    width: () => width,
+    frameInterval: $ => $.frameInterval(),
+    rotation: () => -90,
+    offset: { x: 18, y: -2 },
+    origin: { x: 34, y: 16 },
+    style: $ => ({ filter: $.style().filter }),
+    state: $ => Math.abs($.speed()) > 0 ? 'play' : 'pause',
   })
 }
