@@ -14,7 +14,7 @@ import { LocaleFlags, Translations } from "@/utils/Translations"
 export const MenuScene: SceneComponent = props => {
   const game = new Game('menu', {
       ...useGameState()!,
-    width: Math.min(700, window.innerWidth - 20),
+    width: 700,
     height: 700,
     images: [
       menu1,
@@ -41,7 +41,9 @@ export const MenuScene: SceneComponent = props => {
         class={styles.flag}
         onClick={game.gameStateActions.toggleLanguage}
       />
-      <Button onClick={() => props.setScene('surface')}>{t().menu.start}</Button>
+      <Button onClick={() => props.setScene('surface')}>
+        {game.gameState.score.total > 0 ? t().menu.continue : t().menu.start}
+      </Button>
       <Button onClick={() => props.setScene('instructions')} size="small">{t().menu.instructions}</Button>
       <Button onClick={() => props.setScene('achievements')} size="small">{t().achievements.title}</Button>
       <Button onClick={() => props.setScene('options')} size="small">{t().menu.options}</Button>

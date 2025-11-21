@@ -30,7 +30,6 @@ export function createLightRayController(
       const offset = $.x() - $game.canvas().x()
       if (offset < -100) $.setX($.x() + $game.canvas().width + 200)
       if (offset > $game.canvas().width + 100) $.setX($.x() - $game.canvas().width - 200)
-      console.log()
     },
   })
 }

@@ -41,7 +41,7 @@ export const OceanScene: SceneComponent = props => {
   const state = useGameState()!
   const game = new Game('ocean', {
     ...state!,
-    width: Math.min(700, window.innerWidth - 20),
+    width: 700,
     height: 700,
     setup($game: Game) {
       $game.addController(createWhaleController('whale'))
@@ -57,6 +57,7 @@ export const OceanScene: SceneComponent = props => {
           }
         },
         blackout: () => {
+          game.setGameState('score', 'currentDive', 0)
           props.setScene('blackout')
           game.gameStateActions.achievement('blackout')
         },

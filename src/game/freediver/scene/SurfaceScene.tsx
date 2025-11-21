@@ -17,7 +17,7 @@ export const SurfaceScene: SceneComponent = props => {
   const state = useGameState()!
   const game = new Game('surface', {
     ...state,
-    width: Math.min(700, window.innerWidth - 20),
+    width: 700,
     height: 700,
     setup($game: Game) {
       $game.addController(

@@ -131,12 +131,6 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
   onCleanup(() => clearTimeout(enterFrameTimeout))
 
   const left = createMemo(() => {
-    if (props.id?.startsWith('fish'))
-    console.log(
-      'x', props.x,
-      'canvas x', game.canvas().x(), 
-      'left', (props.x - game.canvas().x() * (props.parallax ?? 1)) + 'px',
-    )
     return (props.x - game.canvas().x() * (props.parallax ?? 1)) + 'px'
   })
 

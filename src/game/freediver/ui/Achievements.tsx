@@ -34,17 +34,17 @@ const styles = {
   achievements: cva({
     base: {
       display: 'grid',
-      gap: '10px',
+      gap: '5px',
       m: '2rem 1rem',
       gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
-      fontSize: '20px',
+      fontSize: '18px',
       wordBreak: 'break-word',
     },
     variants: {
       locale: {
         en: {},
         ru: {
-          fontSize: '16px',
+          fontSize: '15px',
           lineHeight: '20px',
         },
         sv: {},
@@ -55,7 +55,7 @@ const styles = {
     base: {
       backgroundColor: '#00000070',
       color: 'white',
-      p: '10px',
+      p: '5px',
       borderRadius: '10px',
       textAlign: 'center',
       backdropFilter: 'blur(3px)',

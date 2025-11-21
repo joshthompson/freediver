@@ -67,7 +67,7 @@ export function createCrabController(
       if ($.mode() === 'right') $.setX($.x() + $.speed())
 
 
-      $.setState($.mode() !== 'pause' || $.y() > $.initY ? 'play' : 'pause')
+      $.setState($.mode() !== 'pause' || $.y() < $.initY ? 'play' : 'pause')
       
       const xMin = $game.canvas().x() - 30
       const xMax = $game.canvas().width + $game.canvas().x() + 30

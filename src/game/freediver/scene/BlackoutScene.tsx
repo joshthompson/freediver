@@ -12,7 +12,7 @@ export const BlackoutScene: SceneComponent = props => {
     gameState,
     setGameState,
     gameStateActions,
-    width: Math.min(700, window.innerWidth - 20),
+    width: 700,
     height: 700,
   })
   onCleanup(() => game.destroy())

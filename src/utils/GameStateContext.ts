@@ -7,7 +7,7 @@ export const AllAchievements = [
   'firstDive', // First dive
   'total100', // Obtain a total score of over 100
   'dive10', // Get 10 points in a single dive
-  'dive30', // Get 30 points in a single dive
+  'dive20', // Get 20 points in a single dive
   'almostFaint', // Return to the surface with 1 oxygen remaining
   'blackout', // Experience a blackout
 
@@ -107,7 +107,7 @@ export const useGameState = () => {
           const newMaxDive = Math.max(state.maxDive, state.currentDive)
 
           if (state.currentDive >= 10) achievement('dive10')
-          if (state.currentDive >= 30) achievement('dive30')
+          if (state.currentDive >= 30) achievement('dive20')
           if (newTotal >= 100) achievement('total100')
 
           return {

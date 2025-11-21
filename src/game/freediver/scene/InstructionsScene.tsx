@@ -10,7 +10,7 @@ import { Translations } from "@/utils/Translations"
 export const InstructionsScene: SceneComponent = props => {
   const game = new Game('instructions', {
     ...useGameState()!,
-    width: Math.min(700, window.innerWidth - 20),
+    width: 700,
     height: 700,
     images: [menu2],
   })
@@ -42,31 +42,30 @@ export const InstructionsScene: SceneComponent = props => {
             <div class={styles.keyName}>→</div>
             <div class={styles.keyDescription}>{t().instructions.right}</div>
           </div>
-          <div class={styles.key({ key: 'space' })}>
-            <div class={styles.keyName}>{t().instructions.spacebar}</div>
-            <div class={styles.keyDescription}>{t().instructions.space}</div>
-          </div>
-        </div>
-        <div class={styles.keyboard}>
-          <div class={styles.key({ key: 'up' })}>
+          <div class={styles.or}>{t().instructions.or}</div>
+          <div class={styles.key({ key: 'w' })}>
             <div class={styles.keyName}>W</div>
             <div class={styles.keyDescription}>{t().instructions.up}</div>
           </div>
-          <div class={styles.key({ key: 'down' })}>
+          <div class={styles.key({ key: 's' })}>
             <div class={styles.keyName}>S</div>
             <div class={styles.keyDescription}>{t().instructions.down}</div>
           </div>
-          <div class={styles.key({ key: 'left' })}>
+          <div class={styles.key({ key: 'a' })}>
             <div class={styles.keyName}>A</div>
             <div class={styles.keyDescription}>{t().instructions.left}</div>
           </div>
-          <div class={styles.key({ key: 'right' })}>
+          <div class={styles.key({ key: 'd' })}>
             <div class={styles.keyName}>D</div>
             <div class={styles.keyDescription}>{t().instructions.right}</div>
           </div>
           <div class={styles.key({ key: 'space' })}>
             <div class={styles.keyName}>{t().instructions.spacebar}</div>
             <div class={styles.keyDescription}>{t().instructions.space}</div>
+          </div>
+          <div class={styles.key({ key: 'escape' })}>
+            <div class={styles.keyName}>ESC</div>
+            <div class={styles.keyDescription}>{t().instructions.pause}</div>
           </div>
         </div>
       </div>
@@ -83,7 +82,7 @@ const styles = {
     justifyContent: 'flex-end',
     alignItems: 'center',
     flexDirection: 'column',
-    gap: '150px',
+    gap: '50px',
     pb: '10px',
     fontSize: '20px',
   }),
@@ -102,7 +101,7 @@ const styles = {
   }),
   keyboard: css({
     display: 'grid',
-    gridTemplateColumns: 'repeat(3, 70px)',
+    gridTemplateColumns: 'repeat(7, 70px)',
     gridTemplateRows: 'repeat(3, auto)',
     gap: '20px 15px',
     mb: '20px',
@@ -131,28 +130,26 @@ const styles = {
     },
     variants: {
       key: {
-        up: {
-          gridColumn: '2',
-          gridRow: '1',
-        },
-        down: {
-          gridColumn: '2',
-          gridRow: '2',
-        },
-        left: {
-          gridColumn: '1',
-          gridRow: '2',
-        },
-        right: {
-          gridColumn: '3',
-          gridRow: '2',
-        },
-        space: {
-          gridColumn: '1 / span 3',
-          gridRow: '4',
-        },
+        up: { gridColumn: '2', gridRow: '1' },
+        down: { gridColumn: '2', gridRow: '2' },
+        left: { gridColumn: '1', gridRow: '2' },
+        right: { gridColumn: '3', gridRow: '2' },
+        w: { gridColumn: '6', gridRow: '1' },
+        a: { gridColumn: '5', gridRow: '2' },
+        s: { gridColumn: '6', gridRow: '2' },
+        d: { gridColumn: '7', gridRow: '2' },
+        space: { gridColumn: '1 / span 7', gridRow: '4' },
+        escape: { gridColumn: '3 / span 3', gridRow: '5' },
       },
     },
+  }),
+  or: css({
+    gridColumn: '4',
+    gridRow: '1 / span 2',
+    fontSize: '24px',
+    alignItems: 'center',
+    display: 'flex',
+    justifyContent: 'center',
   }),
   keyName: css({
     m: '20px',

@@ -15,10 +15,21 @@ export type SceneComponent<T extends {} = any> = Component<{
 
 class KeyController {
   #keys = new Map<string, boolean>()
+  #timeouts = new Map<string, number>()
 
   constructor() {
     window.addEventListener('keydown', this.#keydown.bind(this))
     window.addEventListener('keyup', this.#keyup.bind(this))
+  }
+
+  emulateKeydown(key: string, time = 100) {
+    this.#keys.set(key, true)
+    if (this.#timeouts.has(key)) {
+      window.clearTimeout(this.#timeouts.get(key))
+    }
+    this.#timeouts.set(key, window.setTimeout(() => {
+      this.#keys.set(key, false)
+    }, time))
   }
 
   destroy() {
@@ -155,7 +166,6 @@ export function createController<
     frames: options.frames,
     onEnterFrame: () => {
       if (data.game && data.game?.isActive()) {
-        if (data.type === 'fish') console.log('===========')
         onEnterFrame({
           $: data,
           $game: data.game,
@@ -321,6 +331,7 @@ export class Game<C extends Controller<any> = Controller<any>> {
 
     // Set window event listeners
     window.addEventListener('keydown', this.handleWindowKeydown.bind(this))
+    window.addEventListener('pause-game', this.togglePause.bind(this))
 
     // Run setup
     this.setup()
@@ -366,6 +377,7 @@ export class Game<C extends Controller<any> = Controller<any>> {
   destroy() {
     clearInterval(this.interval)
     window.removeEventListener('keydown', this.handleWindowKeydown.bind(this))
+    window.removeEventListener('pause-game', this.togglePause.bind(this))
   }
 
   createCanvas(): Canvas {
@@ -485,4 +497,12 @@ export function playTone(
 
   oscillator.start();
   oscillator.stop(audioCtx.currentTime + duration);
+}
+
+export function isMobileBrowser() {
+  return (
+    'ontouchstart' in window ||
+    navigator.maxTouchPoints > 0 ||
+    (navigator as any).msMaxTouchPoints > 0
+  )
 }

@@ -12,7 +12,7 @@ export const OptionsScene: SceneComponent = props => {
   const state = useGameState()!
   const game = new Game('options', {
     ...state,
-    width: Math.min(700, window.innerWidth - 20),
+    width: 700,
     height: 700,
     images: [menu1],
   })

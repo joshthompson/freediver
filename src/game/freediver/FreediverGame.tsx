@@ -1,10 +1,10 @@
-import { Component, createEffect, createSignal, For, Show } from 'solid-js'
+import { Component, createEffect, createMemo, createSignal, For, Show } from 'solid-js'
 import { css, cva } from '@style/css'
 import { OceanScene } from './scene/OceanScene'
 import { SurfaceScene } from './scene/SurfaceScene'
 import { MenuScene } from './scene/MenuScene'
 import { InstructionsScene } from './scene/InstructionsScene'
-import { playSound } from '@/utils/game'
+import { isMobileBrowser, playSound } from '@/utils/game'
 import ocean1 from '@assets/sounds/ocean1.mp3'
 import alert from '@assets/sprites/alert.png'
 import gift from '@assets/sprites/gift.png'
@@ -14,11 +14,15 @@ import { BlackoutScene } from './scene/BlackoutScene'
 import { OptionsScene } from './scene/OptionsScene'
 import { Translations } from '@/utils/Translations'
 import { AchievementsScene } from './scene/AchievementsScene'
+import { MobileKeyboard } from './ui/MobileKeyboard'
 
 const local = window.location.hostname === 'localhost'
 
 export const FreediverGame: Component = () => {
   const savedGameState = JSON.parse(window.localStorage.getItem('game-state') ?? '{}')
+  const [windowWidth, setWindowWidth] = createSignal(window.innerWidth)
+  const zoom = createMemo(() => windowWidth() < 700 ? windowWidth() / 700 : 1)
+
   const [gameState, setGameState] = createStore<GameState>({
     score: {
       currentDive: 0,
@@ -45,7 +49,7 @@ export const FreediverGame: Component = () => {
   })
   const t = () => Translations[gameState.options.locale]
 
-  const [scene, _setScene] = createSignal<string>(local ? 'ocean' : 'menu')
+  const [scene, _setScene] = createSignal<string>(local ? 'menu' : 'menu')
   const setScene = (newScene: string) => {
     if (['ocean', 'surface'].includes(newScene) && !music()) {
       startMusic()
@@ -63,6 +67,10 @@ export const FreediverGame: Component = () => {
     setMusic(playSound(ocean1, { loop: true, mute: gameState.options.volume === 0 }))
   }
 
+  window.addEventListener('resize', () => {
+    setWindowWidth(window.innerWidth)
+  })
+
   const newAchievement = () => {
     return Object.entries(gameState.achievements)
       .filter(([, state]) => state === 'new')
@@ -77,7 +85,7 @@ export const FreediverGame: Component = () => {
 
   return (
     <GameStateContext.Provider value={[gameState, setGameState]}>
-      <div class={styles.page({ locale: gameState.options.locale })}>
+      <div class={styles.page({ locale: gameState.options.locale })} style={{ transform: `scale(${zoom()})`}}>
         {scene() === 'menu' && <MenuScene setScene={setScene} />}
         {scene() === 'instructions' && <InstructionsScene setScene={setScene} />}
         {scene() === 'options' && <OptionsScene setScene={setScene} />}
@@ -99,6 +107,7 @@ export const FreediverGame: Component = () => {
           <div class={styles.gift} style={{ 'background-image': `url(${gift})`}} />
         </Show>
       </div>
+      {isMobileBrowser() && <MobileKeyboard scene={scene()} />}
     </GameStateContext.Provider>
   )
 }
@@ -109,13 +118,18 @@ const styles = {
       '--u': 'min(1dvh, 1dvw)',
       '--size': 'calc(80 * var(--u))',
       width: '700px',
-      m: '20px auto',
+      m: '0 auto',
       position: 'relative',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
       flexDirection: 'column',
       fontFamily: '"Jersey 10", sans-serif',
+      transformOrigin: 'top left',
+
+      md: {
+        m: '20px auto',
+      }
     },
     variants: {
       locale: {

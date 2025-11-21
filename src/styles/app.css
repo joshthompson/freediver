@@ -12,4 +12,5 @@ html {
 
 body {
   background: #000000;
+  touch-action: manipulation;
 }
