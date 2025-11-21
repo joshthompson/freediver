@@ -84,7 +84,7 @@ export const useGameState = () => {
 
       // SPECIAL GIFT THING
       const total = Object.values(gameState.achievements).filter(state => state === 'shown' || state === 'new').length
-      if (total % 3 === 0 && total > 0) {
+      if ((total % 3 === 0 && total > 0) || total === 1) {
         setGameState('showGift', true)
       }
 
