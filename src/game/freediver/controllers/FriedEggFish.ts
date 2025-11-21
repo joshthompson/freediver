@@ -3,6 +3,7 @@ import { createSignal } from 'solid-js'
 import eggfish from '@assets/sprites/fish/egg.png'
 import { DiverController } from './DiverController'
 import { createBubbleController } from './BubbleController'
+import { createIndicatorController } from './IndicatorController'
 
 let bubbleN = 0
 
@@ -12,7 +13,7 @@ export function createFriedEggFishController(
     x: number
   },
 ) {
-  return createController({
+  const friedEggFishController = createController({
     frames: [eggfish],
     init() {
       const [x, setX] = createSignal<number>(props.x)
@@ -83,4 +84,5 @@ export function createFriedEggFishController(
       }
     },
   })
+  return [friedEggFishController, createIndicatorController(friedEggFishController, 'friend')]
 }

@@ -67,11 +67,11 @@ export const OceanScene: SceneComponent = props => {
       $game.addController(createWallController('wall-right', { x: maxX + 40 }))
       $game.addController(createCorgiController('corgi'))
       $game.addController(createRopeController('rope'))
-      $game.addController(createFriedEggFishController('fried-egg-fish-1', { x: -7000 }))
-      $game.addController(createFriedEggFishController('fried-egg-fish-2', { x: 4000 }))
-      $game.addController(createFriedEggFishController('fried-egg-fish-3', { x: 9000 }))
-      $game.addController(createTriggerFishController('triggerfish-1', { x: 8000 }))
-      $game.addController(createTriggerFishController('triggerfish-2', { x: -5000 }))
+      $game.addController(...createFriedEggFishController('fried-egg-fish-1', { x: -7000 }))
+      $game.addController(...createFriedEggFishController('fried-egg-fish-2', { x: 4000 }))
+      $game.addController(...createFriedEggFishController('fried-egg-fish-3', { x: 9000 }))
+      $game.addController(...createTriggerFishController('triggerfish-1', { x: 8000 }))
+      $game.addController(...createTriggerFishController('triggerfish-2', { x: -5000 }))
       
       const totalBones = 20
       const boneGap = 1000
