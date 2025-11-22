@@ -1,25 +1,25 @@
 import { Canvas } from "@/game/core/Canvas"
 import { Game, SceneComponent } from "@/utils/game"
 import { onCleanup } from "solid-js"
-import menu2 from '@assets/menu2.png'
 import { css, cva } from "@style/css"
 import { Button } from "../ui/Button"
 import { useGameState } from "@/utils/GameStateContext"
 import { Translations } from "@/utils/Translations"
+import { menu2Asset } from "@/assets"
 
 export const InstructionsScene: SceneComponent = props => {
   const game = new Game('instructions', {
     ...useGameState()!,
     width: 700,
     height: 700,
-    images: [menu2],
+    images: [menu2Asset],
   })
   onCleanup(() => game.destroy())
   const t = () => Translations[game.gameState.options.locale]
 
   return <Canvas
     game={game}
-    style={{ background: `url(${menu2})`, 'background-size': 'cover' }}
+    style={{ background: `url(${menu2Asset})`, 'background-size': 'cover' }}
     overlay={<div class={styles.overlay}>
       <div class={styles.description}>
         <div>{t().instructions.description}</div>

@@ -2,10 +2,8 @@ import { createConnectedController, createController, Key } from '@/utils/game'
 import { createSignal } from 'solid-js'
 import { createBubbleController } from './BubbleController'
 import { Sprite } from '@/game/core/Sprite'
-import seadiverBody from '@assets/sprites/seadiver/seadiver-body.png'
-import seadiverHead from '@assets/sprites/seadiver/seadiver-head.png'
-import seadiverArm from '@assets/sprites/seadiver/seadiver-arm.png'
 import { generateFrames } from '@/utils'
+import { seadiverArmBackAsset, seadiverArmFrontAsset, seadiverBodyAsset, seadiverHeadAsset } from '@/assets'
 
 export type DiverController = ReturnType<typeof createDiver>
 export type DiverHeadController = ReturnType<typeof createDiverHead>
@@ -33,8 +31,8 @@ const maxShowHealLevel = 60
 export function createDiverController(id: string, props: DiverControllerProps) {
   const diver = createDiver(id, props)
   const diverHead = createDiverHead(diver)
-  const diverLeftArm = createDiverArm2(diver, 'left')
-  const diverRightArm = createDiverArm2(diver, 'right')
+  const diverLeftArm = createDiverArm(diver, 'left')
+  const diverRightArm = createDiverArm(diver, 'right')
 
   return [
     diverLeftArm,
@@ -50,7 +48,7 @@ function createDiver(id: string, props: DiverControllerProps) {
 
   return createController(
     {
-      frames: generateFrames(seadiverBody, 952 / 7, 315, 68, 7),
+      frames: generateFrames(seadiverBodyAsset, 952 / 7, 315, 68, 7),
       style: props.style,
       init() {
         const [x, setX] = createSignal<number>(props.x)
@@ -264,7 +262,7 @@ function createDiverHead(diver: DiverController) {
   return createConnectedController({
     type: 'head',
     base: diver,
-    frames: [seadiverHead],
+    frames: [seadiverHeadAsset],
     width: () => 20,
     rotation: $ => -70 * $.speed() / maxSpeed,
     offset: { x: 42, y: -19 },
@@ -273,38 +271,14 @@ function createDiverHead(diver: DiverController) {
   })
 }
 
-
 function createDiverArm(
-  diver: DiverController,
-  arm: 'left' | 'right',
-) {
-  let rotation = arm === 'left' ? 180 : 0
-  return createConnectedController({
-    type: 'arm-' + arm,
-    base: diver,
-    frames: [seadiverArm],
-    width: () => 12.5,
-    rotation: $ => {
-      rotation += $.speed() / 3
-      return rotation
-    },
-    offset: { x: 49, y: 7 },
-    origin: { x: 5.5, y: 6 },
-    style: $ => ({ filter: $.style().filter }),
-  })
-}
-
-import armFront from '@assets/sprites/seadiver/arm-front.png'
-import armBack from '@assets/sprites/seadiver/arm-back.png'
-
-function createDiverArm2(
   diver: DiverController,
   arm: 'left' | 'right',
 ) {
   const width = 80
   const frames = arm === 'left'
-    ? generateFrames(armFront, 200, 172, width, 6, true)
-    : generateFrames(armBack, 200, 152, width, 6, true)
+    ? generateFrames(seadiverArmFrontAsset, 200, 172, width, 6, true)
+    : generateFrames(seadiverArmBackAsset, 200, 152, width, 6, true)
 
   return createConnectedController({
     type: 'arm-' + arm,

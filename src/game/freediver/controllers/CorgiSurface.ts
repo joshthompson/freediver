@@ -1,7 +1,7 @@
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
 import { Sprite } from '@/game/core/Sprite'
-import corgiFront from '@assets/sprites/link/link-front2.png'
+import { linkFrontAsset } from '@/assets'
 
 export type CorgiSurfaceController = ReturnType<typeof createCorgiSurfaceController>
 
@@ -14,7 +14,7 @@ interface CorgiSurfaceControllerProps {
 export function createCorgiSurfaceController(id: string, props?: CorgiSurfaceControllerProps) {
   return createController(
     {
-      frames: [corgiFront],
+      frames: [linkFrontAsset],
       init() {
         const [x] = createSignal<number>(props?.x ?? 10)
         const [y, setY] = createSignal<number>(350)

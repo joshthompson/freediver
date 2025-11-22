@@ -1,7 +1,7 @@
 import { css } from '@style/css'
-import light from '@assets/sprites/light.png'
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
+import { lightAsset } from '@/assets'
 
 export function createLightRayController(
   id: string,
@@ -10,7 +10,7 @@ export function createLightRayController(
   },
 ) {
   return createController({
-    frames: [light],
+    frames: [lightAsset],
     init() {
       const [x, setX] = createSignal<number>(props.x + Math.random() * 20 - 10)
       return {

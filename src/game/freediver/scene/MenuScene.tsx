@@ -1,16 +1,11 @@
 import { Canvas } from "@/game/core/Canvas"
 import { Game, SceneComponent } from "@/utils/game"
 import { onCleanup } from "solid-js"
-import menu1 from '@assets/menu1.png'
-import logoAlisa from '@assets/logo-alisa.png'
-import logoFreediver from '@assets/logo-freediver.png'
-import logoAlisaRu from '@assets/logo-alisa-ru.png'
-import logoFreediverRu from '@assets/logo-freediver-ru.png'
 import { css } from "@style/css"
 import { Button } from "../ui/Button"
 import { useGameState } from "@/utils/GameStateContext"
 import { LocaleFlags, Translations } from "@/utils/Translations"
-import alert from '@assets/sprites/alert.png'
+import { alertAsset, logoAlisaAsset, logoAlisaRuAsset, logoFreediverAsset, logoFreediverRuAsset, menu1Asset } from "@/assets"
 
 export const MenuScene: SceneComponent = props => {
   const game = new Game('menu', {
@@ -18,12 +13,12 @@ export const MenuScene: SceneComponent = props => {
     width: 700,
     height: 700,
     images: [
-      menu1,
-      logoAlisa,
-      logoFreediver,
-      logoAlisaRu,
-      logoFreediverRu,
-      alert,
+      menu1Asset,
+      logoAlisaAsset,
+      logoFreediverAsset,
+      logoAlisaRuAsset,
+      logoFreediverRuAsset,
+      alertAsset,
     ],
   })
   onCleanup(() => game.destroy())
@@ -32,11 +27,11 @@ export const MenuScene: SceneComponent = props => {
 
   return <Canvas
     game={game}
-    style={{ background: `url(${menu1})`, 'background-size': 'cover' }}
+    style={{ background: `url(${menu1Asset})`, 'background-size': 'cover' }}
     overlay={<div class={styles.overlay}>
       <div  class={styles.logo}>
-        <img src={locale() === 'ru' ? logoAlisaRu : logoAlisa} class={styles.logoTop} />
-        <img src={locale() === 'ru' ? logoFreediverRu : logoFreediver} class={styles.logoBottom} />
+        <img src={locale() === 'ru' ? logoAlisaRuAsset : logoAlisaAsset} class={styles.logoTop} />
+        <img src={locale() === 'ru' ? logoFreediverRuAsset : logoFreediverAsset} class={styles.logoBottom} />
       </div>
       <img
         src={LocaleFlags[game.gameState.options.locale]}

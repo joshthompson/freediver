@@ -1,9 +1,9 @@
+import { statueAsset } from '@/assets'
 import { createController } from '@/utils/game'
-import statue from '@assets/sprites/statue.png'
 
 export function createStatueController(id: string) {
   return createController({
-    frames: [statue],
+    frames: [statueAsset],
     init() {
       return {
         id,

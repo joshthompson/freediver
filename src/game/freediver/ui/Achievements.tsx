@@ -1,8 +1,8 @@
+import { trophyAsset } from "@/assets";
 import { AllAchievements, useGameState } from "@/utils/GameStateContext";
 import { Translations } from "@/utils/Translations";
 import { css, cva } from "@style/css";
 import { Component, For } from "solid-js";
-import trophy from '@assets/sprites/trophy.png'
 
 export const Achievements: Component = () => {
   const { gameState } = useGameState()!
@@ -18,7 +18,7 @@ export const Achievements: Component = () => {
     <For each={achievements()}>
       {achievement => (
         <div class={styles.achievement({ unlocked: achievement.unlocked })}>
-          <img src={trophy} />
+          <img src={trophyAsset} />
           <div>{achievement.unlocked || 1 ? achievement.name : '???'}</div>
         </div>
       )}

@@ -4,6 +4,7 @@ import 'solid-devtools';
 
 import '@/styles/app.css'
 import '@style/styles.css'
+import { registerSW } from 'virtual:pwa-register'
 
 import App from './App';
 
@@ -16,3 +17,8 @@ if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
 }
 
 render(() => <App />, root!);
+
+
+registerSW({
+  immediate: true,
+});

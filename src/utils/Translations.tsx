@@ -1,6 +1,4 @@
-import enFlag from '@assets/flags/en.png'
-import svFlag from '@assets/flags/sv.png'
-import ruFlag from '@assets/flags/ru.png'
+import { enFlagAsset, ruFlagAsset, svFlagAsset } from '@/assets'
 import { Achievement } from './GameStateContext'
 
 export type Locale = keyof typeof Translations
@@ -12,9 +10,9 @@ export const LocaleNames: Record<Locale, string> = {
 }
 
 export const LocaleFlags: Record<Locale, string> = {
-  en: enFlag,
-  sv: svFlag,
-  ru: ruFlag,
+  en: enFlagAsset,
+  sv: svFlagAsset,
+  ru: ruFlagAsset,
 }
 
 const baseTranslations = {

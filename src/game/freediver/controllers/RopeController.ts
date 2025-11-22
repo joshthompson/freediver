@@ -1,12 +1,12 @@
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
-import rope from '@assets/sprites/rope.png'
+import { ropeAsset } from '@/assets'
 
 export function createRopeController(
   id: string
 ) {
   return createController({
-    frames: [rope],
+    frames: [ropeAsset],
     init() {
       const [x, setX] = createSignal<number>(-50)
       const [y, setY] = createSignal<number>(-70)

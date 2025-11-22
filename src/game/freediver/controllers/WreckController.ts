@@ -1,9 +1,9 @@
+import { wreckAsset } from '@/assets'
 import { createController } from '@/utils/game'
-import wreck from '@assets/sprites/wreck.png'
 
 export function createWreckController(id: string) {
   return createController({
-    frames: [wreck],
+    frames: [wreckAsset],
     init() {
       return {
         id,

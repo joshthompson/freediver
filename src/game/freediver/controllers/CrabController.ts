@@ -1,9 +1,9 @@
 import { generateFrames, randomItem } from '@/utils'
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
-import crab from '@assets/sprites/crab/crab.png'
 import { DiverController } from './DiverController'
 import { Sprite } from '@/game/core/Sprite'
+import { crabAsset } from '@/assets'
 
 type CrabMode = typeof modes[number]
 const modes = ['pause', 'left', 'right'] as const
@@ -18,7 +18,7 @@ export function createCrabController(
   },
 ) {
   return createController({
-    frames: generateFrames(crab, 150, 127, 48, 4),
+    frames: generateFrames(crabAsset, 150, 127, 48, 4),
     init() {
       const initY = 630 + Math.random() * 30
       const [x, setX] = createSignal<number>(props.x)

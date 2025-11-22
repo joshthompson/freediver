@@ -1,13 +1,13 @@
 import { createController } from '@/utils/game'
-import bone from '@assets/sprites/bone.png'
 import { createSignal } from 'solid-js'
 import { CorgiController } from './CorgiController'
+import { boneAsset } from '@/assets'
 
 export type BoneController = ReturnType<typeof createBoneController>
 
 export function createBoneController(id: string, props: { x: number }) {
   return createController({
-    frames: [bone],
+    frames: [boneAsset],
     init() {
       const [x, setX] = createSignal(props.x)
       const [y, setY] = createSignal(620)

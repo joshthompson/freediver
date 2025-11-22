@@ -1,27 +1,21 @@
+import { fish1Asset, fish2Asset, rareFish1Asset, rareFish2Asset, rareFish3Asset, rareFish4Asset, rareFish5Asset } from '@/assets'
 import { generateFrames, randomItem } from '@/utils'
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
-import fish1 from '@assets/sprites/fish/fish1.png'
-import fish2 from '@assets/sprites/fish/fish2.png'
-import rare1 from '@assets/sprites/fish/rare1.png'
-import rare2 from '@assets/sprites/fish/rare2.png'
-import rare3 from '@assets/sprites/fish/rare3.png'
-import rare4 from '@assets/sprites/fish/rare4.png'
-import rare5 from '@assets/sprites/fish/rare5.png'
 
 const width = 30
 function chooseFishFrames() {
   return Math.random() > 0.5
     ? randomItem([
-      generateFrames(fish1, 157, 150, width, 1),
-      generateFrames(fish2, 340, 150, width, 1),
+      generateFrames(fish1Asset, 157, 150, width, 1),
+      generateFrames(fish2Asset, 340, 150, width, 1),
     ]) 
     : randomItem([
-      generateFrames(rare1, 265, 150, width, 1),
-      generateFrames(rare2, 575, 150, width, 1),
-      generateFrames(rare3, 201, 150, width, 1),
-      generateFrames(rare4, 268, 150, width, 1),
-      generateFrames(rare5, 443, 150, width, 1),
+      generateFrames(rareFish1Asset, 265, 150, width, 1),
+      generateFrames(rareFish2Asset, 575, 150, width, 1),
+      generateFrames(rareFish3Asset, 201, 150, width, 1),
+      generateFrames(rareFish4Asset, 268, 150, width, 1),
+      generateFrames(rareFish5Asset, 443, 150, width, 1),
     ]) 
 }
 

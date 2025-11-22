@@ -1,13 +1,12 @@
 import { Canvas } from "@/game/core/Canvas"
 import { Game, SceneComponent } from "@/utils/game"
 import { onCleanup } from "solid-js"
-import menu1 from '@assets/menu1.png'
 import { css } from "@style/css"
 import { Button } from "../ui/Button"
 import { useGameState } from "@/utils/GameStateContext"
 import { Translations } from "@/utils/Translations"
 import { Options } from "../ui/Options"
-import alert from '@assets/sprites/alert.png'
+import { alertAsset, menu1Asset } from "@/assets"
 
 export const OptionsScene: SceneComponent = props => {
   const state = useGameState()!
@@ -15,14 +14,14 @@ export const OptionsScene: SceneComponent = props => {
     ...state,
     width: 700,
     height: 700,
-    images: [menu1, alert],
+    images: [menu1Asset, alertAsset],
   })
   onCleanup(() => game.destroy())
   const t = () => Translations[state.gameState.options.locale]
 
   return <Canvas
     game={game}
-    style={{ background: `url(${menu1})`, 'background-size': 'cover' }}
+    style={{ background: `url(${menu1Asset})`, 'background-size': 'cover' }}
     overlay={<div class={styles.overlay}>
       <div class={styles.options}>
         <Options mode="menu" />

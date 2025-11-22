@@ -9,15 +9,6 @@ import { createCorgiController } from "../controllers/CorgiController"
 import { createRopeController } from "../controllers/RopeController"
 import { Component, onCleanup } from "solid-js"
 import { css, cva } from "@style/css"
-import depth1 from '@assets/depth1.png'
-import depth2 from '@assets/depth2.png'
-import depth3 from '@assets/depth3.png'
-import surface from '@assets/surface.png'
-import sand from '@assets/sand.png'
-import alert from '@assets/sprites/alert.png'
-import thudSound from '@/assets/sounds/thud.mp3'
-import starfishSound from '@/assets/sounds/starfish.mp3'
-import equalisationSound from '@/assets/sounds/swoop.mp3'
 import { PauseMenu } from "../ui/PauseMenu"
 import { Bar } from "../ui/Bar"
 import { DivingWatch } from "../ui/DivingWatch"
@@ -35,6 +26,7 @@ import { createBoneController } from "../controllers/BoneController"
 import { createSharkController } from "../controllers/SharkController"
 import { createWhaleSharkController } from "../controllers/WhaleSharkController"
 import { createWallController } from "../controllers/WallController"
+import { alertAsset, depth1Asset, depth2Asset, depth3Asset, equalisationSound, sandAsset, starfishSound, surfaceAsset, thudSound } from "@/assets"
 
 export const OceanScene: SceneComponent = props => {
   const minX = -10000
@@ -136,7 +128,7 @@ export const OceanScene: SceneComponent = props => {
       starfish: starfishSound,
       equalisation: equalisationSound,
     },
-    images: [depth1, depth2, depth3, surface, sand, alert],
+    images: [depth1Asset, depth2Asset, depth3Asset, surfaceAsset, sandAsset, alertAsset],
   })
   onCleanup(() => game.destroy())
 
@@ -153,10 +145,10 @@ export const OceanScene: SceneComponent = props => {
     class={styles.level}
     style={{
       'background-image': `
-        url(${sand}),
-        url(${depth1}),
-        url(${depth2}),
-        url(${depth3}),
+        url(${sandAsset}),
+        url(${depth1Asset}),
+        url(${depth2Asset}),
+        url(${depth3Asset}),
         linear-gradient(
           0deg,
           rgba(7, 0, 145, 1) 0%,
@@ -230,7 +222,7 @@ const GameOverlay: Component<{ game: Game, exitToMenu: () => void }> = props => 
 
 const GameUnderlay: Component<{ game: Game }> = props => {
   return <div class={styles.surface} style={{
-    'background-image': `url(${surface})`,
+    'background-image': `url(${surfaceAsset})`,
     'background-position-x': `${-props.game.canvas().x() / 10}px`
   }} />
 }

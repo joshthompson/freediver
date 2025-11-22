@@ -1,10 +1,10 @@
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
-import whale from '@assets/sprites/whale.png'
+import { whaleAsset } from '@/assets'
 
 export function createWhaleController(id: string) {
   const width = 800
-  const frames = [whale]
+  const frames = [whaleAsset]
 
   return createController({
     frames,

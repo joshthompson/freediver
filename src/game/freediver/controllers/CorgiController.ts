@@ -3,9 +3,9 @@ import { createSignal } from 'solid-js'
 import { DiverController } from './DiverController'
 import { createBubbleController } from './BubbleController'
 import { Sprite } from '@/game/core/Sprite'
-import corgi from '@assets/sprites/link/link.png'
 import { generateFrames } from '@/utils'
 import { BoneController } from './BoneController'
+import { linkAsset } from '@/assets'
 
 const bubbleFrequency = 20
 const maxSpeed = 10
@@ -25,7 +25,7 @@ export function createCorgiController(
   const boostDistance = 200 // If the corgi is further than this from the diver, it goes faster
 
   return createController({
-    frames: generateFrames(corgi, 634, 394, 70, 3, true),
+    frames: generateFrames(linkAsset, 634, 394, 70, 3, true),
     init() {
       const [x, setX] = createSignal<number>(props.x)
       const [y, setY] = createSignal<number>(props?.y ?? 40)

@@ -1,7 +1,7 @@
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
-import starfish from '@assets/sprites/starfish.png'
 import { DiverArmController, DiverController } from './DiverController'
+import { starfishAsset } from '@/assets'
 
 export function createStarfishController(
   id: string,
@@ -10,7 +10,7 @@ export function createStarfishController(
 
   const randomY = () => Math.random() * 500 + 150
   return createController({
-    frames: [starfish],
+    frames: [starfishAsset],
     init() {
       const [x, setX] = createSignal(props.x)
       const [baseY, setBaseY] = createSignal(randomY())

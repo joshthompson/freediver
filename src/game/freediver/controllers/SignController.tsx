@@ -1,15 +1,15 @@
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
-import rope from '@assets/sprites/rope.png'
 import { cva } from '@style/css'
 import { GameState, useGameState } from '@/utils/GameStateContext'
 import { Translations } from '@/utils/Translations'
+import { ropeAsset } from '@/assets'
 
 export function createSignController(id: string) {
   
   const baseY = 240
   return createController({
-    frames: [rope],
+    frames: [ropeAsset],
     init() {
       const [y, setY] = createSignal<number>(baseY)
       const [rotation, setRotation] = createSignal<number>(0)

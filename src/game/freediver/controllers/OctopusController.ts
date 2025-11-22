@@ -1,8 +1,8 @@
 import { generateFrames, randomItem } from '@/utils'
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
-import octopus from '@assets/sprites/octopus/octopus.png'
 import { DiverController } from './DiverController'
+import { octopusAsset } from '@/assets'
 
 export function createOctopusController(
   id: string,
@@ -12,7 +12,7 @@ export function createOctopusController(
   },
 ) {
   return createController({
-    frames: generateFrames(octopus, 271, 309 , 30, 10),
+    frames: generateFrames(octopusAsset, 271, 309 , 30, 10),
     randomStartFrame: true,
     init() {
       const [x, setX] = createSignal<number>(props.x)

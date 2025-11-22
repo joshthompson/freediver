@@ -1,12 +1,10 @@
-import { Component, createMemo, createSignal, For, Show } from 'solid-js'
+import { Component, createMemo, createSignal, For } from 'solid-js'
 import { css, cva } from '@style/css'
 import { OceanScene } from './scene/OceanScene'
 import { SurfaceScene } from './scene/SurfaceScene'
 import { MenuScene } from './scene/MenuScene'
 import { InstructionsScene } from './scene/InstructionsScene'
 import { isMobileBrowser, playSound } from '@/utils/game'
-import ocean1 from '@assets/sounds/ocean1.mp3'
-import alert from '@assets/sprites/alert.png'
 import { createStore } from 'solid-js/store'
 import { Achievement, AchievementsRecord, GameState, GameStateContext } from '@/utils/GameStateContext'
 import { BlackoutScene } from './scene/BlackoutScene'
@@ -14,6 +12,7 @@ import { OptionsScene } from './scene/OptionsScene'
 import { Translations } from '@/utils/Translations'
 import { AchievementsScene } from './scene/AchievementsScene'
 import { MobileKeyboard } from './ui/MobileKeyboard'
+import { alertAsset, musicSound } from '@/assets'
 
 const local = window.location.hostname === 'localhost'
 
@@ -62,7 +61,7 @@ export const FreediverGame: Component = () => {
 
   const [music, setMusic] = createSignal<HTMLAudioElement | undefined>(undefined)
   const startMusic = () => {
-    setMusic(playSound(ocean1, { loop: true, mute: gameState.options.volume === 0 }))
+    setMusic(playSound(musicSound, { loop: true, mute: gameState.options.volume === 0 }))
   }
 
   window.addEventListener('resize', () => {
@@ -87,7 +86,7 @@ export const FreediverGame: Component = () => {
         {scene() === 'blackout' && <BlackoutScene setScene={setScene} />}
         {newAchievement().length > 0 && <div class={styles.achievements}>
           <For each={newAchievement()}>
-            {achievement => (<div class={styles.achievement} style={{ 'background-image': `url(${alert})` }}>
+            {achievement => (<div class={styles.achievement} style={{ 'background-image': `url(${alertAsset})` }}>
             <div class={styles.achievementInner}>
               <small>{t().achievements.new}</small>
               <div>{t().achievements[achievement]}</div>

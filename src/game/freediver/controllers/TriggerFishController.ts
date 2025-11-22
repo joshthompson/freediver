@@ -1,8 +1,8 @@
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
-import evilfish from '@assets/sprites/fish/evil.png'
 import { DiverController } from './DiverController'
 import { createIndicatorController } from './IndicatorController'
+import { triggerFishAsset } from '@/assets'
 
 export function createTriggerFishController(
   id: string,
@@ -11,7 +11,7 @@ export function createTriggerFishController(
   },
 ) {
   const triggerFishController = createController({
-    frames: [evilfish],
+    frames: [triggerFishAsset],
     init() {
       const [x, setX] = createSignal<number>(props.x)
       const [y, setY] = createSignal<number>(Math.random() * 500 + 100)

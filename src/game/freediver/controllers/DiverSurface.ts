@@ -1,9 +1,8 @@
 import { createConnectedController, createController, Key, playTone } from '@/utils/game'
 import { createSignal } from 'solid-js'
 import { Sprite } from '@/game/core/Sprite'
-import seadiverFrontBody from '@assets/sprites/seadiver/seadiver-front-body.png'
-import seadiverFrontHead from '@assets/sprites/seadiver/seadiver-front-head.png'
 import { generateFrames } from '@/utils'
+import { seadiverFrontBodyAsset, seadiverFrontHeadAsset } from '@/assets'
 
 export type DiverSurfaceBodyController = ReturnType<typeof createDiverSurfaceBodyController>
 export type DiverSurfaceHeadController = ReturnType<typeof createDiverSurfaceHeadController>
@@ -28,7 +27,7 @@ function createDiverSurfaceBodyController(id: string, props?: DiverSurfaceContro
   const baseY = 400
   return createController(
     {
-      frames: generateFrames(seadiverFrontBody, 638, 1578, 68, 7),
+      frames: generateFrames(seadiverFrontBodyAsset, 638, 1578, 68, 7),
       style: props?.style,
       init() {
         const [x, setX] = createSignal<number>(props?.x ?? 30)
@@ -76,7 +75,7 @@ function createDiverSurfaceHeadController(body: DiverSurfaceBodyController) {
   return createConnectedController({
     type: 'head',
     base: body,
-    frames: generateFrames(seadiverFrontHead, 184, 265, 70, 2),
+    frames: generateFrames(seadiverFrontHeadAsset, 184, 265, 70, 2),
     width: () => 70,
     rotation: (_, $age) => Math.sin($age / 7) * 3,
     offset: { x: 93, y: -85 },

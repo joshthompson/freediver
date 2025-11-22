@@ -1,10 +1,10 @@
+import { sharkAsset } from '@/assets'
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
-import shark from '@assets/sprites/shark.png'
 
 export function createSharkController(id: string) {
   const width = 300
-  const frames = [shark]
+  const frames = [sharkAsset]
 
   return createController({
     frames,

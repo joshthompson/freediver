@@ -1,6 +1,6 @@
+import { cloudAsset } from '@/assets'
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
-import cloud from '@assets/sprites/cloud.png'
 
 export function createCloudController(
   id: string,
@@ -12,7 +12,7 @@ export function createCloudController(
   }
 ) {
   return createController({
-    frames: [cloud],
+    frames: [cloudAsset],
     init() {
       const [x, setX] = createSignal<number>(options.x)
       return {

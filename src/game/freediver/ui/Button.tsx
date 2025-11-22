@@ -1,8 +1,8 @@
-import { Component, JSX, useContext } from "solid-js"
+import { Component, JSX } from "solid-js"
 import { cva } from "@style/css"
 import { playSound } from "@/utils/game"
-import clickSound from "@assets/sounds/click.mp3"
 import { useGameState } from "@/utils/GameStateContext"
+import { clickSound } from "@/assets"
 
 export const Button: Component<{
   size?: 'medium' | 'small'

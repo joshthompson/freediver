@@ -1,9 +1,9 @@
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
-import eggfish from '@assets/sprites/fish/egg.png'
 import { DiverController } from './DiverController'
 import { createBubbleController } from './BubbleController'
 import { createIndicatorController } from './IndicatorController'
+import { eggFishAsset } from '@/assets'
 
 let bubbleN = 0
 
@@ -14,7 +14,7 @@ export function createFriedEggFishController(
   },
 ) {
   const friedEggFishController = createController({
-    frames: [eggfish],
+    frames: [eggFishAsset],
     init() {
       const [x, setX] = createSignal<number>(props.x)
       const [y, setY] = createSignal<number>(Math.random() * 500 + 100)

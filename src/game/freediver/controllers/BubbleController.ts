@@ -1,8 +1,7 @@
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
-import bubble from '@assets/sprites/bubble.png'
-import kiss from '@assets/sprites/kiss.png'
 import { css } from '@style/css'
+import { bubbleAsset, kissAsset } from '@/assets'
 
 const acceleration = 0.1
 
@@ -17,7 +16,7 @@ export function createBubbleController(
   },
 ) {
   return createController({
-    frames: [props.type === 'kiss' ? kiss : bubble],
+    frames: [props.type === 'kiss' ? kissAsset : bubbleAsset],
     init() {
       const [x, setX] = createSignal<number>(props.x)
       const [y, setY] = createSignal<number>(props.y)
