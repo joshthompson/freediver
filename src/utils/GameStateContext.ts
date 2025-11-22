@@ -51,7 +51,6 @@ export interface GameState {
     debug: boolean
     volume: number
   }
-  showGift: boolean
   achievements: AchievementsRecord
 }
 
@@ -81,13 +80,6 @@ export const useGameState = () => {
         setGameState('achievements', name, 'shown')
         saveState(gameState)
       }, AchievementDisplayDuration)
-
-      // SPECIAL GIFT THING
-      const total = Object.values(gameState.achievements).filter(state => state === 'shown' || state === 'new').length
-      if ((total % 3 === 0 && total > 0) || total === 1) {
-        setGameState('showGift', true)
-      }
-
       return true
     } else {
       return false

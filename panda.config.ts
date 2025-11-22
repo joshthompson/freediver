@@ -59,19 +59,6 @@ export default defineConfig({
         '0%, 100%': { opacity: 0 },
         '50%': { opacity: 0.2 },
       },
-      gift: {
-        '0%': {
-          opacity: 0,
-          transform: 'translate(-50%, -50%) scale(0.5)',
-        },
-        '10%, 90%': {
-          opacity: 1,
-        },
-        '100%': {
-          opacity: 0,
-          transform: 'translate(-50%, -50%) scale(1.5)',
-        },
-      }
     },
   },
 

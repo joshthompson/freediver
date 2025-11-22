@@ -1,4 +1,4 @@
-import { Component, createEffect, createMemo, createSignal, For, Show } from 'solid-js'
+import { Component, createMemo, createSignal, For, Show } from 'solid-js'
 import { css, cva } from '@style/css'
 import { OceanScene } from './scene/OceanScene'
 import { SurfaceScene } from './scene/SurfaceScene'
@@ -7,7 +7,6 @@ import { InstructionsScene } from './scene/InstructionsScene'
 import { isMobileBrowser, playSound } from '@/utils/game'
 import ocean1 from '@assets/sounds/ocean1.mp3'
 import alert from '@assets/sprites/alert.png'
-import gift from '@assets/sprites/gift.png'
 import { createStore } from 'solid-js/store'
 import { Achievement, AchievementsRecord, GameState, GameStateContext } from '@/utils/GameStateContext'
 import { BlackoutScene } from './scene/BlackoutScene'
@@ -45,7 +44,6 @@ export const FreediverGame: Component = () => {
         Object.entries((savedGameState?.achievements ?? {}) as AchievementsRecord)
           .map(([key, value]) => [key as Achievement, value === 'new' ? 'shown' : value])
       ),
-    showGift: false,
   })
   const t = () => Translations[gameState.options.locale]
 
@@ -77,12 +75,6 @@ export const FreediverGame: Component = () => {
       .map(([achievement]) => achievement) as Achievement[]
   }
 
-  createEffect(() => {
-    if (gameState.showGift) {
-      setTimeout(() => setGameState('showGift', false), 2000)
-    }
-  })
-
   return (
     <GameStateContext.Provider value={[gameState, setGameState]}>
       <div class={styles.page({ locale: gameState.options.locale })} style={{ transform: `scale(${zoom()})`}}>
@@ -103,9 +95,6 @@ export const FreediverGame: Component = () => {
           </div>)}
           </For>
         </div>}
-        <Show when={gameState.showGift}>
-          <div class={styles.gift} style={{ 'background-image': `url(${gift})`}} />
-        </Show>
       </div>
       {isMobileBrowser() && <MobileKeyboard scene={scene()} />}
     </GameStateContext.Provider>
@@ -165,18 +154,5 @@ const styles = {
     textAlign: 'center',
     fontSize: '26px',
     lineHeight: '0.7em',
-  }),
-  gift: css({
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    filter: 'drop-shadow(0 0 30px #FFFFFF) drop-shadow(0 0 30px #FFFFFF)',
-    width: '150px',
-    height: '150px',
-    backgroundImage: 'url(/assets/sprites/gift.png)',
-    backgroundSize: 'contain',
-    backgroundRepeat: 'no-repeat',
-    pointerEvents: 'none',
-    animation: 'gift 2s ease-in forwards',
   }),
 }
