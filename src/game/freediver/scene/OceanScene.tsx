@@ -14,6 +14,7 @@ import depth2 from '@assets/depth2.png'
 import depth3 from '@assets/depth3.png'
 import surface from '@assets/surface.png'
 import sand from '@assets/sand.png'
+import alert from '@assets/sprites/alert.png'
 import thudSound from '@/assets/sounds/thud.mp3'
 import starfishSound from '@/assets/sounds/starfish.mp3'
 import equalisationSound from '@/assets/sounds/swoop.mp3'
@@ -44,14 +45,17 @@ export const OceanScene: SceneComponent = props => {
     width: 700,
     height: 700,
     setup($game: Game) {
+      const diverX = $game.gameState.diver.x
       $game.addController(createWhaleController('whale'))
       $game.addController(createWhaleSharkController('whale-shark'))
       $game.addController(createSharkController('shark'))
       $game.addController(createWreckController('wreck'))
       $game.addController(createStatueController('statue'))
       $game.addController(...createDiverController('diver', {
-        goToSurface: () => {
+        x: diverX,
+        goToSurface: x => {
           props.setScene('surface')
+          $game.setGameState('diver', 'x', x)
           if ($game.gameState.diver.oxygen <= 1) {
             game.gameStateActions.achievement('almostFaint')
           }
@@ -66,7 +70,7 @@ export const OceanScene: SceneComponent = props => {
       }))
       $game.addController(createWallController('wall-left', { x: minX - 500 }))
       $game.addController(createWallController('wall-right', { x: maxX + 40 }))
-      $game.addController(createCorgiController('corgi'))
+      $game.addController(createCorgiController('corgi', { x: diverX + 10 }))
       $game.addController(createRopeController('rope'))
       $game.addController(...createFriedEggFishController('fried-egg-fish-1', { x: -7000 }))
       $game.addController(...createFriedEggFishController('fried-egg-fish-2', { x: 4000 }))
@@ -96,7 +100,7 @@ export const OceanScene: SceneComponent = props => {
 
       Array(20).fill(null).forEach((_, n) => {
         $game.addController(createFishController('fish-' + n, {
-          x: Math.random() * 700 - 350,
+          x: Math.random() * 700 - 350 + diverX,
           y: Math.random() * 500 + 100,
         }))
       })
@@ -107,14 +111,14 @@ export const OceanScene: SceneComponent = props => {
     
       const crabs = Array(3).fill(null).map((_, n) => 
         createCrabController('crab-' + n, {
-          x: -100 + n * 200 + Math.random() * 200,
+          x: -100 + n * 200 + Math.random() * 200 + diverX,
         })
       ).sort((a, b) => a.data.y() - b.data.y())
       crabs.forEach(crab => $game.addController(crab))
     
       const octopi = Array(4).fill(null).map((_, n) => 
         createOctopusController('octopus-' + n, {
-          x: Math.random() * 700 - 350,
+          x: Math.random() * 700 - 350 + diverX,
           y: Math.random() * 500 + 100,
         })
       ).sort((a, b) => b.data.y() - a.data.y())
@@ -132,7 +136,7 @@ export const OceanScene: SceneComponent = props => {
       starfish: starfishSound,
       equalisation: equalisationSound,
     },
-    images: [depth1, depth2, depth3, surface, sand],
+    images: [depth1, depth2, depth3, surface, sand, alert],
   })
   onCleanup(() => game.destroy())
 

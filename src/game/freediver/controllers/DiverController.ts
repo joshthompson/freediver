@@ -12,10 +12,10 @@ export type DiverHeadController = ReturnType<typeof createDiverHead>
 export type DiverArmController = ReturnType<typeof createDiverArm>
 
 interface DiverControllerProps {
-  x?: number
+  x: number
   y?: number
   style?: Sprite['style']
-  goToSurface?: () => void
+  goToSurface?: (x: number) => void
   blackout?: () => void
   maxX: number
   minX: number
@@ -53,7 +53,7 @@ function createDiver(id: string, props: DiverControllerProps) {
       frames: generateFrames(seadiverBody, 952 / 7, 315, 68, 7),
       style: props.style,
       init() {
-        const [x, setX] = createSignal<number>(props.x ?? 30)
+        const [x, setX] = createSignal<number>(props.x)
         const [y, setY] = createSignal<number>(props.y ?? 15)
         const [xScale, setXScale] = createSignal<number>(1)
         const [rotation, setRotation] = createSignal<number>(180)
@@ -208,7 +208,7 @@ function createDiver(id: string, props: DiverControllerProps) {
         const maxY = $game.canvas().height - 160
 
         if ($.y() < minY) {
-          $.goToSurface()
+          $.goToSurface($.x())
           $.setY(minY)
           $game.gameStateActions.registerCurrentDive()
         }

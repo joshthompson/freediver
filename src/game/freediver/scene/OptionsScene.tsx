@@ -7,6 +7,7 @@ import { Button } from "../ui/Button"
 import { useGameState } from "@/utils/GameStateContext"
 import { Translations } from "@/utils/Translations"
 import { Options } from "../ui/Options"
+import alert from '@assets/sprites/alert.png'
 
 export const OptionsScene: SceneComponent = props => {
   const state = useGameState()!
@@ -14,7 +15,7 @@ export const OptionsScene: SceneComponent = props => {
     ...state,
     width: 700,
     height: 700,
-    images: [menu1],
+    images: [menu1, alert],
   })
   onCleanup(() => game.destroy())
   const t = () => Translations[state.gameState.options.locale]

@@ -10,6 +10,7 @@ import { css } from "@style/css"
 import { Button } from "../ui/Button"
 import { useGameState } from "@/utils/GameStateContext"
 import { LocaleFlags, Translations } from "@/utils/Translations"
+import alert from '@assets/sprites/alert.png'
 
 export const MenuScene: SceneComponent = props => {
   const game = new Game('menu', {
@@ -22,6 +23,7 @@ export const MenuScene: SceneComponent = props => {
       logoFreediver,
       logoAlisaRu,
       logoFreediverRu,
+      alert,
     ],
   })
   onCleanup(() => game.destroy())

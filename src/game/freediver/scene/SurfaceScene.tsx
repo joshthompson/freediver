@@ -12,6 +12,7 @@ import { createBoatController } from "../controllers/BoatController"
 import { createSignController } from "../controllers/SignController"
 import { createCloudController } from "../controllers/CloudController"
 import { Translations } from "@/utils/Translations"
+import alert from '@assets/sprites/alert.png'
 
 export const SurfaceScene: SceneComponent = props => {
   const state = useGameState()!
@@ -42,6 +43,7 @@ export const SurfaceScene: SceneComponent = props => {
         $game.canvas().setX(diver.data.x() - $game.canvas().width / 2 + diver.data.width() / 2 + 80)
       }
     },
+    images: [alert],
   })
   const t = () => Translations[game.gameState.options.locale]
   onCleanup(() => game.destroy())

@@ -29,7 +29,7 @@ export const FreediverGame: Component = () => {
       maxDive: savedGameState?.score?.maxDive ?? 0,
     },
     diver: {
-      x: 0,
+      x: savedGameState?.diver?.x ?? 0,
       oxygen: 100,
       showDamage: false,
       showHeal: false,

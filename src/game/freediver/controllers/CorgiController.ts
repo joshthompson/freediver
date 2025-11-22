@@ -16,8 +16,8 @@ export type CorgiController = ReturnType<typeof createCorgiController>
 
 export function createCorgiController(
   id: string,
-  props?: {
-    x?: number
+  props: {
+    x: number
     y?: number
   },
 ) {
@@ -27,7 +27,7 @@ export function createCorgiController(
   return createController({
     frames: generateFrames(corgi, 634, 394, 70, 3, true),
     init() {
-      const [x, setX] = createSignal<number>(props?.x ?? 10)
+      const [x, setX] = createSignal<number>(props.x)
       const [y, setY] = createSignal<number>(props?.y ?? 40)
       const [xScale, setXScale] = createSignal<number>(1)
       const [rotation, setRotation] = createSignal<number>(0)
