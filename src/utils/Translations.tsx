@@ -48,7 +48,7 @@ const baseTranslations = {
   },
   watch: {
     meters: 'm',
-    oxygen: 'O₂',
+    oxygen: <>O<sub>2</sub></>,
   },
   blackout: {
     youBlackedOut: 'You blacked out',
@@ -127,7 +127,7 @@ export const Translations = {
     },
     watch: {
       meters: 'м',
-      oxygen: 'О₂',
+      oxygen: <>О<sub>2</sub></>,
     },
     blackout: {
       youBlackedOut: 'Ты потерял сознание',
@@ -203,7 +203,7 @@ export const Translations = {
     },
     watch: {
       meters: 'm',
-      oxygen: 'O₂',
+      oxygen: <>O<sub>2</sub></>,
     },
     blackout: {
       youBlackedOut: 'Du svimmar av',
@@ -228,9 +228,9 @@ export const Translations = {
       title: 'Prestationer',
       firstDive: 'Första dyket',
       whale: 'Valviskaren',
-      whaleShark: 'Valhajsspanare',
+      whaleShark: 'Valhajspan',
       shark: 'Hajspanaren',
-      wreck: 'Vrakutforskare',
+      wreck: 'Vrakutforsk',
       almostFaint: 'Svimma nästan',
       crabJump: 'Krabphoppare',
       total100: '100 Totalt',

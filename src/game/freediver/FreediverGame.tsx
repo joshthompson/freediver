@@ -14,8 +14,6 @@ import { AchievementsScene } from './scene/AchievementsScene'
 import { MobileKeyboard } from './ui/MobileKeyboard'
 import { alertAsset, musicSound } from '@/assets'
 
-const local = window.location.hostname === 'localhost'
-
 export const FreediverGame: Component = () => {
   const savedGameState = JSON.parse(window.localStorage.getItem('game-state') ?? '{}')
   const [windowWidth, setWindowWidth] = createSignal(window.innerWidth)
@@ -34,7 +32,7 @@ export const FreediverGame: Component = () => {
       showHeal: false,
     },
     options: {
-      debug: local,
+      debug: import.meta.env.DEV,
       locale: savedGameState?.locale ?? 'en',
       volume: savedGameState?.volume ?? 1,
     },
@@ -46,7 +44,7 @@ export const FreediverGame: Component = () => {
   })
   const t = () => Translations[gameState.options.locale]
 
-  const [scene, _setScene] = createSignal<string>(local ? 'ocean' : 'menu')
+  const [scene, _setScene] = createSignal<string>(import.meta.env.DEV ? 'menu' : 'menu')
   const setScene = (newScene: string) => {
     if (['ocean', 'surface'].includes(newScene) && !music()) {
       startMusic()
@@ -76,7 +74,7 @@ export const FreediverGame: Component = () => {
 
   return (
     <GameStateContext.Provider value={[gameState, setGameState]}>
-      <div class={styles.page({ locale: gameState.options.locale })} style={{ transform: `scale(${zoom()})`}}>
+      <div class={styles.page} style={{ transform: `scale(${zoom()})`}}>
         {scene() === 'menu' && <MenuScene setScene={setScene} />}
         {scene() === 'instructions' && <InstructionsScene setScene={setScene} />}
         {scene() === 'options' && <OptionsScene setScene={setScene} />}
@@ -101,32 +99,21 @@ export const FreediverGame: Component = () => {
 }
 
 const styles = {
-  page: cva({
-    base: {
-      '--u': 'min(1dvh, 1dvw)',
-      '--size': 'calc(80 * var(--u))',
-      width: '700px',
-      m: '0 auto',
-      position: 'relative',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      flexDirection: 'column',
-      fontFamily: '"Jersey 10", sans-serif',
-      transformOrigin: 'top left',
+  page: css({
+    '--u': 'min(1dvh, 1dvw)',
+    '--size': 'calc(80 * var(--u))',
+    width: '700px',
+    m: '0 auto',
+    position: 'relative',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'column',
+    fontFamily: '"Snowstorm", sans-serif',
+    transformOrigin: 'top left',
 
-      md: {
-        m: '20px auto',
-      }
-    },
-    variants: {
-      locale: {
-        en: {},
-        ru: {
-          fontFamily: '"Tiny5", sans-serif',
-        },
-        sv: {},
-      },
+    md: {
+      m: '20px auto',
     }
   }),
   achievements: css({

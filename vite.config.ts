@@ -11,10 +11,12 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
 
+      scope: '/freediver/',
+
       manifest: {
         name: 'Alisa: The Freediver',
         short_name: 'Freediver',
-        start_url: '/',
+        start_url: '/freediver/',
         display: 'standalone',
         icons: [
           {
@@ -33,8 +35,23 @@ export default defineConfig({
       },
 
       workbox: {
-        globPatterns: ['**/*.{js,css,html,png,svg,woff2,mp3}']
-      }
+        globPatterns: ['**/*.{js,css,html,png,svg,woff2,woff,mp3}'],
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // allow files up to 3 MB
+        runtimeCaching: [
+          {
+            urlPattern: ({ request }) =>
+              request.destination === 'font',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'fonts-cache',
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
+              }
+            }
+          }
+        ],
+      },
     }),
   ],
   resolve: {

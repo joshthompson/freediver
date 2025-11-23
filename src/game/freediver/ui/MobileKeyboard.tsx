@@ -17,7 +17,7 @@ export const MobileKeyboard: Component<{ scene: string}> = props => {
     window.dispatchEvent(new Event('pause-game'))
   }
 
-  return <div class={styles.buttons({ locale: gameState.options.locale })}>
+  return <div class={styles.buttons}>
     <button class={styles.button({ key: 'left' })} onClick={() => emulate('ArrowLeft')}>←</button>
     <button class={styles.button({ key: 'right' })} onClick={() => emulate('ArrowRight')}>→</button>
     <button class={styles.button({ key: 'up' })} onClick={() => emulate('ArrowUp')}>↑</button>
@@ -28,27 +28,15 @@ export const MobileKeyboard: Component<{ scene: string}> = props => {
 }
 
 const styles = {
-  buttons: cva({
-    base: {
-      position: 'fixed',
-      bottom: '1rem',
-      left: '1rem',
-      display: 'grid',
-      gridTemplateColumns: 'repeat(3, 1fr)',
-      gap: '8px',
-      width: 'calc(100% - 2rem)',
-      maxWidth: '600px',
-      fontFamily: '"Jersey 10", sans-serif',
-    },
-    variants: {
-      locale: {
-        en: {},
-        sv: {},
-        ru: {
-          fontFamily: '"Tiny5", sans-serif',
-        },
-      }
-    }
+  buttons: css({
+    position: 'fixed',
+    bottom: '1rem',
+    left: '1rem',
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: '8px',
+    width: 'calc(100% - 2rem)',
+    maxWidth: '600px',
   }),
   button: cva({
     base: {

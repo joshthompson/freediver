@@ -1,24 +1,24 @@
 /* @refresh reload */
-import { render } from 'solid-js/web';
-import 'solid-devtools';
+import { render } from 'solid-js/web'
+import { registerSW } from 'virtual:pwa-register'
+
+import 'solid-devtools'
 
 import '@/styles/app.css'
 import '@style/styles.css'
-import { registerSW } from 'virtual:pwa-register'
 
-import App from './App';
+import App from './App'
 
-const root = document.getElementById('root');
+const root = document.getElementById('root')
 
 if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
   throw new Error(
     'Root element not found. Did you forget to add it to your index.html? Or maybe the id attribute got misspelled?',
-  );
+  )
 }
 
-render(() => <App />, root!);
-
+render(() => <App />, root!)
 
 registerSW({
   immediate: true,
-});
+})()

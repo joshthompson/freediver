@@ -34,10 +34,8 @@ const styles = {
       color: 'white',
       minWidth: '180px',
       textShadow: `
-        0.04em 0 0 black,
-        -0.04em 0 0 black,
-        0 0.04em 0 black,
-        0 -0.04em 0 black
+        0.06em 0.06em 0 black,
+        0.06em 0.06em 0.1em black
       `,
       textTransform: 'uppercase',
       boxShadow: `

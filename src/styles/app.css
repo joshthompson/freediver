@@ -14,3 +14,23 @@ body {
   background: #000000;
   touch-action: manipulation;
 }
+
+@font-face {
+  font-family: "Snowstorm";
+  src:
+    url("/src/assets/fonts/snowstorm.woff2") format("woff2"),
+    url("/src/assets/fonts/snowstorm.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Snowstorm";
+  src:
+    url("/src/assets/fonts/snowstorm-bold.woff2") format("woff2"),
+    url("/src/assets/fonts/snowstorm-bold.woff") format("woff");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}

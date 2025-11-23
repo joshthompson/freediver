@@ -14,7 +14,7 @@ export const Achievements: Component = () => {
     unlocked: !!gameState.achievements[achievement],
   }))
 
-  return <div class={styles.achievements({ locale: gameState.options.locale })}>
+  return <div class={styles.achievements}>
     <For each={achievements()}>
       {achievement => (
         <div class={styles.achievement({ unlocked: achievement.unlocked })}>
@@ -31,25 +31,13 @@ const styles = {
     fontSize: '2rem',
     my: '20px -20px'
   }),
-  achievements: cva({
-    base: {
-      display: 'grid',
-      gap: '5px',
-      m: '2rem 1rem',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
-      fontSize: '18px',
-      wordBreak: 'break-word',
-    },
-    variants: {
-      locale: {
-        en: {},
-        ru: {
-          fontSize: '15px',
-          lineHeight: '20px',
-        },
-        sv: {},
-      }
-    },
+  achievements: css({
+    display: 'grid',
+    gap: '5px',
+    m: '2rem 1rem',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
+    fontSize: '16px',
+    wordBreak: 'break-word',
   }),
   achievement: cva({
     base: {
