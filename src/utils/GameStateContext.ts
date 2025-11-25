@@ -1,38 +1,11 @@
 import { createContext, useContext } from "solid-js"
 import { SetStoreFunction } from "solid-js/store"
-import { Locale } from "./Translations"
-
-export const AllAchievements = [
-  // Basic
-  'firstDive', // First dive
-  'total100', // Obtain a total score of over 100
-  'dive10', // Get 10 points in a single dive
-  'dive20', // Get 20 points in a single dive
-  'almostFaint', // Return to the surface with 1 oxygen remaining
-  'blackout', // Experience a blackout
-
-  // Random
-  'prequalisation', // Equalise near the surface
-  'bone', // Find Linkosha 5 bones
-  'crabJump', // Make a crab jump
-  'bilingual', // Change language
-  'surviveTitanTriggerFish', // Survive an encounter with a titan trigger fish
-  'eggFishKiss', // Get kissed by a fried egg fish
-
-  // Explore
-  'whale', // Find a whale
-  'whaleShark', // Find a whale-shark
-  'shark', // Find a shark
-  'wreck', // Find a ship wreck
-  'statue', // Find the Linkosha statue
-  'endOfTheWorld', // Reach the end of the world
-] as const
-
-export type Achievement = typeof AllAchievements[number]
-export type AchievementState = 'new' | 'shown' | false
-export type AchievementsRecord = Partial<Record<Achievement, AchievementState>>
-const AchievementDisplayDuration = 5000
-  
+import {
+  Achievement,
+  AchievementDisplayDuration,
+  AchievementsRecord,
+} from '@/game/freediver/data/Achievements'
+import { Locale } from "@/game/freediver/data/Translations"
 
 export interface GameState {
   score: {
@@ -51,16 +24,35 @@ export interface GameState {
     debug: boolean
     volume: number
   }
+  questState: Partial<{
+    cow: {
+      state: 'waiting' | 'following' | 'lost' | 'reunited',
+      x: number
+    },
+    cave: {
+      state: 'open' | 'closed',
+    },
+  }>
   achievements: AchievementsRecord
 }
 
+export function setGameStateWithSaveWrapper(
+  gameState: GameState,
+  setGameState: SetStoreFunction<GameState>
+) {
+  return ((...args: any[]) => {
+    (setGameState as any)(...args)
+    saveState(gameState)
+  }) as any as SetStoreFunction<GameState>
+}
+
+
 export const saveState = (gameState: GameState) => {
-  window.localStorage.setItem('game-state', JSON.stringify({
-    volume: gameState.options.volume,
-    score: gameState.score,
-    locale: gameState.options.locale,
-    achievements: gameState.achievements,
-  }))
+  window.localStorage.setItem('game-state', JSON.stringify(gameState satisfies GameState))
+}
+
+export const loadState = (): Partial<GameState> => {
+  return JSON.parse(window.localStorage.getItem('game-state') ?? '{}')
 }
 
 export const GameStateContext = createContext<[GameState, SetStoreFunction<GameState>]>()
@@ -75,10 +67,8 @@ export const useGameState = () => {
   function achievement(name: Achievement) {
     if (!gameState.achievements[name]) {
       setGameState('achievements', name, 'new')
-      saveState(gameState)
       setTimeout(() => {
         setGameState('achievements', name, 'shown')
-        saveState(gameState)
       }, AchievementDisplayDuration)
       return true
     } else {
@@ -98,8 +88,8 @@ export const useGameState = () => {
           const newTotal = state.total + state.currentDive
           const newMaxDive = Math.max(state.maxDive, state.currentDive)
 
-          if (state.currentDive >= 10) achievement('dive10')
-          if (state.currentDive >= 30) achievement('dive20')
+          if (state.currentDive >= 15) achievement('dive15')
+          if (state.currentDive >= 30) achievement('dive30')
           if (newTotal >= 100) achievement('total100')
 
           return {
@@ -108,7 +98,6 @@ export const useGameState = () => {
             maxDive: newMaxDive,
           }
         })
-        saveState(gameState)
       },
       toggleVolume: () => {
         const on = gameState.options.volume > 0
@@ -117,7 +106,6 @@ export const useGameState = () => {
           audio.volume = on ? 0 : parseFloat(audio.getAttribute('data-game-volume')!)
         })
         setGameState('options', 'volume', on ? 0 : 1)
-        saveState(gameState)
       },
       clearGameData: () => {
         setGameState('score', {
@@ -126,9 +114,11 @@ export const useGameState = () => {
           maxDive: 0,
         })
         setGameState('achievements', achievements => Object.fromEntries(
-          Object.entries(achievements).map(([key]) => [key, false])
+          Object.entries(achievements).map(([key]) => [key, undefined])
         ))
-        saveState(gameState)
+        setGameState('questState', questData => Object.fromEntries(
+          Object.entries(questData).map(([key]) => [key, undefined])
+        ))
       },
       toggleLanguage: () => {
         const nextLocale: Record<Locale, Locale> = {
@@ -138,7 +128,6 @@ export const useGameState = () => {
         }
         setGameState('options', 'locale', nextLocale[gameState.options.locale])
         achievement('bilingual')
-        saveState(gameState)
       },
       achievement,
       damage: (amount: number) => {

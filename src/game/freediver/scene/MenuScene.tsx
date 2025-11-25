@@ -4,7 +4,7 @@ import { onCleanup } from "solid-js"
 import { css } from "@style/css"
 import { Button } from "../ui/Button"
 import { useGameState } from "@/utils/GameStateContext"
-import { LocaleFlags, Translations } from "@/utils/Translations"
+import { LocaleFlags, Translations } from "@/game/freediver/data/Translations"
 import { alertAsset, logoAlisaAsset, logoAlisaRuAsset, logoFreediverAsset, logoFreediverRuAsset, menu1Asset } from "@/assets"
 
 export const MenuScene: SceneComponent = props => {

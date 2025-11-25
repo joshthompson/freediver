@@ -16,7 +16,7 @@ import { createStarfishController } from "../controllers/StarFishController"
 import { useGameState } from "@/utils/GameStateContext"
 import { LoadingScreen } from "../ui/LoadingScreen"
 import { createWhaleController } from "../controllers/WhaleController"
-import { Translations } from "@/utils/Translations"
+import { Translations } from "@/game/freediver/data/Translations"
 import { createLightRayController } from "../controllers/LightRayController"
 import { createWreckController } from "../controllers/WreckController"
 import { createTriggerFishController } from "../controllers/TriggerFishController"
@@ -27,11 +27,18 @@ import { createSharkController } from "../controllers/SharkController"
 import { createWhaleSharkController } from "../controllers/WhaleSharkController"
 import { createWallController } from "../controllers/WallController"
 import { alertAsset, depth1Asset, depth2Asset, depth3Asset, equalisationSound, sandAsset, starfishSound, surfaceAsset, thudSound } from "@/assets"
+import { createCowController } from "../controllers/CowController"
+import { Dialog } from "../ui/Dialog"
+import { createManateeController } from "../controllers/ManateeController"
 
 export const OceanScene: SceneComponent = props => {
   const minX = -10000
   const maxX = 10000
   const state = useGameState()!
+
+  // state.setGameState('questState', 'cow', { x: 9000, state: 'following' })
+  // state.setGameState('diver', 'x', 9000)
+  
   const game = new Game('ocean', {
     ...state!,
     width: 700,
@@ -54,14 +61,21 @@ export const OceanScene: SceneComponent = props => {
         },
         blackout: () => {
           game.setGameState('score', 'currentDive', 0)
+          game.setGameState('diver', 'x', 0)
           props.setScene('blackout')
           game.gameStateActions.achievement('blackout')
         },
-        maxX,
+        maxX: (y) => {
+          if (state.gameState.questState.cave?.state === 'open') {
+            return y > 300 && y < 500 ? maxX + 200 : maxX
+          } else {
+            return maxX
+          }
+        },
         minX,
       }))
-      $game.addController(createWallController('wall-left', { x: minX - 500 }))
-      $game.addController(createWallController('wall-right', { x: maxX + 40 }))
+      $game.addController(...createWallController('wall-left', { x: minX - 500 }))
+      $game.addController(...createWallController('wall-right', { x: maxX - 20, cave: 'left' }))
       $game.addController(createCorgiController('corgi', { x: diverX + 10 }))
       $game.addController(createRopeController('rope'))
       $game.addController(...createFriedEggFishController('fried-egg-fish-1', { x: -7000 }))
@@ -69,6 +83,15 @@ export const OceanScene: SceneComponent = props => {
       $game.addController(...createFriedEggFishController('fried-egg-fish-3', { x: 9000 }))
       $game.addController(...createTriggerFishController('triggerfish-1', { x: 8000 }))
       $game.addController(...createTriggerFishController('triggerfish-2', { x: -5000 }))
+      $game.addController(createCowController('cow', {
+        x: state.gameState.questState.cow?.x ?? -9900,
+      }))
+      $game.addController(createManateeController('manatee', {
+        x: state.gameState.questState.cow?.state === 'reunited'
+          ? state.gameState.questState.cow?.x ?? 9000
+          : 10080,
+        y: 475,
+      }))
       
       const totalBones = 20
       const boneGap = 1000
@@ -123,6 +146,29 @@ export const OceanScene: SceneComponent = props => {
         $game.canvas().setX(diver.data.x() - $game.canvas().width / 2 + diver.data.width() / 2)
       }
     },
+    assetOrder: [
+      'fish',
+      'crab',
+      'wall-fg',
+      'bubble',
+      'corgi',
+      'diver-arm-left',
+      'diver',
+      'diver-head',
+      'diver-arm-right',
+      'manatee',
+      'triggerfish',
+      'friedeggfish',
+      'octopus',
+      'crab',
+      'bone',
+      'wreck',
+      'statue',
+      'wall',
+      'shark',
+      'whale-shark',
+      'whale',
+    ],
     sounds: {
       thud: thudSound,
       starfish: starfishSound,
@@ -140,6 +186,7 @@ export const OceanScene: SceneComponent = props => {
     debug={game.gameState.options.debug}
     game={game}
     loading={LoadingScreen}
+    dialog={Dialog}
     overlay={<GameOverlay game={game} exitToMenu={exitToMenu} />}
     underlay={<GameUnderlay game={game} />}
     class={styles.level}
@@ -165,7 +212,7 @@ export const OceanScene: SceneComponent = props => {
       `,
     }}
     onClick={event => {
-      if (!game.paused()) {
+      if (game.isActive()) {
         game.addController(createBubbleController('bubble-click-' + Date.now(), event))
       }
     }}
@@ -325,7 +372,7 @@ const styles = {
       },
       superWarn: {
         true: {
-          background: '#000000FF',
+          background: '#000000DD',
           color: 'black',
         },
       }

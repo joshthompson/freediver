@@ -2,7 +2,7 @@ import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
 import { css } from '@style/css'
 import { GameState, useGameState } from '@/utils/GameStateContext'
-import { Translations } from '@/utils/Translations'
+import { Translations } from '@/game/freediver/data/Translations'
 import { ropeAsset } from '@/assets'
 
 export function createSignController(id: string) {

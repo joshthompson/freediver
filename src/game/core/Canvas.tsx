@@ -11,6 +11,7 @@ export interface CanvasProps {
   ref?: HTMLDivElement | undefined
   game: Game
   loading?: Component<{ game: Game }>
+  dialog?: Component<{ game: Game }>
   overlay?: JSX.Element
   underlay?: JSX.Element
   style?: JSX.CSSProperties
@@ -40,32 +41,13 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
     )
   })
 
-  const typeOrder = [
-    'bubble',
-    'corgi',
-    'diver-arm-left',
-    'diver',
-    'diver-head',
-    'diver-arm-right',
-    'fish',
-    'triggerfish',
-    'friedeggfish',
-    'octopus',
-    'crab',
-    'bone',
-    'wreck',
-    'statue',
-    'wall',
-    'shark',
-    'whale-shark',
-    'whale',
-  ]
   const sprites = () => {
+    const assetOrder = props.game.options.assetOrder ?? []
     return props.game.controllers()
       .map(({ controller }) => controller)
       .toSorted((a, b) => {
-        const aP = typeOrder.findIndex(type => type === a.type)
-        const bP = typeOrder.findIndex(type => type === b.type)
+        const aP = assetOrder.findIndex(type => type === a.type)
+        const bP = assetOrder.findIndex(type => type === b.type)
         return bP - aP
       })
   }
@@ -114,8 +96,9 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
         <For each={sprites()}>
           {controller => <Sprite {...controller.sprite()} id={controller.id} active={props.game.isActive()} />}
         </For>
+        {props.dialog && <props.dialog game={props.game} />}
         {props.overlay}
-        {props.game.loading() && props.loading && <props.loading game={props.game} />}
+        {props.loading && props.game.loading() && <props.loading game={props.game} />}
         {!!props.debug && <Debugger game={props.game} />}
       </div>
     </GameContext.Provider>

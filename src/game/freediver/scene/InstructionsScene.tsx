@@ -4,7 +4,7 @@ import { onCleanup } from "solid-js"
 import { css, cva } from "@style/css"
 import { Button } from "../ui/Button"
 import { useGameState } from "@/utils/GameStateContext"
-import { Translations } from "@/utils/Translations"
+import { Translations } from "@/game/freediver/data/Translations"
 import { menu2Asset } from "@/assets"
 
 export const InstructionsScene: SceneComponent = props => {

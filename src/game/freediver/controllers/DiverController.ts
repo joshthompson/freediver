@@ -15,8 +15,8 @@ interface DiverControllerProps {
   style?: Sprite['style']
   goToSurface?: (x: number) => void
   blackout?: () => void
-  maxX: number
-  minX: number
+  maxX: number | ((y: number) => number)
+  minX: number | ((y: number) => number)
 }
 
 const bubbleFrequency = 20
@@ -74,14 +74,17 @@ function createDiver(id: string, props: DiverControllerProps) {
           })
         }
 
+        const maxX = () => typeof props.maxX === 'function' ? props.maxX(y()) : props.maxX
+        const minX = () => typeof props.minX === 'function' ? props.minX(y()) : props.minX
+
         return {
           id,
           type: 'diver',
-          x,
-          setX,
-          y,
-          setY,
+          x, setX,
+          y, setY,
           initY: y(),
+          maxX,
+          minX,
           xScale,
           setXScale,
           rotation,
@@ -215,15 +218,15 @@ function createDiver(id: string, props: DiverControllerProps) {
           if ($.y() !== initY) $game.playSound('thud')
         }
 
-        if ($.x() > props.maxX) {
+        if ($.x() > $.maxX()) {
           $game.gameStateActions.achievement('endOfTheWorld')
-          $.setX(props.maxX)
+          $.setX($.maxX())
           if ($.x() !== initX) $game.playSound('thud')
         }
 
-        if ($.x() < props.minX) {
+        if ($.x() < $.minX()) {
           $game.gameStateActions.achievement('endOfTheWorld')
-          $.setX(props.minX)
+          $.setX($.minX())
           if ($.x() !== initX) $game.playSound('thud')
         }
 

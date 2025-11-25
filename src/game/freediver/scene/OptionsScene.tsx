@@ -4,7 +4,7 @@ import { onCleanup } from "solid-js"
 import { css } from "@style/css"
 import { Button } from "../ui/Button"
 import { useGameState } from "@/utils/GameStateContext"
-import { Translations } from "@/utils/Translations"
+import { Translations } from "@/game/freediver/data/Translations"
 import { Options } from "../ui/Options"
 import { alertAsset, menu1Asset } from "@/assets"
 

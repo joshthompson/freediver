@@ -1,7 +1,7 @@
 import { Component } from "solid-js"
 import { css, cx } from "@style/css"
 import { useGameState } from "@/utils/GameStateContext"
-import { Translations } from "@/utils/Translations"
+import { Translations } from "@/game/freediver/data/Translations"
 import { watchAsset } from "@/assets"
 
 export const DivingWatch: Component<{ depth: number }> = props => {

@@ -2,7 +2,7 @@ import { css } from "@style/css";
 import { Component } from "solid-js";
 import { Button } from "./Button";
 import { useGameState } from "@/utils/GameStateContext";
-import { LocaleFlags, LocaleNames, Translations } from "@/utils/Translations";
+import { LocaleFlags, LocaleNames, Translations } from "@/game/freediver/data/Translations";
 
 export const Options: Component<{ mode: 'pause' | 'menu' }> = props => {
   const size = () => props.mode === 'menu' ? 'medium' : 'small'

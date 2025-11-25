@@ -138,6 +138,8 @@ export interface Controller<
   onEnterFrame: () => void
   destroy: () => void
   hitTest: (other: Controller<any>) => boolean
+  distanceTo: (x: number, y: number) => number
+  direction: (x: number, y: number) => number
   setGame: (game: Game) => void
   data: CP
   sprite: Accessor<Sprite>
@@ -159,6 +161,12 @@ export function createController<
     const ref2 = document.querySelector(`[data-controller-id="${other.id}"]`) as HTMLElement
     return isOverlapping(ref1, ref2)
   }
+  const distanceTo = (x: number, y: number) => {
+    return Math.hypot(data.x() - x, data.y() - y)
+  }
+  const direction = (x: number, y: number) => {
+    return Math.atan2(y - data.y(), x - data.x())
+  }
 
   const controller: Controller<CP> = {
     id: data.id,
@@ -178,6 +186,8 @@ export function createController<
     },
     destroy,
     hitTest,
+    distanceTo,
+    direction,
     setGame,
     age,
     data,
@@ -260,6 +270,26 @@ export function createConnectedController<C extends Controller<any>>(options: {
   })
 }
 
+export interface Dialog {
+  messages: DialogMessage[],
+  onComplete?: () => void,
+  pauseGameplay?: boolean,
+}
+
+export interface DialogMessage {
+  text: string
+  speaker?: string
+  image?: string
+  after?: () => void,
+  options?: {
+    text: string;
+    value: string,
+    next?: number,
+    end?: boolean
+    onSelect?: (game: Game) => void,
+  }[]
+}
+
 
 interface GameOptions {
   gameState: GameState
@@ -274,6 +304,7 @@ interface GameOptions {
   sounds?: Record<string, string>
   images?: string[] // These are other assets that are not in controllers
   frameRate?: number
+  assetOrder?: string[]
 }
 
 export class Game<C extends Controller<any> = Controller<any>> {
@@ -294,6 +325,12 @@ export class Game<C extends Controller<any> = Controller<any>> {
   setLoadingAssetCount: Setter<number>
   setLoadingAssetTotal: Setter<number>
   interval: number
+  dialog: {
+    data: Accessor<Dialog | undefined>
+    setData: Setter<Dialog | undefined>
+    messageIndex: Accessor<number>
+    setMessageIndex: Setter<number>
+  } 
 
   constructor(public id: string, public options: GameOptions) {
     // Store setup options
@@ -326,6 +363,16 @@ export class Game<C extends Controller<any> = Controller<any>> {
     this.setPaused = setPaused
     this.controllers = controllers
     this.setControllers = setControllers
+
+    // Dialog setup
+    const [dialog, setDialog] = createSignal<Dialog | undefined>(undefined)
+    const [currentMessageIndex, setCurrentMessageIndex] = createSignal<number>(0)
+    this.dialog = {
+      data: dialog,
+      setData: setDialog,
+      messageIndex: currentMessageIndex,
+      setMessageIndex: setCurrentMessageIndex,
+    }
 
     // Setup onEnterFrame functions for controllers
     this.interval = window.setInterval(() => {
@@ -375,7 +422,9 @@ export class Game<C extends Controller<any> = Controller<any>> {
   }
 
   isActive() {
-    return !this.paused() && !this.loading()
+    return !this.paused()
+        && !this.loading()
+        && ((this.dialog.data()?.pauseGameplay ?? false) !== true)
   }
 
   destroy() {
@@ -397,6 +446,39 @@ export class Game<C extends Controller<any> = Controller<any>> {
       setY,
       controllers: this.controllers,
     }
+  }
+
+  startDialog(dialog: Dialog, options?: { firstMessageIndex?: number }) {
+    this.dialog.setMessageIndex(options?.firstMessageIndex ?? 0)
+    this.dialog.setData(dialog)
+  }
+
+  diaglogAction(optionIndex: number) {
+    const data = this.dialog.data()
+    const message = data?.messages[this.dialog.messageIndex()]
+    if (!message) return
+
+    // Run after hook and option onSelect
+    message.after?.()
+    const option = message.options?.[optionIndex]
+    if (option?.end) {
+      this.endDialog()
+    }
+    option?.onSelect?.(this)
+
+    // Move to next message or end dialog
+    const nextMessageIndex = option?.next ?? this.dialog.messageIndex() + 1
+    if (data.messages[nextMessageIndex]) {
+      this.dialog.setMessageIndex(nextMessageIndex)
+    } else {
+      this.endDialog()
+    }
+  }
+
+  endDialog() {
+    this.dialog.data()?.onComplete?.()
+    this.dialog.setData(undefined)
+    this.dialog.setMessageIndex(0)
   }
   
   async setup() {

@@ -2,7 +2,7 @@ import { Component } from "solid-js";
 import { css, cva } from "@style/css";
 import { Key } from "@/utils/game";
 import { useGameState } from "@/utils/GameStateContext";
-import { Translations } from "@/utils/Translations";
+import { Translations } from "@/game/freediver/data/Translations";
 
 export const MobileKeyboard: Component<{ scene: string}> = props => {
   const { gameState } = useGameState()!
@@ -46,6 +46,7 @@ const styles = {
       textTransform: 'uppercase',
       fontSize: '26px',
       width: '100%',
+      userSelect: 'none',
     },
     variants: {
       key: {

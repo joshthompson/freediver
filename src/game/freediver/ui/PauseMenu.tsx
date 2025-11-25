@@ -3,7 +3,7 @@ import { Component, createSignal } from "solid-js";
 import { Button } from "./Button";
 import { css } from "@style/css";
 import { useGameState } from "@/utils/GameStateContext";
-import { Translations } from "@/utils/Translations";
+import { Translations } from "@/game/freediver/data/Translations";
 import { Achievements } from "./Achievements";
 import { Options } from "./Options";
 

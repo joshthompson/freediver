@@ -4,7 +4,7 @@ import { onCleanup } from "solid-js"
 import { css } from "@style/css"
 import { Button } from "../ui/Button"
 import { useGameState } from "@/utils/GameStateContext"
-import { Translations } from "@/utils/Translations"
+import { Translations } from "@/game/freediver/data/Translations"
 import { Achievements } from "../ui/Achievements"
 import { menu2Asset, trophyAsset } from "@/assets"
 
@@ -24,7 +24,8 @@ export const AchievementsScene: SceneComponent = props => {
     style={{ background: `url(${menu2Asset})`, 'background-size': 'cover' }}
     overlay={<div class={styles.overlay}>
       <div class={styles.title}>{t().achievements.title}</div>
-      <Achievements />
+      <div class={styles.achievements}><Achievements /></div>
+      <div class={styles.spacer} />
       <Button onClick={() => props.setScene('menu')} size="small">{t().common.back}</Button>
     </div>}
   />
@@ -45,5 +46,11 @@ const styles = {
   title: css({
     fontSize: '2rem',
     my: '20px -20px'
+  }),
+  achievements: css({
+    overflowY: 'auto',
+  }),
+  spacer: css({
+    flexGrow: 1,
   }),
 }

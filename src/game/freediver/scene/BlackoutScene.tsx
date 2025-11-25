@@ -4,7 +4,7 @@ import { onCleanup } from "solid-js"
 import { css } from "@style/css"
 import { useGameState } from "@/utils/GameStateContext"
 import { Button } from "../ui/Button"
-import { Translations } from "@/utils/Translations"
+import { Translations } from "@/game/freediver/data/Translations"
 
 export const BlackoutScene: SceneComponent = props => {
   const { gameState, setGameState, gameStateActions } = useGameState()!

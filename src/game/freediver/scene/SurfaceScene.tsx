@@ -11,7 +11,7 @@ import { LoadingScreen } from "../ui/LoadingScreen"
 import { createBoatController } from "../controllers/BoatController"
 import { createSignController } from "../controllers/SignController"
 import { createCloudController } from "../controllers/CloudController"
-import { Translations } from "@/utils/Translations"
+import { Translations } from "@/game/freediver/data/Translations"
 import { alertAsset } from "@/assets"
 
 export const SurfaceScene: SceneComponent = props => {

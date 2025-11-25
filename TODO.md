@@ -14,8 +14,24 @@
 [x] Dog bone + achievement
 [x] Gift every 3 achievements
 
-# Version 1.1
+# Version v1.1
 [x] Remember diver's x position
 [ ] Convert Game object into Scene and make a parent Game object that handles state and other stuff
-[ ] Add a service worker for asset caching
+[x] Add a service worker for asset caching
 [ ] Cave to move you from minX to maxX
+[x] Dialog system
+[ ] Convert keyboard manager to use signals
+[x] Pause dialog with game pause and have it behind pause screen
+[ ] Achievement tooltip alignment
+
+[ ] Cow quest
+    [ ] Meet cow and start quest with a dialog
+    [ ] Have cow follow Link across the level (remember cow X)
+    [ ] Add cave and put manatee in the cave
+    [ ] Once you meet the manatee dialog ends quest
+    [ ] Manatee then moves out of the cave... new area
+
+[ ] New area - the trench?
+    [ ] Cow quest opens the cave to the new area
+    [ ] New area looks different and has different fish?
+    [ ] Maybe remove trigger fish from the ocean scene and put them in the new area

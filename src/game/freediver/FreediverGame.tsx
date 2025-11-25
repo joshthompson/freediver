@@ -1,50 +1,59 @@
 import { Component, createMemo, createSignal, For } from 'solid-js'
-import { css, cva } from '@style/css'
+import { css } from '@style/css'
 import { OceanScene } from './scene/OceanScene'
 import { SurfaceScene } from './scene/SurfaceScene'
 import { MenuScene } from './scene/MenuScene'
 import { InstructionsScene } from './scene/InstructionsScene'
 import { isMobileBrowser, playSound } from '@/utils/game'
 import { createStore } from 'solid-js/store'
-import { Achievement, AchievementsRecord, GameState, GameStateContext } from '@/utils/GameStateContext'
+import { GameState, GameStateContext, loadState, setGameStateWithSaveWrapper } from '@/utils/GameStateContext'
 import { BlackoutScene } from './scene/BlackoutScene'
 import { OptionsScene } from './scene/OptionsScene'
-import { Translations } from '@/utils/Translations'
+import { Translations } from '@/game/freediver/data/Translations'
 import { AchievementsScene } from './scene/AchievementsScene'
 import { MobileKeyboard } from './ui/MobileKeyboard'
 import { alertAsset, musicSound } from '@/assets'
+import { Achievement, AchievementsRecord } from '@/game/freediver/data/Achievements'
+
+const testScene = 'menu'
 
 export const FreediverGame: Component = () => {
-  const savedGameState = JSON.parse(window.localStorage.getItem('game-state') ?? '{}')
+  const loadedState = loadState()
   const [windowWidth, setWindowWidth] = createSignal(window.innerWidth)
   const zoom = createMemo(() => windowWidth() < 700 ? windowWidth() / 700 : 1)
 
-  const [gameState, setGameState] = createStore<GameState>({
+  const [gameState, _setGameState] = createStore<GameState>({
     score: {
       currentDive: 0,
-      total: savedGameState?.score?.total ?? 0,
-      maxDive: savedGameState?.score?.maxDive ?? 0,
+      total: loadedState?.score?.total ?? 0,
+      maxDive: loadedState?.score?.maxDive ?? 0,
     },
     diver: {
-      x: savedGameState?.diver?.x ?? 0,
+      x: loadedState?.diver?.x ?? 0,
       oxygen: 100,
       showDamage: false,
       showHeal: false,
     },
     options: {
+      ...(loadedState.options ?? {
+        locale: 'en',
+        volume: 1,
+      }),
       debug: import.meta.env.DEV,
-      locale: savedGameState?.locale ?? 'en',
-      volume: savedGameState?.volume ?? 1,
     },
+    questState: loadedState?.questState ?? {},
     achievements:
       Object.fromEntries(
-        Object.entries((savedGameState?.achievements ?? {}) as AchievementsRecord)
+        Object.entries((loadedState?.achievements ?? {}) as AchievementsRecord)
           .map(([key, value]) => [key as Achievement, value === 'new' ? 'shown' : value])
       ),
   })
+
+  const setGameState = setGameStateWithSaveWrapper(gameState, _setGameState)
+
   const t = () => Translations[gameState.options.locale]
 
-  const [scene, _setScene] = createSignal<string>(import.meta.env.DEV ? 'menu' : 'menu')
+  const [scene, _setScene] = createSignal<string>(import.meta.env.DEV ? testScene : 'menu')
   const setScene = (newScene: string) => {
     if (['ocean', 'surface'].includes(newScene) && !music()) {
       startMusic()
