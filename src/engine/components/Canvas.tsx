@@ -1,17 +1,18 @@
 import { Accessor, Component, For, JSX, onCleanup, Setter } from 'solid-js'
 import { css, cx } from '@style/css'
-import { Sprite } from './Sprite'
-import { Controller, Game } from '@/utils/game'
-import { GameContext } from '@/utils/GameContext'
+import { Controller } from '@/utils/game'
+import { SceneContext } from '@/utils/SceneContext'
 import { Debugger } from './Debugger'
+import { Scene } from '@/engine'
+import { Sprite } from './Sprite'
 
 export type CanvasControllers = { id: string, controller: Controller<any> }[]
 
 export interface CanvasProps {
   ref?: HTMLDivElement | undefined
-  game: Game
-  loading?: Component<{ game: Game }>
-  dialog?: Component<{ game: Game }>
+  scene: Scene
+  loading?: Component<{ scene: Scene }>
+  dialog?: Component<{ scene: Scene }>
   overlay?: JSX.Element
   underlay?: JSX.Element
   style?: JSX.CSSProperties
@@ -36,14 +37,14 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
   props: CanvasProps,
 ) {
   onCleanup(() => {
-    props.game.controllers().forEach(({ controller }) =>
+    props.scene.controllers.get().forEach(({ controller }) =>
       controller.destroy(),
     )
   })
 
   const sprites = () => {
-    const assetOrder = props.game.options.assetOrder ?? []
-    return props.game.controllers()
+    const assetOrder = props.scene.options.assetOrder?.flat() ?? []
+    return props.scene.controllers.get()
       .map(({ controller }) => controller)
       .toSorted((a, b) => {
         const aP = assetOrder.findIndex(type => type === a.type)
@@ -56,10 +57,10 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
     const rect = (event.currentTarget as HTMLDivElement).getBoundingClientRect()
     const x = (event instanceof MouseEvent
       ? event.clientX - rect.left
-      : event.touches[0].clientX - rect.left) + props.game.canvas().x()
+      : event.touches[0].clientX - rect.left) + props.scene.canvas.get().x()
     const y = (event instanceof MouseEvent
       ? event.clientY - rect.top
-      : event.touches[0].clientY - rect.top) + props.game.canvas().y()
+      : event.touches[0].clientY - rect.top) + props.scene.canvas.get().y()
     return { x, y }
   }
 
@@ -76,14 +77,14 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
   const handleMouseUp = (e: MouseEvent) => props.onMouseUp?.(getMousePosition(e))
 
   return (
-    <GameContext.Provider value={props.game}>
+    <SceneContext.Provider value={props.scene}>
       <div
         ref={props.ref}
-        data-game-scene={props.game.id}
+        data-game-scene={props.scene.id}
         class={cx(styles.canvas, props.class)}
         style={{
-          width: `${props.game.canvas().width}px`,
-          height: `${props.game.canvas().height}px`,
+          width: `${props.scene.canvas.get().width}px`,
+          height: `${props.scene.canvas.get().height}px`,
           ...props.style,
         }}
         onClick={handleClick}
@@ -94,14 +95,14 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
       >
         {props.underlay}
         <For each={sprites()}>
-          {controller => <Sprite {...controller.sprite()} id={controller.id} active={props.game.isActive()} />}
+          {controller => <Sprite {...controller.sprite()} id={controller.id} active={props.scene.isActive()} />}
         </For>
-        {props.dialog && <props.dialog game={props.game} />}
+        {props.dialog && <props.dialog scene={props.scene} />}
         {props.overlay}
-        {props.loading && props.game.loading() && <props.loading game={props.game} />}
-        {!!props.debug && <Debugger game={props.game} />}
+        {props.loading && props.scene.loading.get() && <props.loading scene={props.scene} />}
+        {!!props.debug && <Debugger scene={props.scene} />}
       </div>
-    </GameContext.Provider>
+    </SceneContext.Provider>
   )
 }
 

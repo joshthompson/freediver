@@ -1,8 +1,9 @@
 import { createConnectedController, createController, Key, playTone } from '@/utils/game'
 import { createSignal } from 'solid-js'
-import { Sprite } from '@/game/core/Sprite'
+import { Sprite } from '@/engine/components/Sprite'
 import { generateFrames } from '@/utils'
 import { seadiverFrontBodyAsset, seadiverFrontHeadAsset } from '@/assets'
+import { createObjectSignal } from '@/engine/utils'
 
 export type DiverSurfaceBodyController = ReturnType<typeof createDiverSurfaceBodyController>
 export type DiverSurfaceHeadController = ReturnType<typeof createDiverSurfaceHeadController>
@@ -30,27 +31,18 @@ function createDiverSurfaceBodyController(id: string, props?: DiverSurfaceContro
       frames: generateFrames(seadiverFrontBodyAsset, 638, 1578, 68, 7),
       style: props?.style,
       init() {
-        const [x, setX] = createSignal<number>(props?.x ?? 30)
-        const [y, setY] = createSignal<number>(baseY)
-        const [oxygen, setOxygen] = createSignal(0)
-        const [spaceTap, setSpaceTap] = createSignal(false)
-
         return {
           id,
           type: 'diver-surface',
-          x,
-          setX,
-          y,
-          setY,
+          ...createObjectSignal(props?.x ?? 30, 'x'),
+          ...createObjectSignal(baseY, 'y'),
+          ...createObjectSignal(0, 'oxygen'),
+          ...createObjectSignal(false, 'spaceTap'),
           width: () => 200,
           height: () => 374,
-          oxygen,
-          setOxygen,
-          spaceTap,
-          setSpaceTap,
         }
       },
-      onEnterFrame({ $, $game, $age }) {
+      onEnterFrame({ $, $scene, $age }) {
         const space = Key.isDown(' ')
       
         const float = Math.cos($age / 10) * 8
@@ -59,7 +51,7 @@ function createDiverSurfaceBodyController(id: string, props?: DiverSurfaceContro
         if (!$.spaceTap() && space) {
           $.setOxygen($.oxygen() + oxygenUpRate)
           $.setSpaceTap(true)
-          playTone(400 + $.oxygen() * 15, 0.5, 10 * $game.gameState.options.volume)
+          playTone(400 + $.oxygen() * 15, 0.5, 10 * $scene.gameState.options.volume)
         }
         if ($.spaceTap() && !space) {
           $.setSpaceTap(false)

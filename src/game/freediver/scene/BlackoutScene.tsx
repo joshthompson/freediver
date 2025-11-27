@@ -1,14 +1,14 @@
-import { Canvas } from "@/game/core/Canvas"
-import { Game, SceneComponent } from "@/utils/game"
+import { Canvas } from "@/engine/components/Canvas"
 import { onCleanup } from "solid-js"
 import { css } from "@style/css"
 import { useGameState } from "@/utils/GameStateContext"
 import { Button } from "../ui/Button"
 import { Translations } from "@/game/freediver/data/Translations"
+import { Scene, SceneComponent } from "@/engine"
 
 export const BlackoutScene: SceneComponent = props => {
   const { gameState, setGameState, gameStateActions } = useGameState()!
-  const game = new Game('blackout', {
+  const game = new Scene('blackout', {
     gameState,
     setGameState,
     gameStateActions,
@@ -19,7 +19,7 @@ export const BlackoutScene: SceneComponent = props => {
   const t = () => Translations[gameState.options.locale]
 
   return <Canvas
-    game={game}
+    scene={game}
     overlay={<div class={styles.overlay}>
       <div class={styles.text}>{t().blackout.youBlackedOut}</div>
       <div class={styles.button}><Button onClick={props.setScene('menu')}>

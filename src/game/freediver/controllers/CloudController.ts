@@ -1,4 +1,5 @@
 import { cloudAsset } from '@/assets'
+import { createObjectSignal } from '@/engine/utils'
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
 
@@ -14,12 +15,10 @@ export function createCloudController(
   return createController({
     frames: [cloudAsset],
     init() {
-      const [x, setX] = createSignal<number>(options.x)
       return {
         id,
         type: 'cloud',
-        x,
-        setX,
+        ...createObjectSignal(options.x, 'x'),
         y: () => options.y,
         xScale: () => options.flip ? -1 : 1,
         size: 1,
@@ -27,10 +26,10 @@ export function createCloudController(
         style: () => ({ opacity: 0.3 }),
       }
     },
-    onEnterFrame({ $, $game }) {
+    onEnterFrame({ $, $scene }) {
       $.setX($.x() + 0.2 * options.size)
 
-      if ($.x() > $game.canvas().width + $.width()) {
+      if ($.x() > $scene.canvas.get().width + $.width()) {
         $.setX(-500)
       }
     }

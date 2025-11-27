@@ -41,8 +41,8 @@ export function createSignController(id: string) {
         },
       }
     },
-    onEnterFrame({ $, $game, $age }) {
-      $.setScore($game.gameState.score)
+    onEnterFrame({ $, $scene, $age }) {
+      $.setScore($scene.gameState.score)
       const float = Math.cos(10 + $age / 10) * 2
       $.setY(baseY + float)
       $.setRotation(Math.sin(10 + $age / 50) * 3)

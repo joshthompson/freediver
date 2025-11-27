@@ -1,6 +1,6 @@
 import { createController } from '@/utils/game'
-import { createSignal } from 'solid-js'
 import { whaleAsset } from '@/assets'
+import { createObjectSignal } from '@/engine/utils'
 
 export function createWhaleController(id: string) {
   const width = 800
@@ -9,23 +9,20 @@ export function createWhaleController(id: string) {
   return createController({
     frames,
     init() {
-      const [x, setX] = createSignal<number>(2000)
       return {
         id,
         type: 'whale',
-        x,
-        setX,
+        ...createObjectSignal(2000, 'x'),
         y: () => 100,
         speed: () => 1,
         width: () => width,
         parallax: () => 1 / 3.5,
-        style: () => ({ filter: 'brightness(0.6)' }),
       }
     },
-    onEnterFrame({ $, $game, $controller }) {
+    onEnterFrame({ $, $scene, $controller }) {
       $.setX($.x() - $.speed())
-      if ($game.getControllerById('diver')?.hitTest($controller)) {
-        $game.gameStateActions.achievement('whale')
+      if ($scene.getControllerById('diver')?.hitTest($controller)) {
+        $scene.gameStateActions.achievement('whale')
       }
     },
   })

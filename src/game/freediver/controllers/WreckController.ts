@@ -13,9 +13,9 @@ export function createWreckController(id: string) {
         width: () => 400,
       }
     },
-    onEnterFrame({ $game, $controller }) {
-      if ($game.getControllerById('diver')?.hitTest($controller)) {
-        $game.gameStateActions.achievement('wreck')
+    onEnterFrame({ $scene, $controller }) {
+      if ($scene.getControllerById('diver')?.hitTest($controller)) {
+        $scene.gameStateActions.achievement('wreck')
       }
     }
   })

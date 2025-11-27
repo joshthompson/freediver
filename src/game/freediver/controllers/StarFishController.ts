@@ -2,20 +2,17 @@ import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
 import { DiverArmController, DiverController } from './DiverController'
 import { starfishAsset } from '@/assets'
+import { createObjectSignal } from '@/engine/utils'
 
 export function createStarfishController(
   id: string,
   props: { x: number }
 ) {
-
   const randomY = () => Math.random() * 500 + 150
   return createController({
     frames: [starfishAsset],
     init() {
-      const [x, setX] = createSignal(props.x)
-      const [baseY, setBaseY] = createSignal(randomY())
-      const [y, setY] = createSignal(baseY())
-      const [rotation, setRotation] = createSignal(200)
+      const baseY = createObjectSignal(randomY(), 'baseY')
       const [age, setAge] = createSignal(0)
       const [hue, setHue] = createSignal(Math.random() * 360)
       const [width, setWidth] = createSignal(Math.random() * 24 + 24)
@@ -23,14 +20,10 @@ export function createStarfishController(
       return {
         id,
         type: 'starfish',
-        x,
-        setX,
-        baseY,
-        setBaseY,
-        y,
-        setY,
-        rotation,
-        setRotation,
+        ...createObjectSignal(props.x, 'x'),
+        ...baseY,
+        ...createObjectSignal(baseY.baseY(), 'y'),
+        ...createObjectSignal(200, 'rotation'),
         setAge,
         width,
         setWidth,
@@ -48,9 +41,9 @@ export function createStarfishController(
         }),
       }
     },
-    onEnterFrame({ $, $game, $age, $controller }) {
+    onEnterFrame({ $, $scene, $age, $controller }) {
       if ($.hidden()) {
-        const diver = $game.getControllerById('diver') as DiverController
+        const diver = $scene.getControllerById('diver') as DiverController
         const distance = Math.hypot($.x() - diver.data.x(), $.y() - diver.data.y())
         if (distance > 1000) {
           $.setHidden(false)
@@ -60,21 +53,21 @@ export function createStarfishController(
         $.setY($.baseY() + Math.sin($age / 3) * 5)
         $.setRotation(0 + Math.sin($age / 12) * 10)
 
-        const diverArmLeft = $game.getControllerById('diver-arm-left') as DiverArmController
-        const diverArmRight = $game.getControllerById('diver-arm-left') as DiverArmController
+        const diverArmLeft = $scene.getControllerById('diver-arm-left') as DiverArmController
+        const diverArmRight = $scene.getControllerById('diver-arm-left') as DiverArmController
         const caught = diverArmLeft?.hitTest($controller) || diverArmRight?.hitTest($controller)
 
         if (caught) {
-          $game.playSound('starfish', { volume: 0.5, unique: true })
+          $scene.playSound('starfish', { volume: 0.5, unique: true })
   
           $.setX($.x() + Math.random() * 400 - 200)
-          $.setBaseY(randomY)
+          $.setBaseY(randomY())
           $.setHue(Math.random() * 360)
           $.setWidth(Math.random() * 24 + 24)
           $.setHidden(true)
   
           // Increase score
-          $game.gameStateActions.score(1)
+          $scene.gameStateActions.score(1)
         }
       }
 

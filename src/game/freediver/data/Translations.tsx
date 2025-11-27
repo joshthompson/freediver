@@ -107,7 +107,7 @@ const baseTranslations = {
     boneDescription: 'Find Linkosha 5 bones',
     endOfTheWorld: 'The End of the World',
     endOfTheWorldDescription: 'Reach the end of the world',
-    cow: 'The Sea Cows',
+    cow: 'Cow Cousins',
     cowDescription: 'Reunite the cow with her cousin',
   } satisfies Record<Achievement | `${Achievement}Description` | 'new' | 'title', string>,
 }
@@ -206,7 +206,7 @@ export const Translations = {
       boneDescription: 'Найдите 5 костей Линкоши',
       endOfTheWorld: 'Доберись до края мира',
       endOfTheWorldDescription: 'Достигните конца света',
-      cow: 'Морские коровы',
+      cow: 'Коровьи кузены',
       cowDescription: 'Воссоедините корову с её кузиной',
     },
   },
@@ -302,7 +302,7 @@ export const Translations = {
       boneDescription: 'Hitta 5 av Linkoshas ben',
       endOfTheWorld: 'Världens ände',
       endOfTheWorldDescription: 'Nå fram till världens slut',
-      cow: 'Sjökor',
+      cow: 'Kokusiner',
       cowDescription: 'Återförena kon med hennes kusin'
     },
   }

@@ -1,5 +1,5 @@
-import { Canvas } from "@/game/core/Canvas"
-import { Game, SceneComponent } from "@/utils/game"
+import { Canvas } from "@/engine/components/Canvas"
+import { Scene, SceneComponent } from "@/engine"
 import { onCleanup } from "solid-js"
 import { css } from "@style/css"
 import { Button } from "../ui/Button"
@@ -10,7 +10,7 @@ import { alertAsset, menu1Asset } from "@/assets"
 
 export const OptionsScene: SceneComponent = props => {
   const state = useGameState()!
-  const game = new Game('options', {
+  const game = new Scene('options', {
     ...state,
     width: 700,
     height: 700,
@@ -20,7 +20,7 @@ export const OptionsScene: SceneComponent = props => {
   const t = () => Translations[state.gameState.options.locale]
 
   return <Canvas
-    game={game}
+    scene={game}
     style={{ background: `url(${menu1Asset})`, 'background-size': 'cover' }}
     overlay={<div class={styles.overlay}>
       <div class={styles.options}>

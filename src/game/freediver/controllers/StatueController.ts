@@ -13,9 +13,9 @@ export function createStatueController(id: string) {
         width: () => 360,
       }
     },
-    onEnterFrame({ $game, $controller }) {
-      if ($game.getControllerById('diver')?.hitTest($controller)) {
-        $game.gameStateActions.achievement('statue')
+    onEnterFrame({ $scene, $controller }) {
+      if ($scene.getControllerById('diver')?.hitTest($controller)) {
+        $scene.gameStateActions.achievement('statue')
       }
     }
   })

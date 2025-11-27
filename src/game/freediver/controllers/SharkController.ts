@@ -1,6 +1,6 @@
 import { sharkAsset } from '@/assets'
+import { createObjectSignal } from '@/engine/utils'
 import { createController } from '@/utils/game'
-import { createSignal } from 'solid-js'
 
 export function createSharkController(id: string) {
   const width = 300
@@ -9,22 +9,20 @@ export function createSharkController(id: string) {
   return createController({
     frames,
     init() {
-      const [x, setX] = createSignal<number>(5000)
       return {
         id,
         type: 'whale-shark',
-        x,
-        setX,
+        ...createObjectSignal(5000, 'x'),
         y: () => 90,
         speed: () => 2,
         width: () => width,
         parallax: () => 1 / 2.5,
       }
     },
-    onEnterFrame({ $, $game, $controller }) {
+    onEnterFrame({ $, $scene, $controller }) {
       $.setX($.x() - $.speed())
-      if ($game.getControllerById('diver')?.hitTest($controller)) {
-        $game.gameStateActions.achievement('shark')
+      if ($scene.getControllerById('diver')?.hitTest($controller)) {
+        $scene.gameStateActions.achievement('shark')
       }
     },
   })

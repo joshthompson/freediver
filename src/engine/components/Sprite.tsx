@@ -9,7 +9,7 @@ import {
   useContext,
 } from 'solid-js'
 import { css, cx } from '@style/css'
-import { GameContext } from '@/utils/GameContext'
+import { SceneContext } from '@/utils/SceneContext'
 
 export interface Sprite {
   ref?: HTMLDivElement | undefined
@@ -45,8 +45,8 @@ interface SpriteExtendedProps {
 }
 
 export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
-  const game = useContext(GameContext)
-  if (!game) return
+  const scene = useContext(SceneContext)
+  if (!scene) return
   
   const [loading, setLoading] = createSignal(true)
   const [imageSize, setImageSize] = createSignal<{
@@ -131,7 +131,7 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
   onCleanup(() => clearTimeout(enterFrameTimeout))
 
   const left = createMemo(() => {
-    return (props.x - game.canvas().x() * (props.parallax ?? 1)) + 'px'
+    return (props.x - scene.canvas.get().x() * (props.parallax ?? 1)) + 'px'
   })
 
   return (

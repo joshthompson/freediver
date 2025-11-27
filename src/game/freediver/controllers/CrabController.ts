@@ -1,9 +1,9 @@
 import { generateFrames, randomItem } from '@/utils'
 import { createController } from '@/utils/game'
-import { createSignal } from 'solid-js'
 import { DiverController } from './DiverController'
-import { Sprite } from '@/game/core/Sprite'
+import { Sprite } from '@/engine/components/Sprite'
 import { crabAsset } from '@/assets'
+import { createObjectSignal } from '@/engine/utils'
 
 type CrabMode = typeof modes[number]
 const modes = ['pause', 'left', 'right'] as const
@@ -21,39 +21,23 @@ export function createCrabController(
     frames: generateFrames(crabAsset, 150, 127, 48, 4),
     init() {
       const initY = 630 + Math.random() * 30
-      const [x, setX] = createSignal<number>(props.x)
-      const [y, setY] = createSignal<number>(initY)
-      const [xScale, setXScale] = createSignal<number>(1)
-      const [mode, setMode] = createSignal<CrabMode>('pause')
-      const [changeMode, setChangeMode] = createSignal(0)
-      const [speed, setSpeed] = createSignal(Math.random() * maxSpeed)
-      const [jump, setJump] = createSignal(0)
-      const [state, setState] = createSignal<Sprite['state']>('pause')
       return {
         id,
         type: 'crab',
-        x,
-        setX,
-        y,
-        setY,
-        xScale,
-        setXScale,
+        ...createObjectSignal(props.x, 'x'),
+        ...createObjectSignal(initY, 'y'),
+        ...createObjectSignal(1, 'xScale'),
+        ...createObjectSignal('pause' as CrabMode, 'mode'),
+        ...createObjectSignal(0, 'changeMode'),
+        ...createObjectSignal(Math.random() * maxSpeed, 'speed'),
+        ...createObjectSignal(0, 'jump'),
+        ...createObjectSignal('pause' as Sprite['state'], 'state'),
         initY,
-        jump,
-        setJump,
-        speed,
-        setSpeed,
         width: () => 48,
-        mode,
-        setMode,
-        changeMode,
-        setChangeMode,
         frameInterval: () => 100,
-        state,
-        setState,
       }
     },
-    onEnterFrame({ $, $game }) {
+    onEnterFrame({ $, $scene }) {
       if ($.changeMode() <= 0) {
         $.setMode(randomItem(modes))
         $.setChangeMode(minChangeMode + Math.random() * (maxChangeMode - minChangeMode))
@@ -69,8 +53,8 @@ export function createCrabController(
 
       $.setState($.mode() !== 'pause' || $.y() < $.initY ? 'play' : 'pause')
       
-      const xMin = $game.canvas().x() - 30
-      const xMax = $game.canvas().width + $game.canvas().x() + 30
+      const xMin = $scene.canvas.get().x() - 30
+      const xMax = $scene.canvas.get().width + $scene.canvas.get().x() + 30
       if ($.x() > xMax || $.x() < xMin) {
         $.setY($.initY)
       }
@@ -84,7 +68,7 @@ export function createCrabController(
         $.setJump(0)
       }
 
-      const diver = $game.getControllerById('diver') as DiverController
+      const diver = $scene.getControllerById('diver') as DiverController
       if (diver) {
         const dx = Math.abs(diver.data.x() - $.x())
         const dy = Math.abs(diver.data.y() - $.y())
@@ -92,7 +76,7 @@ export function createCrabController(
 
         if (distance < 200 && $.y() === $.initY) {
           $.setJump(Math.round(5 + Math.random() * 10))
-          $game.gameStateActions.achievement('crabJump')
+          $scene.gameStateActions.achievement('crabJump')
         }
       }
     },

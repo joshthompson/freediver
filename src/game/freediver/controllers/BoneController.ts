@@ -2,6 +2,7 @@ import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
 import { CorgiController } from './CorgiController'
 import { boneAsset } from '@/assets'
+import { createObjectSignal } from '@/engine/utils'
 
 export type BoneController = ReturnType<typeof createBoneController>
 
@@ -9,31 +10,28 @@ export function createBoneController(id: string, props: { x: number }) {
   return createController({
     frames: [boneAsset],
     init() {
-      const [x, setX] = createSignal(props.x)
-      const [y, setY] = createSignal(620)
-      const [claimed, setClaimed] = createSignal(false)
-      const [boneNumber, setBoneNumber] = createSignal(-1)
+      const claimed = createObjectSignal(false, 'claimed')
       return {
         id,
         type: 'bone',
-        x, setX,
-        y, setY,
-        claimed, setClaimed,
-        boneNumber, setBoneNumber,
-        width: () => claimed() ? 30 : 60,
+        ...createObjectSignal(props.x, 'x'),
+        ...createObjectSignal(620, 'y'),
+        ...claimed,
+        ...createObjectSignal(-1, 'boneNumber'),
+        width: () => claimed.claimed() ? 30 : 60,
         rotation: () => Math.random() * 20,
       }
     },
-    onEnterFrame({ $, $game, $controller }) {
-      const corgi = $game.getControllerById('corgi') as CorgiController
+    onEnterFrame({ $, $scene, $controller }) {
+      const corgi = $scene.getControllerById('corgi') as CorgiController
       if (!corgi) return
 
       if (!$.claimed() && corgi.hitTest($controller)) {
         $.setClaimed(true)
         $.setBoneNumber(corgi.data.bones())
-        $game.gameStateActions.score(1)
+        $scene.gameStateActions.score(1)
         corgi.data.setBones(corgi.data.bones() + 1)
-        if (corgi.data.bones() === 5) $game.gameStateActions.achievement('bone')
+        if (corgi.data.bones() === 5) $scene.gameStateActions.achievement('bone')
       }
 
       if ($.claimed()) {

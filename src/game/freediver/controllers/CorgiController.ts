@@ -2,10 +2,11 @@ import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
 import { DiverController } from './DiverController'
 import { createBubbleController } from './BubbleController'
-import { Sprite } from '@/game/core/Sprite'
+import { Sprite } from '@/engine/components/Sprite'
 import { generateFrames } from '@/utils'
 import { BoneController } from './BoneController'
 import { linkAsset } from '@/assets'
+import { createObjectSignal } from '@/engine/utils'
 
 const bubbleFrequency = 20
 const maxSpeed = 10
@@ -27,47 +28,26 @@ export function createCorgiController(
   return createController({
     frames: generateFrames(linkAsset, 634, 394, 70, 3, true),
     init() {
-      const [x, setX] = createSignal<number>(props.x)
-      const [y, setY] = createSignal<number>(props?.y ?? 40)
-      const [xScale, setXScale] = createSignal<number>(1)
-      const [rotation, setRotation] = createSignal<number>(0)
-      const [rotationSpeed] = createSignal<number>(5)
-      const [speed, setSpeed] = createSignal<number>(0)
-      const [state] = createSignal<Sprite['state']>('play')
-      const [frameInterval, setFrameInterval] = createSignal(250)
-      const [bubbleLevel, setBubbleLevel] = createSignal(bubbleFrequency / 2)
-      const [bones, setBones] = createSignal<number>(0)
-
       return {
         id,
         type: 'corgi',
-        x,
-        setX,
-        y,
-        setY,
-        xScale,
-        setXScale,
-        rotation,
-        setRotation,
-        rotationSpeed,
+        ...createObjectSignal(props.x, 'x'),
+        ...createObjectSignal(props.y ?? 40, 'y'),
+        ...createObjectSignal(1, 'xScale'),
+        ...createObjectSignal(0, 'rotation'),
+        ...createObjectSignal(0, 'speed'),
+        ...createObjectSignal(250, 'frameInterval'),
+        ...createObjectSignal(bubbleFrequency / 2, 'bubbleLevel'),
+        ...createObjectSignal(0, 'bones'),
         acceleration: 0.15,
-        speed,
-        setSpeed,
         width: () => 70,
-        state,
-        frameInterval,
-        setFrameInterval,
-        bubbleLevel,
-        setBubbleLevel,
-        bones,
-        setBones,
+        state: () => 'play',
       }
     },
-    onEnterFrame({ $, $game, $age }) {
-      const diver = $game.getControllerById('diver') as DiverController
-      const bones = $game.getControllersByType('bone') as BoneController[]
+    onEnterFrame({ $, $scene, $age }) {
+      const diver = $scene.getControllerById('diver') as DiverController
+      const bones = $scene.getControllersByType('bone') as BoneController[]
       if (!diver) return
-
 
       let targetX = diver.data.x()
       let targetY = diver.data.y() + 80
@@ -126,7 +106,7 @@ export function createCorgiController(
       $.setBubbleLevel($.bubbleLevel() + $.speed() / 4 + 0.5)
       if ($.bubbleLevel() > bubbleFrequency) {
         $.setBubbleLevel(0)
-        $game.addController?.(
+        $scene.addController?.(
           createBubbleController('corgi-bubble-' + bubbleN++, {
             x: $.x() + $.width() / 2,
             y: $.y(),

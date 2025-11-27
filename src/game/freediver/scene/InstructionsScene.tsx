@@ -1,5 +1,5 @@
-import { Canvas } from "@/game/core/Canvas"
-import { Game, SceneComponent } from "@/utils/game"
+import { Canvas } from "@/engine/components/Canvas"
+import { Scene, SceneComponent } from "@/engine"
 import { onCleanup } from "solid-js"
 import { css, cva } from "@style/css"
 import { Button } from "../ui/Button"
@@ -8,7 +8,7 @@ import { Translations } from "@/game/freediver/data/Translations"
 import { menu2Asset } from "@/assets"
 
 export const InstructionsScene: SceneComponent = props => {
-  const game = new Game('instructions', {
+  const game = new Scene('instructions', {
     ...useGameState()!,
     width: 700,
     height: 700,
@@ -18,7 +18,7 @@ export const InstructionsScene: SceneComponent = props => {
   const t = () => Translations[game.gameState.options.locale]
 
   return <Canvas
-    game={game}
+    scene={game}
     style={{ background: `url(${menu2Asset})`, 'background-size': 'cover' }}
     overlay={<div class={styles.overlay}>
       <div class={styles.description}>

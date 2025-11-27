@@ -1,10 +1,10 @@
-import { Canvas } from "@/game/core/Canvas"
+import { Canvas } from "@/engine/components/Canvas"
 import { createBubbleController } from "../controllers/BubbleController"
 import { createOctopusController } from "../controllers/OctopusController"
 import { createCrabController } from "../controllers/CrabController"
 import { createFishController } from "../controllers/FishController"
 import { createDiverController, DiverController } from "../controllers/DiverController"
-import { Game, SceneComponent } from "@/utils/game"
+import { SceneComponent } from "@/engine"
 import { createCorgiController } from "../controllers/CorgiController"
 import { createRopeController } from "../controllers/RopeController"
 import { Component, onCleanup } from "solid-js"
@@ -30,40 +30,37 @@ import { alertAsset, depth1Asset, depth2Asset, depth3Asset, equalisationSound, s
 import { createCowController } from "../controllers/CowController"
 import { Dialog } from "../ui/Dialog"
 import { createManateeController } from "../controllers/ManateeController"
+import { Scene } from "@/engine"
 
 export const OceanScene: SceneComponent = props => {
   const minX = -10000
   const maxX = 10000
   const state = useGameState()!
-
-  // state.setGameState('questState', 'cow', { x: 9000, state: 'following' })
-  // state.setGameState('diver', 'x', 9000)
-  
-  const game = new Game('ocean', {
+  const scene = new Scene('ocean', {
     ...state!,
     width: 700,
     height: 700,
-    setup($game: Game) {
-      const diverX = $game.gameState.diver.x
-      $game.addController(createWhaleController('whale'))
-      $game.addController(createWhaleSharkController('whale-shark'))
-      $game.addController(createSharkController('shark'))
-      $game.addController(createWreckController('wreck'))
-      $game.addController(createStatueController('statue'))
-      $game.addController(...createDiverController('diver', {
+    setup($scene: Scene) {
+      const diverX = $scene.gameState.diver.x
+      $scene.addController(createWhaleController('whale'))
+      $scene.addController(createWhaleSharkController('whale-shark'))
+      $scene.addController(createSharkController('shark'))
+      $scene.addController(createWreckController('wreck'))
+      $scene.addController(createStatueController('statue'))
+      $scene.addController(...createDiverController('diver', {
         x: diverX,
         goToSurface: x => {
           props.setScene('surface')
-          $game.setGameState('diver', 'x', x)
-          if ($game.gameState.diver.oxygen <= 1) {
-            game.gameStateActions.achievement('almostFaint')
+          $scene.setGameState('diver', 'x', x)
+          if ($scene.gameState.diver.oxygen <= 1) {
+            scene.gameStateActions.achievement('almostFaint')
           }
         },
         blackout: () => {
-          game.setGameState('score', 'currentDive', 0)
-          game.setGameState('diver', 'x', 0)
+          scene.setGameState('score', 'currentDive', 0)
+          scene.setGameState('diver', 'x', 0)
           props.setScene('blackout')
-          game.gameStateActions.achievement('blackout')
+          scene.gameStateActions.achievement('blackout')
         },
         maxX: (y) => {
           if (state.gameState.questState.cave?.state === 'open') {
@@ -74,19 +71,19 @@ export const OceanScene: SceneComponent = props => {
         },
         minX,
       }))
-      $game.addController(...createWallController('wall-left', { x: minX - 500 }))
-      $game.addController(...createWallController('wall-right', { x: maxX - 20, cave: 'left' }))
-      $game.addController(createCorgiController('corgi', { x: diverX + 10 }))
-      $game.addController(createRopeController('rope'))
-      $game.addController(...createFriedEggFishController('fried-egg-fish-1', { x: -7000 }))
-      $game.addController(...createFriedEggFishController('fried-egg-fish-2', { x: 4000 }))
-      $game.addController(...createFriedEggFishController('fried-egg-fish-3', { x: 9000 }))
-      $game.addController(...createTriggerFishController('triggerfish-1', { x: 8000 }))
-      $game.addController(...createTriggerFishController('triggerfish-2', { x: -5000 }))
-      $game.addController(createCowController('cow', {
+      $scene.addController(...createWallController('wall-left', { x: minX - 500 }))
+      $scene.addController(...createWallController('wall-right', { x: maxX - 20, cave: 'left' }))
+      $scene.addController(createCorgiController('corgi', { x: diverX + 10 }))
+      $scene.addController(createRopeController('rope'))
+      $scene.addController(...createFriedEggFishController('fried-egg-fish-1', { x: -7000 }))
+      $scene.addController(...createFriedEggFishController('fried-egg-fish-2', { x: 4000 }))
+      $scene.addController(...createFriedEggFishController('fried-egg-fish-3', { x: 9000 }))
+      $scene.addController(...createTriggerFishController('triggerfish-1', { x: 8000 }))
+      $scene.addController(...createTriggerFishController('triggerfish-2', { x: -5000 }))
+      $scene.addController(createCowController('cow', {
         x: state.gameState.questState.cow?.x ?? -9900,
       }))
-      $game.addController(createManateeController('manatee', {
+      $scene.addController(createManateeController('manatee', {
         x: state.gameState.questState.cow?.state === 'reunited'
           ? state.gameState.questState.cow?.x ?? 9000
           : 10080,
@@ -99,7 +96,7 @@ export const OceanScene: SceneComponent = props => {
         const x = n < totalBones / 2
           ? 0 + (n + 1) * boneGap
           : 0 - (n - totalBones / 2 + 1) * boneGap
-        $game.addController(createBoneController('bone-' + n, { x: x + Math.random() * 200 - 100 }) )
+        $scene.addController(createBoneController('bone-' + n, { x: x + Math.random() * 200 - 100 }) )
       })
 
       const totalStarfish = 30
@@ -108,20 +105,20 @@ export const OceanScene: SceneComponent = props => {
         const totalSpace = maxX - minX - starfishMargin * 2
         const gap = totalSpace / (totalStarfish - 1)
         const x = minX + starfishMargin + n * gap
-        $game.addController(createStarfishController('starfish-' + n, {
+        $scene.addController(createStarfishController('starfish-' + n, {
           x: x + Math.random() * 300 - 150,
         }) )
       })
 
       Array(20).fill(null).forEach((_, n) => {
-        $game.addController(createFishController('fish-' + n, {
+        $scene.addController(createFishController('fish-' + n, {
           x: Math.random() * 700 - 350 + diverX,
           y: Math.random() * 500 + 100,
         }))
       })
 
       Array(10).fill(null).forEach((_, n) => {
-        $game.addController(createLightRayController('light-' + n, { x: n * 70 }))
+        $scene.addController(createLightRayController('light-' + n, { x: n * 70 }))
       })
     
       const crabs = Array(3).fill(null).map((_, n) => 
@@ -129,7 +126,7 @@ export const OceanScene: SceneComponent = props => {
           x: -100 + n * 200 + Math.random() * 200 + diverX,
         })
       ).sort((a, b) => a.data.y() - b.data.y())
-      crabs.forEach(crab => $game.addController(crab))
+      crabs.forEach(crab => $scene.addController(crab))
     
       const octopi = Array(4).fill(null).map((_, n) => 
         createOctopusController('octopus-' + n, {
@@ -137,37 +134,49 @@ export const OceanScene: SceneComponent = props => {
           y: Math.random() * 500 + 100,
         })
       ).sort((a, b) => b.data.y() - a.data.y())
-      octopi.forEach(octopus => $game.addController(octopus))
+      octopi.forEach(octopus => $scene.addController(octopus))
     },
-    afterEnterFrames: ({ $game }) => {
-      const diver = $game.getControllerById<DiverController>('diver')
+    afterEnterFrames: ({ $scene }) => {
+      const diver = $scene.getControllerById<DiverController>('diver')
       // Center camera
       if (diver) {
-        $game.canvas().setX(diver.data.x() - $game.canvas().width / 2 + diver.data.width() / 2)
+        $scene.canvas.get().setX(diver.data.x() - $scene.canvas.get().width / 2 + diver.data.width() / 2)
       }
     },
     assetOrder: [
-      'fish',
-      'crab',
-      'wall-fg',
-      'bubble',
-      'corgi',
-      'diver-arm-left',
-      'diver',
-      'diver-head',
-      'diver-arm-right',
-      'manatee',
-      'triggerfish',
-      'friedeggfish',
-      'octopus',
-      'crab',
-      'bone',
-      'wreck',
-      'statue',
-      'wall',
-      'shark',
-      'whale-shark',
-      'whale',
+      [
+        'fish',
+        'triggerfish',
+        'friedeggfish',
+        'octopus',
+        'crab',
+        'bone',
+        'bubble',
+      ],
+      [
+        'wall-fg',
+      ],
+      [
+        'corgi',
+        'diver-arm-left',
+        'diver',
+        'diver-head',
+        'diver-arm-right',
+      ],
+      [
+        'manatee',
+        'cow',
+      ],
+      [
+        'wreck',
+        'statue',
+        'wall',
+      ],
+      [
+        'shark',
+        'whale-shark',
+        'whale',
+      ],
     ],
     sounds: {
       thud: thudSound,
@@ -176,19 +185,19 @@ export const OceanScene: SceneComponent = props => {
     },
     images: [depth1Asset, depth2Asset, depth3Asset, surfaceAsset, sandAsset, alertAsset],
   })
-  onCleanup(() => game.destroy())
+  onCleanup(() => scene.destroy())
 
   const exitToMenu = () => {
     props.setScene('menu')
   }
 
   return <Canvas
-    debug={game.gameState.options.debug}
-    game={game}
+    debug={scene.gameState.options.debug}
+    scene={scene}
     loading={LoadingScreen}
     dialog={Dialog}
-    overlay={<GameOverlay game={game} exitToMenu={exitToMenu} />}
-    underlay={<GameUnderlay game={game} />}
+    overlay={<GameOverlay scene={scene} exitToMenu={exitToMenu} />}
+    underlay={<GameUnderlay scene={scene} />}
     class={styles.level}
     style={{
       'background-image': `
@@ -204,45 +213,45 @@ export const OceanScene: SceneComponent = props => {
         )
       `,
       'background-position': `
-        ${-game.canvas().x()}px bottom,
-        ${-game.canvas().x() / 1.5}px 85%,
-        ${-game.canvas().x() / 2.0}px 85%,
-        ${-game.canvas().x() / 2.5}px 85%,
-        ${-game.canvas().x()}px bottom
+        ${-scene.canvas.get().x()}px bottom,
+        ${-scene.canvas.get().x() / 1.5}px 85%,
+        ${-scene.canvas.get().x() / 2.0}px 85%,
+        ${-scene.canvas.get().x() / 2.5}px 85%,
+        ${-scene.canvas.get().x()}px bottom
       `,
     }}
     onClick={event => {
-      if (game.isActive()) {
-        game.addController(createBubbleController('bubble-click-' + Date.now(), event))
+      if (scene.isActive()) {
+        scene.addController(createBubbleController('bubble-click-' + Date.now(), event))
       }
     }}
   />
 }
 
-const GameOverlay: Component<{ game: Game, exitToMenu: () => void }> = props => {
-  const t = () => Translations[props.game.gameState.options.locale]
+const GameOverlay: Component<{ scene: Scene, exitToMenu: () => void }> = props => {
+  const t = () => Translations[props.scene.gameState.options.locale]
   const depth = () => {
-    const diver = props.game.getControllerById<DiverController>('diver')
+    const diver = props.scene.getControllerById<DiverController>('diver')
     if (!diver) return 0
     return diver.data.depth()
   }
 
   const eqWarn = () => {
-    const diver = props.game.getControllerById<DiverController>('diver')
+    const diver = props.scene.getControllerById<DiverController>('diver')
     if (!diver) return false
     const { eqLevel, eqTolerance } = diver.data
     return eqLevel() > eqTolerance
   }
 
   const eqBar = () => {
-    const diver = props.game.getControllerById<DiverController>('diver')
+    const diver = props.scene.getControllerById<DiverController>('diver')
     if (!diver) return 0
     const { holdSpace, holdSpaceMax } = diver.data
     return Math.min(100, holdSpace() / holdSpaceMax * 100)
   }
 
   const blackoutWarning = () => {
-    const { oxygen } = props.game.gameState.diver
+    const { oxygen } = props.scene.gameState.diver
     if (oxygen < 10) {
       return (10 - oxygen) / 10
     } else {
@@ -252,7 +261,7 @@ const GameOverlay: Component<{ game: Game, exitToMenu: () => void }> = props => 
 
   return <>
     <div class={styles.equalisation({ warn: eqWarn() })}>
-      <div class={styles.equalisationBackground({ paused: props.game.paused() })} />
+      <div class={styles.equalisationBackground({ paused: props.scene.paused.get() })} />
       <div class={styles.key}>{t().ocean.holdSpace}</div>
       <Bar percent={eqBar()} />
     </div>
@@ -263,14 +272,14 @@ const GameOverlay: Component<{ game: Game, exitToMenu: () => void }> = props => 
       {t().ocean.warningLowOxygen}
     </div>
     <DivingWatch depth={depth()} />
-    {props.game.paused() && <PauseMenu game={props.game} exitToMenu={props.exitToMenu} />}
+    {props.scene.paused.get() && <PauseMenu scene={props.scene} exitToMenu={props.exitToMenu} />}
   </>
 }
 
-const GameUnderlay: Component<{ game: Game }> = props => {
+const GameUnderlay: Component<{ scene: Scene }> = props => {
   return <div class={styles.surface} style={{
     'background-image': `url(${surfaceAsset})`,
-    'background-position-x': `${-props.game.canvas().x() / 10}px`
+    'background-position-x': `${-props.scene.canvas.get().x() / 10}px`
   }} />
 }
 

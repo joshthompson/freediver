@@ -1,5 +1,5 @@
-import { Canvas } from "@/game/core/Canvas"
-import { Game, SceneComponent } from "@/utils/game"
+import { Canvas } from "@/engine/components/Canvas"
+import { Scene, SceneComponent } from "@/engine"
 import { createEffect, onCleanup } from "solid-js"
 import { css, cva } from "@style/css"
 import { PauseMenu } from "../ui/PauseMenu"
@@ -16,12 +16,12 @@ import { alertAsset } from "@/assets"
 
 export const SurfaceScene: SceneComponent = props => {
   const state = useGameState()!
-  const game = new Game('surface', {
+  const game = new Scene('surface', {
     ...state,
     width: 700,
     height: 700,
-    setup($game: Game) {
-      $game.addController(
+    setup($scene: Scene) {
+      $scene.addController(
         createBoatController('boat'),
         createSignController('sign'),
         ...createDiverSurfaceController('diver-surface'),
@@ -35,12 +35,12 @@ export const SurfaceScene: SceneComponent = props => {
         createCloudController('cloud-4', { x: 500, y: 10, flip: true, size: 1.5 }),
       )
     },
-    afterEnterFrames: ({ $game }) => {
-      const diver = $game.getControllerById<DiverSurfaceBodyController>('diver-surface')
+    afterEnterFrames: ({ $scene }) => {
+      const diver = $scene.getControllerById<DiverSurfaceBodyController>('diver-surface')
       // Center camera
       if (diver) {
-        $game.canvas().setX(diver.data.x() - $game.canvas().width / 2 + diver.data.width() / 2)
-        $game.canvas().setX(diver.data.x() - $game.canvas().width / 2 + diver.data.width() / 2 + 80)
+        $scene.canvas.get().setX(diver.data.x() - $scene.canvas.get().width / 2 + diver.data.width() / 2)
+        $scene.canvas.get().setX(diver.data.x() - $scene.canvas.get().width / 2 + diver.data.width() / 2 + 80)
       }
     },
     images: [alertAsset],
@@ -65,7 +65,7 @@ export const SurfaceScene: SceneComponent = props => {
   
   return <Canvas
     debug={game.gameState.options.debug}
-    game={game}
+    scene={game}
     loading={LoadingScreen}
     class={styles.canvas}
     overlay={
@@ -73,7 +73,7 @@ export const SurfaceScene: SceneComponent = props => {
         <div class={styles.instructions}>{t().surface.relax}<br />{t().surface.getReady}</div>
         <Bar percent={oxygen()} class={styles.bar({ show: oxygen() > 0 })} />
         <div class={styles.surfaceLayer} />
-        {game.paused() && <PauseMenu game={game} exitToMenu={exitToMenu} />}
+        {game.paused.get() && <PauseMenu scene={game} exitToMenu={exitToMenu} />}
       </>
     }
   />

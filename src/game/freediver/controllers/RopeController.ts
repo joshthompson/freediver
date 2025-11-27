@@ -1,6 +1,6 @@
 import { createController } from '@/utils/game'
-import { createSignal } from 'solid-js'
 import { ropeAsset } from '@/assets'
+import { createObjectSignal } from '@/engine/utils'
 
 export function createRopeController(
   id: string
@@ -8,20 +8,14 @@ export function createRopeController(
   return createController({
     frames: [ropeAsset],
     init() {
-      const [x, setX] = createSignal<number>(-50)
-      const [y, setY] = createSignal<number>(-70)
-      const [rotation, setRotation] = createSignal<number>(0)
       return {
         id,
         type: 'rope',
-        x,
-        setX,
-        y,
-        setY,
+        ...createObjectSignal(-50, 'x'),
+        ...createObjectSignal(-70, 'y'),
+        ...createObjectSignal(0, 'rotation'),
         size: 1,
         width: () => 60,
-        rotation,
-        setRotation,
         origin: () => ({ x: 30, y: 30 }),
       }
     },

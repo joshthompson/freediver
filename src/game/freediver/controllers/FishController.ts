@@ -1,4 +1,5 @@
 import { fish1Asset, fish2Asset, rareFish1Asset, rareFish2Asset, rareFish3Asset, rareFish4Asset, rareFish5Asset } from '@/assets'
+import { createObjectSignal } from '@/engine/utils'
 import { generateFrames, randomItem } from '@/utils'
 import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
@@ -29,28 +30,22 @@ export function createFishController(
   return createController({
     frames: chooseFishFrames(),
     init() {
-      const [x, setX] = createSignal<number>(props.x)
-      const [y, setY] = createSignal<number>(props.y)
       const [size, setSize] = createSignal(Math.random() + 0.5)
-      const speed = () => size() * 5
-      const [direction, setDirection] = createSignal(randomItem([-1, 1]))
       const [hue, setHue] = createSignal(Math.random() * 360)
       const [jitter, setJitter] = createSignal({ x: 0, y: 0 })
-      const [frames, setFrames] = createSignal(chooseFishFrames())
+      const direction = createObjectSignal(randomItem([-1, 1]), 'direction')
       return {
         id,
         type: 'fish',
-        x,
-        setX,
-        y,
-        setY,
-        speed,
+        ...createObjectSignal(props.x, 'x'),
+        ...createObjectSignal(props.y, 'y'),
+        ...createObjectSignal(chooseFishFrames(), 'frames'),
+        ...direction,
+        speed: () => size() * 5,
         width: () => width,
-        xScale: () => size() * direction(),
+        xScale: () => size() * direction.direction(),
         yScale: size,
         setSize,
-        direction,
-        setDirection,
         setHue,
         setJitter,
         state: () => 'play',
@@ -59,16 +54,14 @@ export function createFishController(
           translate: `${jitter().x}px ${jitter().y}px`,
           transition: 'translate 0.1s linear',
         }),
-        frames,
-        setFrames,
       }
     },
-    onEnterFrame({ $, $game }) {
+    onEnterFrame({ $, $scene }) {
       let x = $.x() + $.speed() * $.direction()
       $.setJitter({ x: Math.random() * 5 - 2.5, y: Math.random() * 5 - 2.5 })
 
-      const xMin = $game.canvas().x() - 30
-      const xMax = $game.canvas().width + $game.canvas().x() + 30
+      const xMin = $scene.canvas.get().x() - 30
+      const xMax = $scene.canvas.get().width + $scene.canvas.get().x() + 30
       if (x > xMax || x < xMin) {
         $.setY(Math.random() * 500 + 100)
         $.setSize(Math.random() + 0.5)

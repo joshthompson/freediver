@@ -3,6 +3,7 @@ import { createSignal } from 'solid-js'
 import { DiverController } from './DiverController'
 import { createIndicatorController } from './IndicatorController'
 import { triggerFishAsset } from '@/assets'
+import { createObjectSignal } from '@/engine/utils'
 
 export function createTriggerFishController(
   id: string,
@@ -13,38 +14,26 @@ export function createTriggerFishController(
   const triggerFishController = createController({
     frames: [triggerFishAsset],
     init() {
-      const [x, setX] = createSignal<number>(props.x)
-      const [y, setY] = createSignal<number>(Math.random() * 500 + 100)
-      const [xScale, setXScale] = createSignal<number>(1)
-      const [speed, setSpeed] = createSignal(5)
       const [jitter, setJitter] = createSignal({ x: 0, y: 0 })
-      const [rotation, setRotation] = createSignal<number>(0)
-      const [attack, setAttack] = createSignal(false)
       return {
         id,
         type: 'triggerfish',
-        x,
-        setX,
-        y,
-        setY,
-        speed,
-        setSpeed,
+        ...createObjectSignal(props.x, 'x'),
+        ...createObjectSignal(Math.random() * 500 + 100, 'y'),
+        ...createObjectSignal(1, 'xScale'),
+        ...createObjectSignal(5, 'speed'),
+        ...createObjectSignal(0, 'rotation'),
+        ...createObjectSignal(false, 'attack'),
         width: () => 80,
-        xScale,
-        setXScale,
         setJitter,
-        attack,
-        setAttack,
-        rotation,
-        setRotation,
         style: () => ({
           translate: `${jitter().x}px ${jitter().y}px`,
           transition: 'translate 0.1s linear',
         }),
       }
     },
-    onEnterFrame({ $, $game }) {
-      const diver = $game.getControllerById('diver') as DiverController
+    onEnterFrame({ $, $scene }) {
+      const diver = $scene.getControllerById('diver') as DiverController
       if (!diver) return
 
       const targetX = diver.data.x() + 0
@@ -62,7 +51,7 @@ export function createTriggerFishController(
         $.setSpeed(1.5)
         if ($.attack()) {
           $.setAttack(false)
-          $game.gameStateActions.achievement('surviveTitanTriggerFish')
+          $scene.gameStateActions.achievement('surviveTitanTriggerFish')
         }
       }
 
@@ -74,8 +63,8 @@ export function createTriggerFishController(
       })
 
       if (distance < 10) {
-        $game.gameStateActions.damage(5)
-        $game.playSound('thud', { unique: true })
+        $scene.gameStateActions.damage(5)
+        $scene.playSound('thud', { unique: true })
         $.setX($.x() + 10 * $.speed() * Math.cos(direction))
         $.setY($.y() + 10 * $.speed() * Math.sin(direction))
       }

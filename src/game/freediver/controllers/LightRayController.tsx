@@ -1,7 +1,7 @@
 import { css } from '@style/css'
 import { createController } from '@/utils/game'
-import { createSignal } from 'solid-js'
 import { lightAsset } from '@/assets'
+import { createObjectSignal } from '@/engine/utils'
 
 export function createLightRayController(
   id: string,
@@ -12,12 +12,10 @@ export function createLightRayController(
   return createController({
     frames: [lightAsset],
     init() {
-      const [x, setX] = createSignal<number>(props.x + Math.random() * 20 - 10)
       return {
         id,
         type: 'light',
-        x,
-        setX,
+        ...createObjectSignal(props.x + Math.random() * 20 - 10, 'x'),
         y: () => 0,
         width: () => Math.random() * 30 + 70,
         height: () => 400,
@@ -26,10 +24,10 @@ export function createLightRayController(
         style: () => ({ "animation-delay": `${-Math.random() * 5}s` })
       }
     },
-    onEnterFrame({ $, $game }) {
-      const offset = $.x() - $game.canvas().x()
-      if (offset < -100) $.setX($.x() + $game.canvas().width + 200)
-      if (offset > $game.canvas().width + 100) $.setX($.x() - $game.canvas().width - 200)
+    onEnterFrame({ $, $scene }) {
+      const offset = $.x() - $scene.canvas.get().x()
+      if (offset < -100) $.setX($.x() + $scene.canvas.get().width + 200)
+      if (offset > $scene.canvas.get().width + 100) $.setX($.x() - $scene.canvas.get().width - 200)
     },
   })
 }

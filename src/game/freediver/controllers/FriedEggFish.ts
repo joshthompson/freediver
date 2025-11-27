@@ -4,8 +4,11 @@ import { DiverController } from './DiverController'
 import { createBubbleController } from './BubbleController'
 import { createIndicatorController } from './IndicatorController'
 import { eggFishAsset } from '@/assets'
+import { createObjectSignal } from '@/engine/utils'
 
 let bubbleN = 0
+const minSpeed = 1
+const maxSpeed = 4
 
 export function createFriedEggFishController(
   id: string,
@@ -16,38 +19,26 @@ export function createFriedEggFishController(
   const friedEggFishController = createController({
     frames: [eggFishAsset],
     init() {
-      const [x, setX] = createSignal<number>(props.x)
-      const [y, setY] = createSignal<number>(Math.random() * 500 + 100)
-      const [xScale, setXScale] = createSignal<number>(1)
-      const [speed, setSpeed] = createSignal(5)
       const [jitter, setJitter] = createSignal({ x: 0, y: 0 })
-      const [rotation, setRotation] = createSignal<number>(0)
-      const [canGiveHealth, setCanGiveHealth] = createSignal(true)
       return {
         id,
         type: 'friedeggfish',
-        x,
-        setX,
-        y,
-        setY,
-        speed,
-        setSpeed,
+        ...createObjectSignal(props.x, 'x'),
+        ...createObjectSignal(Math.random() * 500 + 100, 'y'),
+        ...createObjectSignal(1, 'xScale'),
+        ...createObjectSignal(maxSpeed, 'speed'),
+        ...createObjectSignal(0, 'rotation'),
+        ...createObjectSignal(true, 'canGiveHealth'),
         width: () => 80,
-        xScale,
-        setXScale,
         setJitter,
-        canGiveHealth,
-        setCanGiveHealth,
-        rotation,
-        setRotation,
         style: () => ({
           translate: `${jitter().x}px ${jitter().y}px`,
           transition: 'translate 0.1s linear',
         }),
       }
     },
-    onEnterFrame({ $, $game }) {
-      const diver = $game.getControllerById('diver') as DiverController
+    onEnterFrame({ $, $scene }) {
+      const diver = $scene.getControllerById('diver') as DiverController
       if (!diver) return
 
       const targetX = diver.data.x() + 0
@@ -57,12 +48,12 @@ export function createFriedEggFishController(
       const direction = Math.atan2($.y() - targetY, $.x() - targetX)
 
       if (distance < 300 && $.canGiveHealth()) {
-        $.setSpeed(4)
+        $.setSpeed(maxSpeed)
         $.setRotation((direction * 180 / Math.PI) + 180)
         $.setX($.x() - $.speed() * Math.cos(direction))
         $.setY($.y() - $.speed() * Math.sin(direction))
       } else {
-        $.setSpeed(1)
+        $.setSpeed(minSpeed)
         $.setX($.x() + $.speed())
         $.setRotation(0)
       }
@@ -73,10 +64,10 @@ export function createFriedEggFishController(
       })
 
       if (distance < 10 && $.canGiveHealth()) {
-        $game.gameStateActions.heal(50)
-        $game.gameStateActions.achievement('eggFishKiss')
+        $scene.gameStateActions.heal(50)
+        $scene.gameStateActions.achievement('eggFishKiss')
         $.setCanGiveHealth(false)
-        $game.addController(createBubbleController('egg-fish-kiss-' + bubbleN++, {
+        $scene.addController(createBubbleController('egg-fish-kiss-' + bubbleN++, {
           x: $.x(),
           y: $.y(),
           type: 'kiss',

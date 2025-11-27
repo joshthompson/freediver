@@ -11,7 +11,6 @@ export const Tooltip: Component<{
   let tooltip: HTMLDivElement | undefined
 
   createEffect(() => {
-    console.log({ show: show(), anchor, tooltip })
     if (show()) {
       if (anchor && tooltip) {
         const anchorRect = anchor.getBoundingClientRect()
@@ -21,8 +20,6 @@ export const Tooltip: Component<{
         const pageMargin = 10
         const margin = pageMargin + (canvasRect.left ?? 0)
         const tooltipLeft = anchorRect.left + anchorRect.width / 2 - tooltipRect.width / 2 - margin
-
-        console.log({ anchorRect, tooltipRect, tooltipLeft, canvasRect })
 
         tooltip.style.left = `${Math.max(
           -margin + 30,

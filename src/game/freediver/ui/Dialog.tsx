@@ -1,8 +1,8 @@
-import { Game } from '@/utils/game'
+import { Scene } from '@/engine'
 import { css, cva, cx } from '@style/css'
 import { Component, createEffect, createSignal, For, onCleanup, onMount, Show } from 'solid-js'
 
-export const Dialog: Component<{game: Game}> = props => {
+export const Dialog: Component<{scene: Scene}> = props => {
   const [text, setText] = createSignal('')
   const [canProceed, setCanProceed] = createSignal(true)
   const [selectedOption, setSelectedOption] = createSignal<number>(0)
@@ -37,7 +37,7 @@ export const Dialog: Component<{game: Game}> = props => {
     const left = event.key === 'ArrowLeft' || event.key === 'a'
     const right = event.key === 'ArrowRight' || event.key === 'd'
     if (space && canProceed()) {
-      props.game.diaglogAction(selectedOption())
+      props.scene.diaglogAction(selectedOption())
     }
     if (left && canProceed()) {
       setSelectedOption(prev => (prev - 1 + options().length) % options().length)
@@ -47,7 +47,7 @@ export const Dialog: Component<{game: Game}> = props => {
     }
   }
 
-  const message = () => props.game.dialog.data()?.messages[props.game.dialog.messageIndex()]
+  const message = () => props.scene.dialog.data()?.messages[props.scene.dialog.messageIndex()]
   const options = () => message()?.options || []
   onMount(() => window.addEventListener('keydown', handleKeyDown))
   onCleanup(() => window.removeEventListener('keydown', handleKeyDown))

@@ -2,6 +2,7 @@ import { createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
 import { css } from '@style/css'
 import { bubbleAsset, kissAsset } from '@/assets'
+import { createObjectSignal } from '@/engine/utils'
 
 const acceleration = 0.1
 
@@ -18,31 +19,23 @@ export function createBubbleController(
   return createController({
     frames: [props.type === 'kiss' ? kissAsset : bubbleAsset],
     init() {
-      const [x, setX] = createSignal<number>(props.x)
-      const [y, setY] = createSignal<number>(props.y)
-      const [size, setSize] = createSignal(props.type === 'kiss' ? 1 : Math.random())
-      const [speed, setSpeed] = createSignal<number>((props.speed ?? 0.5) * (size() * 0.5 + 0.5))
-      const [xSpeed, setXSpeed] = createSignal<number>(props.xSpeed ?? 0)
+      const size = createObjectSignal(props.type === 'kiss' ? 1 : Math.random(), 'size')
       return {
         id,
         type: 'bubble',
-        x,
-        setX,
-        y,
-        setY,
-        speed,
-        setSpeed,
-        xSpeed,
-        setXSpeed,
+        ...createObjectSignal(props.x, 'x'),
+        ...createObjectSignal(props.y, 'y'),
+        ...createObjectSignal((props.speed ?? 0.5) * (size.size() * 0.5 + 0.5), 'speed'),
+        ...createObjectSignal(props.xSpeed ?? 0, 'xSpeed'),
+        ...size,
         seed: Math.random(),
-        xScale: size,
-        yScale: size,
-        setSize,
+        xScale: size.size,
+        yScale: size.size,
         width: () => props.type === 'kiss' ? 30 : 10,
         class: () => css({ opacity: 0.5 }),
       }
     },
-    onEnterFrame({ $, $game, $age }) {
+    onEnterFrame({ $, $scene, $age }) {
       $.setX($.x() + Math.cos($.seed + $age / 5 - 0.5) * 2 + $.xSpeed())
       $.setY($.y() - $.speed())
       $.setSpeed($.speed() + acceleration)
@@ -50,7 +43,7 @@ export function createBubbleController(
       $.setXSpeed($.xSpeed() * 0.99)
 
       if ($.y() < -50) {
-        $game.removeController($.id)
+        $scene.removeController($.id)
       }
     },
   })
