@@ -164,8 +164,8 @@ export const OceanScene: SceneComponent = props => {
         'diver-arm-right',
       ],
       [
-        'manatee',
         'cow',
+        'manatee',
       ],
       [
         'wreck',

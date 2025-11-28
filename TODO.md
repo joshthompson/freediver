@@ -16,20 +16,22 @@
 
 # Version v1.1
 [x] Remember diver's x position
-[ ] Convert Game object into Scene and make a parent Game object that handles state and other stuff
+[x] Convert Game object into Scene object
+[ ] Make a parent Game object that handles state and other stuff
 [x] Add a service worker for asset caching
 [ ] Cave to move you from minX to maxX
 [x] Dialog system
 [ ] Convert keyboard manager to use signals
 [x] Pause dialog with game pause and have it behind pause screen
 [ ] Achievement tooltip alignment
+[x] Dialog system doesn't run when you press space
 
-[ ] Cow quest
-    [ ] Meet cow and start quest with a dialog
-    [ ] Have cow follow Link across the level (remember cow X)
-    [ ] Add cave and put manatee in the cave
-    [ ] Once you meet the manatee dialog ends quest
-    [ ] Manatee then moves out of the cave... new area
+[x] Cow quest
+    [x] Meet cow and start quest with a dialog
+    [x] Have cow follow Link across the level (remember cow X)
+    [x] Add cave and put manatee in the cave
+    [x] Once you meet the manatee dialog ends quest
+    [x] Manatee then moves out of the cave... new area
 
 [ ] New area - the trench?
     [ ] Cow quest opens the cave to the new area

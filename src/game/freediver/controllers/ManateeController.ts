@@ -2,6 +2,7 @@ import { createController } from '@/utils/game'
 import { manatee0Asset, manateeSadAsset } from '@/assets'
 import { generateFrames } from '@/utils'
 import { createObjectSignal } from '@/engine/utils'
+import { CowQuest } from '../data/Dialogs'
 
 export type ManateeController = ReturnType<typeof createManateeController>
 
@@ -26,6 +27,7 @@ export function createManateeController(id: string, props: { x: number, y: numbe
         ...createObjectSignal(-1, 'xScale'),
         ...createObjectSignal('sad' as ManateeMood, 'mood'),
         ...createObjectSignal(frames.sad, 'frames'),
+        ...createObjectSignal(false, 'preQuestDialog'),
         ...createObjectSignal({
           x: Math.random() * 20000 - 10000,
           y: Math.random() * 400 + 100
@@ -39,7 +41,20 @@ export function createManateeController(id: string, props: { x: number, y: numbe
       const float = Math.cos($age / 10 - 0.2)
       $.setY($.y() + float)
 
-      if ($scene.gameState.questState.cow?.state === 'reunited') {
+      const questState = $scene.gameState.questState.cow?.state ?? 'waiting'
+      if (questState === 'waiting' || questState === 'lost') {
+        if ($.preQuestDialog() === false) {
+          const distance = $scene.getControllerById('corgi')?.distanceTo($.x(), $.y()) ?? Infinity
+          if (distance < 200) {
+            $scene.startDialog({
+              messages: CowQuest.preQuestManatee,
+              pauseGameplay: true,
+            })
+            $.setPreQuestDialog(true)
+          }
+        }
+      }
+      if (questState === 'reunited') {
         $.setFrames(frames.happy)
         const direction = Math.atan2($.y() - $.target().y, $.x() - $.target().x)
         const distance = Math.hypot($.x() - $.target().x, $.y() - $.target().y)

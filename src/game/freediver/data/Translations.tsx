@@ -28,7 +28,7 @@ const baseTranslations = {
     continue: 'Continue',
     instructions: 'Instructions',
     options: 'Options',
-    credits: 'A game by Josh Thompson and Olesya Vasileva',
+    credits: 'A game by Josh Thompson and Olesia Vasileva',
   },
   options: {
     clearGameData: 'Clear Game Data',
@@ -223,7 +223,7 @@ export const Translations = {
       continue: 'Fortsätt',
       instructions: 'Instruktioner',
       options: 'Inställningar',
-      credits: 'Ett spel av Josh Thompson och Olesya Vasileva',
+      credits: 'Ett spel av Josh Thompson och Olesia Vasileva',
     },
     options: {
       clearGameData: 'Rensa speldata',

@@ -1,4 +1,5 @@
 import { Scene } from '@/engine'
+import { Key } from '@/utils/game'
 import { css, cva, cx } from '@style/css'
 import { Component, createEffect, createSignal, For, onCleanup, onMount, Show } from 'solid-js'
 
@@ -6,6 +7,7 @@ export const Dialog: Component<{scene: Scene}> = props => {
   const [text, setText] = createSignal('')
   const [canProceed, setCanProceed] = createSignal(true)
   const [selectedOption, setSelectedOption] = createSignal<number>(0)
+  const [spacePressed, setSpacePressed] = createSignal(Key.isDown(' '))
 
   createEffect(() => {
     const text = message()?.text ?? undefined
@@ -36,8 +38,10 @@ export const Dialog: Component<{scene: Scene}> = props => {
     const space = event.key === ' '
     const left = event.key === 'ArrowLeft' || event.key === 'a'
     const right = event.key === 'ArrowRight' || event.key === 'd'
-    if (space && canProceed()) {
+    
+    if (space && canProceed() && !spacePressed()) {
       props.scene.diaglogAction(selectedOption())
+      setSpacePressed(true)
     }
     if (left && canProceed()) {
       setSelectedOption(prev => (prev - 1 + options().length) % options().length)
@@ -47,10 +51,21 @@ export const Dialog: Component<{scene: Scene}> = props => {
     }
   }
 
+  const handleKeyUp = (event: KeyboardEvent) => {
+    const space = event.key === ' '
+    if (space) setSpacePressed(false)
+  }
+
   const message = () => props.scene.dialog.data()?.messages[props.scene.dialog.messageIndex()]
   const options = () => message()?.options || []
-  onMount(() => window.addEventListener('keydown', handleKeyDown))
-  onCleanup(() => window.removeEventListener('keydown', handleKeyDown))
+  onMount(() => {
+    window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('keyup', handleKeyUp)
+  })
+  onCleanup(() => {
+    window.removeEventListener('keydown', handleKeyDown)
+    window.removeEventListener('keyup', handleKeyUp)
+  })
 
   return <Show when={message()}>
     <div class={styles.dialog({ hasImage: !!message()!.image })}>

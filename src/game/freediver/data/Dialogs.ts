@@ -8,7 +8,7 @@ const manatee = { speaker: 'Manny the Manatee', image: manateeDialogAsset }
 export const CowQuest = {
   intro: [
     { ...cow, text: 'Moooooooo!' },
-    { ...cow, text: `My name is Gerald the Cow and I'm in a really a bad mooood` },
+    { ...cow, text: `My name is Wanda the Cow and I'm in a really a bad mooood` },
     { ...link, text: 'Woof woof!' },
     { ...cow, text: 'You really want to help me?!' },
     { ...link, text: 'Woof woof!' },
@@ -17,6 +17,9 @@ export const CowQuest = {
     { ...cow, text: `Wow, your kindness has really moooved me!` },
     { ...link, text: 'Woof woof!' },
     { ...cow, text: `I'll try and keep up with you but I'm not the fastest swimmer` },
+  ],
+  preQuestManatee: [
+    { ...manatee, text: 'Mwoorp, I lost my cousin somewhere. Mwoorp!'}
   ],
   slowDown: [
     { ...cow, text: `Slow down, I've lost you!` },
