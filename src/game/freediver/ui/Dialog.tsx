@@ -1,5 +1,4 @@
-import { Scene } from '@/engine'
-import { Key } from '@/utils/game'
+import { Key, Scene } from '@/engine'
 import { css, cva, cx } from '@style/css'
 import { Component, createEffect, createSignal, For, onCleanup, onMount, Show } from 'solid-js'
 

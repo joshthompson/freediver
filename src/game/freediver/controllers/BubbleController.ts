@@ -1,5 +1,4 @@
 import { createController } from '@/utils/game'
-import { createSignal } from 'solid-js'
 import { css } from '@style/css'
 import { bubbleAsset, kissAsset } from '@/assets'
 import { createObjectSignal } from '@/engine/utils'

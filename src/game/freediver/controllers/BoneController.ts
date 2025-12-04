@@ -1,5 +1,4 @@
 import { createController } from '@/utils/game'
-import { createSignal } from 'solid-js'
 import { CorgiController } from './CorgiController'
 import { boneAsset } from '@/assets'
 import { createObjectSignal } from '@/engine/utils'

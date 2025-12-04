@@ -43,7 +43,7 @@ const styles = {
   achievements: css({
     display: 'grid',
     gap: '5px',
-    m: '2rem 1rem',
+    m: '0',
     gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
     fontSize: '16px',
     wordBreak: 'break-word',

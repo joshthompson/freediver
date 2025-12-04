@@ -95,7 +95,12 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
       >
         {props.underlay}
         <For each={sprites()}>
-          {controller => <Sprite {...controller.sprite()} id={controller.id} active={props.scene.isActive()} />}
+          {controller => <Sprite
+            {...controller.sprite()}
+            id={controller.id}
+            type={controller.type}
+            active={props.scene.isActive()}
+          />}
         </For>
         {props.dialog && <props.dialog scene={props.scene} />}
         {props.overlay}

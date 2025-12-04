@@ -19,12 +19,13 @@
 [x] Convert Game object into Scene object
 [ ] Make a parent Game object that handles state and other stuff
 [x] Add a service worker for asset caching
-[ ] Cave to move you from minX to maxX
 [x] Dialog system
-[ ] Convert keyboard manager to use signals
+[x] Convert keyboard manager to use signals
 [x] Pause dialog with game pause and have it behind pause screen
 [ ] Achievement tooltip alignment
 [x] Dialog system doesn't run when you press space
+[ ] Level file format?
+[x] Replace logo image with text
 
 [x] Cow quest
     [x] Meet cow and start quest with a dialog
@@ -50,6 +51,5 @@ OCEAN
  5000: manatee cave
 
 CAVE
-
    0: cave exit - start location
 1000: 

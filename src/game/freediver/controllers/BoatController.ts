@@ -1,20 +1,18 @@
 import { createController } from '@/utils/game'
-import { createSignal } from 'solid-js'
 import { css } from '@style/css'
 import { boatAsset } from '@/assets'
+import { createObjectSignal } from '@/engine'
 
 export function createBoatController(id: string) {
   const baseY = 300
   return createController({
     frames: [boatAsset],
     init() {
-      const [y, setY] = createSignal<number>(baseY)
       return {
         id,
         type: 'boat',
         x: () => 250,
-        y,
-        setY,
+        ...createObjectSignal(baseY, 'y'),
         width: () => 200,
         class: () => css({
           _after: {

@@ -6,7 +6,7 @@ import { MenuScene } from './scene/MenuScene'
 import { InstructionsScene } from './scene/InstructionsScene'
 import { isMobileBrowser, playSound } from '@/utils/game'
 import { createStore } from 'solid-js/store'
-import { GameState, GameStateContext, loadState, setGameStateWithSaveWrapper } from '@/utils/GameStateContext'
+import { GameState, GameStateContext, initialState, setGameStateWithSaveWrapper } from '@/utils/GameStateContext'
 import { BlackoutScene } from './scene/BlackoutScene'
 import { OptionsScene } from './scene/OptionsScene'
 import { Translations } from '@/game/freediver/data/Translations'
@@ -15,39 +15,13 @@ import { MobileKeyboard } from './ui/MobileKeyboard'
 import { alertAsset, musicSound } from '@/assets'
 import { Achievement, AchievementsRecord } from '@/game/freediver/data/Achievements'
 
-const testScene = 'menu'
+const testScene = 'ocean'
 
 export const FreediverGame: Component = () => {
-  const loadedState = loadState()
   const [windowWidth, setWindowWidth] = createSignal(window.innerWidth)
   const zoom = createMemo(() => windowWidth() < 700 ? windowWidth() / 700 : 1)
 
-  const [gameState, _setGameState] = createStore<GameState>({
-    score: {
-      currentDive: 0,
-      total: loadedState?.score?.total ?? 0,
-      maxDive: loadedState?.score?.maxDive ?? 0,
-    },
-    diver: {
-      x: loadedState?.diver?.x ?? 0,
-      oxygen: 100,
-      showDamage: false,
-      showHeal: false,
-    },
-    options: {
-      ...(loadedState.options ?? {
-        locale: 'en',
-        volume: 1,
-      }),
-      debug: import.meta.env.DEV,
-    },
-    questState: loadedState?.questState ?? {},
-    achievements:
-      Object.fromEntries(
-        Object.entries((loadedState?.achievements ?? {}) as AchievementsRecord)
-          .map(([key, value]) => [key as Achievement, value === 'new' ? 'shown' : value])
-      ),
-  })
+  const [gameState, _setGameState] = createStore<GameState>(initialState())
 
   const setGameState = setGameStateWithSaveWrapper(gameState, _setGameState)
 

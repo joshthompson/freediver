@@ -5,7 +5,8 @@ import { css } from "@style/css"
 import { Button } from "../ui/Button"
 import { useGameState } from "@/utils/GameStateContext"
 import { LocaleFlags, Translations } from "@/game/freediver/data/Translations"
-import { alertAsset, logoAlisaAsset, logoAlisaRuAsset, logoFreediverAsset, logoFreediverRuAsset, menu1Asset } from "@/assets"
+import { alertAsset, menu1Asset } from "@/assets"
+import { Logo } from "../ui/Logo"
 
 export const MenuScene: SceneComponent = props => {
   const game = new Scene('menu', {
@@ -14,10 +15,6 @@ export const MenuScene: SceneComponent = props => {
     height: 700,
     images: [
       menu1Asset,
-      logoAlisaAsset,
-      logoFreediverAsset,
-      logoAlisaRuAsset,
-      logoFreediverRuAsset,
       alertAsset,
     ],
   })
@@ -29,10 +26,7 @@ export const MenuScene: SceneComponent = props => {
     scene={game}
     style={{ background: `url(${menu1Asset})`, 'background-size': 'cover' }}
     overlay={<div class={styles.overlay}>
-      <div  class={styles.logo}>
-        <img src={locale() === 'ru' ? logoAlisaRuAsset : logoAlisaAsset} class={styles.logoTop} />
-        <img src={locale() === 'ru' ? logoFreediverRuAsset : logoFreediverAsset} class={styles.logoBottom} />
-      </div>
+      <Logo class={styles.logo} />
       <img
         src={LocaleFlags[game.gameState.options.locale]}
         class={styles.flag}
@@ -72,28 +66,27 @@ const styles = {
   logo: css({
     position: 'absolute',
     width: '300px',
-    top: '20px',
-    right: '80px',
+    top: '50px',
+    right: '50px',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     gap: '10px',
   }),
-  logoTop: css({
-    width: '100%',
-    filter: 'drop-shadow(2px 4px 0 black)',
-  }),
-  logoBottom: css({
-    width: '80%',
-  }),
   flag: css({
     position: 'absolute',
     top: '10px',
-    right: '10px',
+    left: '10px',
     height: '40px',
     width: '40px',
     borderRadius: '50%',
     border: '2px solid white',
     cursor: 'pointer',
+    boxShadow: '2px 2px 4px #00000050',
+    transition: 'scale 0.1s ease-in-out',
+
+    _hover: {
+      scale: 1.1,
+    }
   }),
 }

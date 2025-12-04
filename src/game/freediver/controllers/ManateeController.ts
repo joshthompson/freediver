@@ -3,6 +3,7 @@ import { manatee0Asset, manateeSadAsset } from '@/assets'
 import { generateFrames } from '@/utils'
 import { createObjectSignal } from '@/engine/utils'
 import { CowQuest } from '../data/Dialogs'
+import { OCEAN } from '../scene/levels/ocean'
 
 export type ManateeController = ReturnType<typeof createManateeController>
 
@@ -41,7 +42,7 @@ export function createManateeController(id: string, props: { x: number, y: numbe
       const float = Math.cos($age / 10 - 0.2)
       $.setY($.y() + float)
 
-      const questState = $scene.gameState.questState.cow?.state ?? 'waiting'
+      const questState = $scene.gameState.questState.cow.state
       if (questState === 'waiting' || questState === 'lost') {
         if ($.preQuestDialog() === false) {
           const distance = $scene.getControllerById('corgi')?.distanceTo($.x(), $.y()) ?? Infinity
@@ -64,7 +65,7 @@ export function createManateeController(id: string, props: { x: number, y: numbe
         $scene.setGameState('questState', 'cow', 'x', $.x())
         if (distance < 20) {
           $.setTarget({
-            x: Math.random() * 20000 - 10000,
+            x: Math.random() * (OCEAN.maxX - OCEAN.minX) + OCEAN.minX,
             y: Math.random() * 400 + 100
           })
         } 

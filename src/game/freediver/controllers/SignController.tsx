@@ -52,7 +52,6 @@ export function createSignController(id: string) {
 
 const styles = {
   sign: css({
-    fontFamily: '"Snowstorm", serif',
     position: 'absolute',
     top: '23px',
     right: '20px',

@@ -1,54 +1,11 @@
 import { Scene } from '@/engine'
 import { Sprite } from '@/engine/components/Sprite'
 import { cx } from '@style/css'
-import { Accessor, Component, createMemo, createSignal, JSX } from 'solid-js'
+import { Accessor, createMemo, createSignal, JSX } from 'solid-js'
 
 type Accessorise<T> = {
   [K in keyof T]: Accessor<T[K]>
 }
-
-class KeyController {
-  #keys = new Map<string, boolean>()
-  #timeouts = new Map<string, number>()
-
-  constructor() {
-    window.addEventListener('keydown', this.#keydown.bind(this))
-    window.addEventListener('keyup', this.#keyup.bind(this))
-  }
-
-  emulateKeydown(key: string, time = 100) {
-    this.#keys.set(key, true)
-    if (this.#timeouts.has(key)) {
-      window.clearTimeout(this.#timeouts.get(key))
-    }
-    this.#timeouts.set(key, window.setTimeout(() => {
-      this.#keys.set(key, false)
-    }, time))
-  }
-
-  destroy() {
-    window.addEventListener('keydown', this.#keydown.bind(this))
-    window.addEventListener('keyup', this.#keyup.bind(this))
-  }
-
-  #keydown(event: KeyboardEvent) {
-    this.#keys.set(event.key, true)
-  }
-
-  #keyup(event: KeyboardEvent) {
-    this.#keys.set(event.key, false)
-  }
-
-  isDown(key: string) {
-    return this.#keys.get(key) ?? false
-  }
-
-  get all() {
-    return this.#keys.entries()
-  }
-}
-
-export const Key = new KeyController()
 
 export function isOverlapping(
   object1: HTMLElement | DOMRect | undefined,
@@ -114,6 +71,14 @@ interface OnEnterFrameData<T extends ControllerBaseType> {
   $controller: Controller<T>
 }
 
+interface OnMountData<T extends ControllerBaseType> {
+  $: T,
+  $scene: Scene,
+  $currentFrame: number
+  $controller: Controller<T>
+  $ref: HTMLDivElement | undefined
+}
+
 interface ControllerProps<T extends ControllerBaseType> {
   init: () => T
   frames?: Sprite['frames']
@@ -121,6 +86,7 @@ interface ControllerProps<T extends ControllerBaseType> {
   class?: Sprite['class']
   style?: Sprite['style']
   onEnterFrame?: (data: OnEnterFrameData<T>) => void
+  onMount?: (data: OnMountData<T>) => void
 }
 
 export interface Controller<
@@ -208,6 +174,15 @@ export function createController<
           origin: data.inner?.origin?.(),
         },
         onChangeFrame: frame => setCurrentFrame(frame),
+        onMount: ({ $ref }) => {
+          options.onMount && options.onMount({
+            $: data,
+            $scene: data.game!,
+            $controller: controller,
+            $currentFrame: currentFrame(),
+            $ref: $ref,
+          })
+        },
       }),
     ),
   }
@@ -218,12 +193,14 @@ export function createController<
 type ExtractControllerType<T> = T extends Controller<infer A> ? A : never
 
 export function createConnectedController<C extends Controller<any>>(options: {
-  type: string,
+  type: string | ((baseType: string) => string),
   base: C,
   frames?: ControllerProps<ExtractControllerType<C>>['frames'],
   offset: { x: number, y: number },
+  transformOrigin?: { x: number, y: number },
   origin?: { x: number, y: number },
   width: ($: ExtractControllerType<C>) => number,
+  height?: ($: ExtractControllerType<C>) => number,
   xScale?: ($: ExtractControllerType<C>) => number,
   rotation?: ($: ExtractControllerType<C>, $age: number) => number,
   frameInterval?: ($: ExtractControllerType<C>) => number,
@@ -231,15 +208,19 @@ export function createConnectedController<C extends Controller<any>>(options: {
   onEnterFrame?: ControllerProps<ExtractControllerType<C>>['onEnterFrame'],
   frame?: ($: ExtractControllerType<C>) => number,
   style?: ($: ExtractControllerType<C>) => JSX.CSSProperties,
+  randomStartFrame?: boolean
 }) {
   return createController({
     frames: options.frames,
+    randomStartFrame: options.randomStartFrame ?? false,
     init() {
       const baseData = options.base.data as ExtractControllerType<C>
 
       return {
         id: `${options.base.id}-${options.type}`,
-        type: `${options.base.type}-${options.type}`,
+        type: typeof options.type === 'function'
+          ? options.type(options.base.type)
+          : `${options.base.type}-${options.type}`,
 
         x: () => baseData.x() + options.offset.x,
         y: () => baseData.y() + options.offset.y,
@@ -247,11 +228,12 @@ export function createConnectedController<C extends Controller<any>>(options: {
         frameInterval: () => options.frameInterval?.(baseData),
         state: () => options.state?.(baseData),
         width: options.width,
+        height: options.height,
         rotation: baseData.rotation,
         xScale: baseData.xScale,
         origin: () => ({
-          x: baseData.width() / 2 - options.offset.x,
-          y: baseData.height() / 2 - options.offset.y,
+          x: baseData.width() / 2 - options.offset.x + (options.transformOrigin?.x ?? 0),
+          y: baseData.height() / 2 - options.offset.y + (options.transformOrigin?.y ?? 0),
         }),
         inner: {
           rotation: () => options.rotation?.(baseData, options.base.age()) ?? 0,

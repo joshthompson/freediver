@@ -35,7 +35,7 @@ export function createCowController(
       const float = Math.cos($age / 10 - 0.8)
       $.setY($.y() + float)
 
-      const state = $scene.gameState.questState.cow?.state ?? 'waiting'
+      const state = $scene.gameState.questState.cow.state
       const corgi = $scene.getControllerById<CorgiController>('corgi')
       const manatee = $scene.getControllerById<ManateeController>('manatee')
       if (!corgi || !manatee) return

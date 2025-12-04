@@ -6,6 +6,7 @@ import {
   AchievementsRecord,
 } from '@/game/freediver/data/Achievements'
 import { Locale } from "@/game/freediver/data/Translations"
+import { OCEAN } from "@/game/freediver/scene/levels/ocean"
 
 export interface GameState {
   score: {
@@ -24,7 +25,7 @@ export interface GameState {
     debug: boolean
     volume: number
   }
-  questState: Partial<{
+  questState: {
     cow: {
       state: 'waiting' | 'following' | 'lost' | 'reunited',
       x: number
@@ -32,8 +33,78 @@ export interface GameState {
     cave: {
       state: 'open' | 'closed',
     },
-  }>
+    corgi: {
+      bones: boolean[]
+      delivered: number
+      open: boolean
+    }
+  }
   achievements: AchievementsRecord
+}
+
+const baseState: GameState = {
+  score: {
+    total: 0,
+    currentDive: 0,
+    maxDive: 0,
+  },
+  diver: {
+    x: 0,
+    oxygen: 100,
+    showDamage: false,
+    showHeal: false,
+  },
+  options: {
+    locale: 'en',
+    volume: 1,
+    debug: import.meta.env.DEV,
+  },
+  achievements: {},
+  questState: {
+    cow: {
+      state: 'waiting',
+      x: OCEAN.minX + 500,
+    },
+    cave: {
+      state: 'closed',
+    },
+    corgi: {
+      bones: Array(10).fill(false),
+      delivered: 0,
+      open: false
+    }
+  },
+}
+
+export function initialState(): GameState {
+  const loadedState = loadState()
+  return {
+    score: {
+      ...baseState.score,
+      ...loadedState.score,
+      currentDive: 0,
+    },
+    diver: {
+      ...baseState.diver,
+      ...loadedState.diver,
+      oxygen: 100,
+      showDamage: false,
+      showHeal: false,
+    },
+    options: {
+      ...baseState.options,
+      ...loadedState.options,
+      debug: import.meta.env.DEV,
+    },
+    questState: {
+      ...baseState.questState,
+      ...loadedState.questState,
+    },
+    achievements: Object.fromEntries(
+      Object.entries((loadedState.achievements ?? {}))
+          .map(([key, value]) => [key as Achievement, value === 'new' ? 'shown' : value])
+    ) as AchievementsRecord
+  }
 }
 
 export function setGameStateWithSaveWrapper(
@@ -51,7 +122,7 @@ export const saveState = (gameState: GameState) => {
   window.localStorage.setItem('game-state', JSON.stringify(gameState satisfies GameState))
 }
 
-export const loadState = (): Partial<GameState> => {
+export const loadState = (): GameState => {
   return JSON.parse(window.localStorage.getItem('game-state') ?? '{}')
 }
 

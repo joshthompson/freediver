@@ -1,8 +1,6 @@
 import { createController } from '@/utils/game'
-import { createSignal } from 'solid-js'
 import { DiverController } from './DiverController'
 import { createBubbleController } from './BubbleController'
-import { Sprite } from '@/engine/components/Sprite'
 import { generateFrames } from '@/utils'
 import { BoneController } from './BoneController'
 import { linkAsset } from '@/assets'
@@ -100,8 +98,7 @@ export function createCorgiController(
         if ($.rotation() < -10 || $.rotation() > 180) $.setRotation($.rotation() + 1.5)
       }
 
-      const float = Math.cos($age / 10 - 0.5)
-      $.setY($.y() + float)
+      $.setY($.y() + Math.cos($age / 10 - 0.5))
 
       $.setBubbleLevel($.bubbleLevel() + $.speed() / 4 + 0.5)
       if ($.bubbleLevel() > bubbleFrequency) {

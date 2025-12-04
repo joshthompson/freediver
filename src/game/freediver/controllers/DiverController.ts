@@ -1,10 +1,10 @@
-import { createConnectedController, createController, Key } from '@/utils/game'
+import { createConnectedController, createController } from '@/utils/game'
 import { createSignal } from 'solid-js'
 import { createBubbleController } from './BubbleController'
 import { Sprite } from '@/engine/components/Sprite'
 import { generateFrames } from '@/utils'
 import { seadiverArmBackAsset, seadiverArmFrontAsset, seadiverBodyAsset, seadiverHeadAsset } from '@/assets'
-import { createObjectSignal } from '@/engine/utils'
+import { createObjectSignal, Key } from '@/engine/utils'
 
 export type DiverController = ReturnType<typeof createDiver>
 export type DiverHeadController = ReturnType<typeof createDiverHead>
@@ -25,6 +25,7 @@ const pxInMeter = 40
 let bubbleN = 0
 const maxSpeed = 10
 const minSpeed = -2.5
+const equalisationSpeedPenaly = 0.75
 const maxShowDamageLevel = 60
 const maxShowHealLevel = 60
 
@@ -125,6 +126,7 @@ function createDiver(id: string, props: DiverControllerProps) {
         const up = () => Key.isDown('ArrowUp') || Key.isDown('w')
         const down = () => Key.isDown('ArrowDown') || Key.isDown('s')
         const space = () => Key.isDown(' ')
+        const currentMaxSpeed = maxSpeed * ($.eqLevel() > $.eqTolerance ? equalisationSpeedPenaly : 1)
 
         if ($scene.gameState.diver.showDamage) {
           $.setShowDamageLevel(maxShowDamageLevel)
@@ -142,8 +144,8 @@ function createDiver(id: string, props: DiverControllerProps) {
 
         if ($age % 20 === 0) {
           const oxygen = $scene.gameState.diver.oxygen
-          let consumption = 0.5 + 0.5 * Math.abs($.speed()) / maxSpeed
-          if ($.eqLevel() > $.eqTolerance) consumption *= 2
+          let consumption = 0.5 + 0.5 * Math.abs($.speed()) / currentMaxSpeed
+          if ($.eqLevel() > $.eqTolerance) consumption *= 1.5
 
           $scene.setGameState('diver', 'oxygen', Math.max(0, oxygen - consumption))
 
@@ -159,9 +161,9 @@ function createDiver(id: string, props: DiverControllerProps) {
         else if (down()) $.setSpeed($.speed() - $.acceleration())
         else if ($.speed() > 0) $.setSpeed($.speed() - $.acceleration() / 2)
         else if ($.speed() < 0) $.setSpeed($.speed() + $.acceleration() / 2)
-        $.setSpeed(Math.max(minSpeed, Math.min(maxSpeed, $.speed())))
+        $.setSpeed(Math.max(minSpeed, Math.min(currentMaxSpeed, $.speed())))
 
-        $.setFrameInterval(250 - 150 * ($.speed() / maxSpeed))
+        $.setFrameInterval(250 - 150 * ($.speed() / currentMaxSpeed))
 
         // Rotation
         let rotation = $.rotation()

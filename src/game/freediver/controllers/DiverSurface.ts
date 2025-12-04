@@ -1,9 +1,8 @@
-import { createConnectedController, createController, Key, playTone } from '@/utils/game'
-import { createSignal } from 'solid-js'
+import { createConnectedController, createController, playTone } from '@/utils/game'
 import { Sprite } from '@/engine/components/Sprite'
 import { generateFrames } from '@/utils'
 import { seadiverFrontBodyAsset, seadiverFrontHeadAsset } from '@/assets'
-import { createObjectSignal } from '@/engine/utils'
+import { createObjectSignal, Key } from '@/engine'
 
 export type DiverSurfaceBodyController = ReturnType<typeof createDiverSurfaceBodyController>
 export type DiverSurfaceHeadController = ReturnType<typeof createDiverSurfaceHeadController>

@@ -81,15 +81,21 @@ export const SurfaceScene: SceneComponent = props => {
 
 const styles = {
   canvas: css({
-    backgroundImage: `linear-gradient(
-      0deg,
-      #399cdc 0%,
-      #399cdc 60%,
-      #2a7db3 70%,
-      #c6fff8 70%,
-      #3ea8ff 100%
-    )`,
-    backgroundSize: 'cover',
+    backgroundImage: `
+      url(/src/assets/island.png),
+      url(/src/assets/island-flip.png),
+      linear-gradient(
+        0deg,
+        #399cdc 0%,
+        #399cdc 60%,
+        #2a7db3 70%,
+        #c6fff8 70%,
+        #3ea8ff 100%
+      )
+    `,
+    backgroundSize: '200px, 200px, cover',
+    backgroundPosition: '-20px 152px, 523px 152px, center',
+    backgroundRepeat: 'no-repeat',
   }),
   instructions: css({
     position: 'relative',

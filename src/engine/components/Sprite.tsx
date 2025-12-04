@@ -6,6 +6,7 @@ import {
   createSignal,
   JSX,
   onCleanup,
+  onMount,
   useContext,
 } from 'solid-js'
 import { css, cx } from '@style/css'
@@ -37,16 +38,20 @@ export interface Sprite {
   children?: JSX.Element
   onClick?: () => void
   onChangeFrame?: (frameIndex: number) => void
+  onMount?: (data: { $ref: HTMLDivElement | undefined }) => void
 }
 
 interface SpriteExtendedProps {
   active?: boolean
   id?: string
+  type?: string
 }
 
 export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
   const scene = useContext(SceneContext)
   if (!scene) return
+
+  let ref: HTMLDivElement
   
   const [loading, setLoading] = createSignal(true)
   const [imageSize, setImageSize] = createSignal<{
@@ -128,6 +133,7 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
   }
   runAnimation()
 
+  onMount(() => props.onMount?.({ $ref: ref }))
   onCleanup(() => clearTimeout(enterFrameTimeout))
 
   const left = createMemo(() => {
@@ -137,7 +143,11 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
   return (
     <div
       data-controller-id={props.id}
-      ref={props.ref}
+      data-controller-type={props.type}
+      ref={el => {
+        ref = el
+        props.ref = el
+      }}
       class={cx(styles.sprite, props.class)}
       style={{
         display: loading() ? 'none' : 'block',

@@ -40,5 +40,6 @@ const styles = {
     gap: '10px',
     color: 'white',
     backdropFilter: 'blur(2px)',
+    p: '20px',
   }),
 }

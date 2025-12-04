@@ -17,6 +17,8 @@ export const LocaleFlags: Record<Locale, string> = {
 
 const baseTranslations = {
   common: {
+    title1: 'Alisa',
+    title2: 'The Freediver',
     back: 'Back',
     volumeOn: 'Volume: On',
     volumeOff: 'Volume: Off',
@@ -116,6 +118,8 @@ export const Translations = {
   en: baseTranslations,
   ru: {
     common: {
+      title1: 'Алиса',
+      title2: 'Фридайвер',
       back: 'Назад',
       volumeOn: 'Громкость: Вкл',
       volumeOff: 'Громкость: Выкл',
@@ -212,6 +216,8 @@ export const Translations = {
   },
   sv: {
     common: {
+      title1: 'Alisa',
+      title2: 'Fridykaren',
       back: 'Tillbaka',
       volumeOn: 'Volym: På',
       volumeOff: 'Volym: Av',

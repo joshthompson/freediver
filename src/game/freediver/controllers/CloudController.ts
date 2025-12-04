@@ -1,7 +1,6 @@
 import { cloudAsset } from '@/assets'
 import { createObjectSignal } from '@/engine/utils'
 import { createController } from '@/utils/game'
-import { createSignal } from 'solid-js'
 
 export function createCloudController(
   id: string,

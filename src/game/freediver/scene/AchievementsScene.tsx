@@ -49,6 +49,7 @@ const styles = {
   }),
   achievements: css({
     overflowY: 'auto',
+    p: '20px',
   }),
   spacer: css({
     flexGrow: 1,

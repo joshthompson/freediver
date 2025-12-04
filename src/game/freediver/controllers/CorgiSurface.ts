@@ -28,6 +28,6 @@ export function createCorgiSurfaceController(id: string, props?: CorgiSurfaceCon
         const float = Math.cos($age / 10 - 0.5) * 0.5
         $.setY($.y() + float)
       },
-    } as const,
+    },
   )
 }

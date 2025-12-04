@@ -11,7 +11,7 @@ export function createSharkController(id: string) {
     init() {
       return {
         id,
-        type: 'whale-shark',
+        type: 'shark',
         ...createObjectSignal(5000, 'x'),
         y: () => 90,
         speed: () => 2,

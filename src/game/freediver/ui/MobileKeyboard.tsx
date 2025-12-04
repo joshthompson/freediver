@@ -1,8 +1,8 @@
 import { Component } from "solid-js";
 import { css, cva } from "@style/css";
-import { Key } from "@/utils/game";
 import { useGameState } from "@/utils/GameStateContext";
 import { Translations } from "@/game/freediver/data/Translations";
+import { Key } from "@/engine";
 
 export const MobileKeyboard: Component<{ scene: string}> = props => {
   const { gameState } = useGameState()!
