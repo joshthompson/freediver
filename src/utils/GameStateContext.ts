@@ -34,7 +34,7 @@ export interface GameState {
       state: 'open' | 'closed',
     },
     corgi: {
-      bones: boolean[]
+      bones: (number | 'delivered')[] // -1 for not found, otherwise the find order
       delivered: number
       open: boolean
     }
@@ -69,7 +69,7 @@ const baseState: GameState = {
       state: 'closed',
     },
     corgi: {
-      bones: Array(10).fill(false),
+      bones: Array(10).fill(-1),
       delivered: 0,
       open: false
     }
@@ -117,9 +117,13 @@ export function setGameStateWithSaveWrapper(
   }) as any as SetStoreFunction<GameState>
 }
 
-
-export const saveState = (gameState: GameState) => {
-  window.localStorage.setItem('game-state', JSON.stringify(gameState satisfies GameState))
+const saveFrequency = 5000
+let lastSaved = 0
+export const saveState = (gameState: GameState, forceSave = false) => {
+  if (Date.now() - lastSaved > saveFrequency || forceSave) {
+    window.localStorage.setItem('game-state', JSON.stringify(gameState satisfies GameState))
+    lastSaved = Date.now()
+  }
 }
 
 export const loadState = (): GameState => {
@@ -147,13 +151,16 @@ export const useGameState = () => {
     }
   }
 
+  function score(points: number) {
+    setGameState('score', 'currentDive', (score) => score + points)
+  }
+
   return {
     gameState,
     setGameState,
     gameStateActions: {
-      score: (points: number) => {
-        setGameState('score', 'currentDive', (score) => score + points)
-      },
+      score,
+      achievement,
       registerCurrentDive: () => {
         setGameState('score', (state) => {
           const newTotal = state.total + state.currentDive
@@ -200,7 +207,6 @@ export const useGameState = () => {
         setGameState('options', 'locale', nextLocale[gameState.options.locale])
         achievement('bilingual')
       },
-      achievement,
       damage: (amount: number) => {
         setGameState('diver', 'oxygen', oxygen => Math.max(0, oxygen - amount))
         setGameState('diver', 'showDamage', true)
@@ -208,7 +214,15 @@ export const useGameState = () => {
       heal: (amount: number) => {
         setGameState('diver', 'oxygen', oxygen => Math.min(100, oxygen + amount))
         setGameState('diver', 'showHeal', true)
-      }
+      },
+      claimBone: (n: number) => {
+        score(1)
+        const totalBonesFound = gameState.questState.corgi.bones.filter(b => b !== -1).length
+        const delivered = gameState.questState.corgi.delivered
+        const nextBoneId = totalBonesFound - delivered
+        setGameState('questState', 'corgi', 'bones', n, nextBoneId)
+        return 1
+      },
     }
   }
 }

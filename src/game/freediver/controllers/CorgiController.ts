@@ -36,7 +36,6 @@ export function createCorgiController(
         ...createObjectSignal(0, 'speed'),
         ...createObjectSignal(250, 'frameInterval'),
         ...createObjectSignal(bubbleFrequency / 2, 'bubbleLevel'),
-        ...createObjectSignal(0, 'bones'),
         acceleration: 0.15,
         width: () => 70,
         state: () => 'play',

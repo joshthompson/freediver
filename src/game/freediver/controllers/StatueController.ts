@@ -1,14 +1,14 @@
 import { statueAsset } from '@/assets'
 import { createController } from '@/utils/game'
 
-export function createStatueController(id: string) {
+export function createStatueController(id: string, props: { x: number }) {
   return createController({
     frames: [statueAsset],
     init() {
       return {
         id,
         type: 'statue',
-        x: () => 8000,
+        x: () => props.x,
         y: () => 220,
         width: () => 360,
       }

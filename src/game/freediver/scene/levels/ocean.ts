@@ -66,7 +66,8 @@ export function OceanLevel(props: {
       }))
       $scene.addController(...createWallController('wall-left', { x: OCEAN.minX - 500 }))
       $scene.addController(...createWallController('wall-right', { x: OCEAN.maxX - 20, cave: 'left' }))
-      $scene.addController(createCorgiController('corgi', { x: diverX + 10 }))
+      const corgi = createCorgiController('corgi', { x: diverX + 10 })
+      $scene.addController(corgi)
       $scene.addController(createRopeController('rope'))
       $scene.addController(...createFriedEggFishController('fried-egg-fish-1', { x: -2000 }))
       $scene.addController(...createFriedEggFishController('fried-egg-fish-2', { x: 4000 }))
@@ -80,13 +81,19 @@ export function OceanLevel(props: {
         y: 475,
       }))
       
-      const totalBones = 20
-      const boneGap = 1000
+      const totalBones = state.gameState.questState.corgi.bones.length
+      const boneGap = (OCEAN.maxX - OCEAN.minX - 1000) / (totalBones - 1)
+      const boneStart = OCEAN.minX + 500
       Array(totalBones).fill(null).forEach((_, n) => {
-        const x = n < totalBones / 2
-          ? 0 + (n + 1) * boneGap
-          : 0 - (n - totalBones / 2 + 1) * boneGap
-        $scene.addController(createBoneController('bone-' + n, { x: x + Math.random() * 200 - 100 }) )
+        const bone = state.gameState.questState.corgi.bones[n]
+        if (bone !== 'delivered') {
+          $scene.addController(createBoneController('bone-' + n, {
+            x: boneStart + boneGap * n + Math.random() * 400 - 200,
+            n: n,
+            boneNumber: bone,
+            corgi,
+          }))
+        }
       })
 
       const totalStarfish = 30

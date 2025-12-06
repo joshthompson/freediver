@@ -24,6 +24,7 @@ export interface Sprite {
   yScale?: number
   state?: 'play' | 'pause' | undefined
   width: number
+  height?: number
   class?: string
   style?: JSX.CSSProperties
   frameInterval?: number | Accessor<number>
@@ -85,6 +86,7 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
     }),
   )
   const width = createMemo(() => props.width ? props.width : imageSize().width)
+  const height = createMemo(() => props.height ? props.height : imageSize().height)
 
   const size = createMemo(() => frames()[0].width
       ? { width: frames()[0].width, height: frames()[0].height }
@@ -151,11 +153,11 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
       class={cx(styles.sprite, props.class)}
       style={{
         display: loading() ? 'none' : 'block',
-        'aspect-ratio': `${size().width} / ${size().height}`,
         top: (props.y - 0 * (props.parallax ?? 1)) + 'px',
         left: left(),
         transform: `scale(${(props.xScale ?? 1).toString()}, ${(props.yScale ?? 1).toString()})`,
         width: width() + 'px',
+        'aspect-ratio': `${size().width} / ${size().height}`,
         'pointer-events': props.onClick ? 'auto' : 'none',
         rotate: props.rotation + 'deg',
         'z-index': props.z,

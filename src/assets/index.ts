@@ -1,5 +1,6 @@
 // Images
-export { default as alertAsset } from '@assets/sprites/alert.png';
+export { default as alertAsset } from '@assets/sprites/alert.png'
+export { default as emptyAsset } from '@assets/sprites/empty.png'
 export { default as boatAsset } from '@assets/sprites/boat.png'
 export { default as boneAsset } from '@assets/sprites/bone.png'
 export { default as bubbleAsset } from '@assets/sprites/bubble.png'

@@ -5,48 +5,61 @@ import { createObjectSignal } from '@/engine/utils'
 
 export type BoneController = ReturnType<typeof createBoneController>
 
-export function createBoneController(id: string, props: { x: number }) {
+export function createBoneController(id: string, props: {
+  x: number
+  n: number
+  boneNumber: number
+  corgi: CorgiController
+}) {
+  const corgi = props.corgi
+  const isClaimed = props.boneNumber >= 0
+
+  function target(boneNumber: number) {
+    return {
+      x: corgi.data.x() + (
+        corgi.data.xScale() > 0
+          ? (-50 - boneNumber * 40)
+          : (50 + boneNumber * 40)
+      ),
+      y: corgi.data.y() + 10,
+    }
+  }
+
   return createController({
     frames: [boneAsset],
     init() {
-      const claimed = createObjectSignal(false, 'claimed')
+      const claimed = createObjectSignal(isClaimed, 'claimed')
       return {
         id,
         type: 'bone',
-        ...createObjectSignal(props.x, 'x'),
-        ...createObjectSignal(620, 'y'),
+        ...createObjectSignal(isClaimed ? target(props.boneNumber).x : props.x, 'x'),
+        ...createObjectSignal(isClaimed ? target(props.boneNumber).y : 620, 'y'),
+        ...createObjectSignal(Math.random() * 20, 'rotation'),
+        ...createObjectSignal(props.boneNumber, 'boneNumber'),
         ...claimed,
-        ...createObjectSignal(-1, 'boneNumber'),
         width: () => claimed.claimed() ? 30 : 60,
-        rotation: () => Math.random() * 20,
       }
     },
-    onEnterFrame({ $, $scene, $controller }) {
-      const corgi = $scene.getControllerById('corgi') as CorgiController
-      if (!corgi) return
-
+    onEnterFrame({ $, $scene, $controller, $age }) {
       if (!$.claimed() && corgi.hitTest($controller)) {
+        const boneNumber = $scene.gameStateActions.claimBone(props.n)
         $.setClaimed(true)
-        $.setBoneNumber(corgi.data.bones())
-        $scene.gameStateActions.score(1)
-        corgi.data.setBones(corgi.data.bones() + 1)
-        if (corgi.data.bones() === 5) $scene.gameStateActions.achievement('bone')
+        $.setBoneNumber(boneNumber)
       }
 
       if ($.claimed()) {
-        const targetX = corgi.data.x() + (
-          corgi.data.xScale() > 0
-            ? (-50 - $.boneNumber() * 40)
-            : (50 + $.boneNumber() * 40)
-        )
-        const targetY = corgi.data.y() + 10
+        const {
+          x: targetX,
+          y: targetY,
+        } = target($.boneNumber())
         const distance = Math.hypot($.x() - targetX, $.y() - targetY)
         const direction = Math.atan2($.y() - targetY, $.x() - targetX)
-        const speed = Math.max(5, corgi.data.speed())
+        const speed = Math.max(3, corgi.data.speed())
         if (distance > 20) {
           $.setX($.x() - speed * Math.cos(direction))
           $.setY($.y() - speed * Math.sin(direction))
         }
+        $.setRotation($.rotation() + Math.cos(props.n * 3 + $age / 10))
       }
     }
   })

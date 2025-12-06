@@ -16,8 +16,8 @@ import { OceanLevel } from './levels/ocean'
 import { CaveLevel } from './levels/cave'
 
 export const OceanScene: SceneComponent = props => {
-  const { scene, style: levelStyle, surface } = OceanLevel({ setScene: props.setScene })
-  // const { scene, style: levelStyle, surface } = CaveLevel({ setScene: props.setScene })
+  // const { scene, style: levelStyle, surface } = OceanLevel({ setScene: props.setScene })
+  const { scene, style: levelStyle, surface } = CaveLevel({ setScene: props.setScene })
   onCleanup(() => scene.destroy())
 
   const exitToMenu = () => {

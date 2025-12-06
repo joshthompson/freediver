@@ -34,6 +34,11 @@
     [x] Once you meet the manatee dialog ends quest
     [x] Manatee then moves out of the cave... new area
 
+[ ] Corgi statue quest
+    [x] Collect bones and remember which bones are collected
+    [ ] Deliver the bones to the statue
+    [ ] When the bones are all delivered open the new area below
+
 [ ] New area - the trench?
     [ ] Cow quest opens the cave to the new area
     [ ] New area looks different and has different fish?

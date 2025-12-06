@@ -9,3 +9,10 @@ type RecursivePartial<T> = {
         ? RecursivePartial<T[P]>
         : T[P]
 }
+
+type Rect = {
+  x: number
+  y: number
+  width: number
+  height: number
+}

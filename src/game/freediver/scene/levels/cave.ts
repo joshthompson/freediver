@@ -11,6 +11,7 @@ import { createOctopusController } from "../../controllers/OctopusController"
 import { alertAsset, depth1Asset, depth2Asset, depth3Asset, equalisationSound, mudAsset, starfishSound, surfaceAsset, thudSound } from "@/assets"
 import { JSX } from "solid-js/jsx-runtime"
 import { createPlantController } from "../../controllers/PlantController"
+import { createBoxController } from "../../controllers/BoxController"
 
 export const CAVE = {
   minX: -10000,
@@ -28,7 +29,9 @@ export function CaveLevel(props: {
     height: 700,
     setup($scene: Scene) {
       const diverX = $scene.gameState.diver.x
-      $scene.addController(createStatueController('statue'))
+      $scene.addController(createBoxController('box-1', { x: 600, y: 200, width: 400, height: 100 }))
+      
+      $scene.addController(createStatueController('statue', { x: 6000 }))
       $scene.addController(...createDiverController('diver', {
         x: diverX,
         goToSurface: x => {
@@ -62,16 +65,6 @@ export function CaveLevel(props: {
       $scene.addController(createCorgiController('corgi', { x: diverX + 10 }))
       $scene.addController(...createTriggerFishController('triggerfish-1', { x: 2000 }))
       $scene.addController(...createTriggerFishController('triggerfish-2', { x: 6000 }))
-
-      
-      // const totalBones = 20
-      // const boneGap = 1000
-      // Array(totalBones).fill(null).forEach((_, n) => {
-      //   const x = n < totalBones / 2
-      //     ? 0 + (n + 1) * boneGap
-      //     : 0 - (n - totalBones / 2 + 1) * boneGap
-      //   $scene.addController(createBoneController('bone-' + n, { x: x + Math.random() * 200 - 100 }) )
-      // })
 
       // const totalStarfish = 30
       // const starfishMargin = 500

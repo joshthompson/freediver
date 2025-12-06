@@ -77,7 +77,9 @@ export class Scene<C extends Controller<any> = Controller<any>> {
 
     // Setup onEnterFrame functions for controllers
     this.interval = window.setInterval(() => {
-      this.controllers.get().forEach(({ controller }) => controller.onEnterFrame())
+      if (this.isActive()) {
+        this.controllers.get().forEach(({ controller }) => controller.onEnterFrame(this))
+      }
       this.options.afterEnterFrames?.({ $scene: this })
     }, this.options.frameRate ?? 40)
 
@@ -110,6 +112,25 @@ export class Scene<C extends Controller<any> = Controller<any>> {
 
   getControllersByType<T = Controller<any>>(type: string) {
     return this.controllers.get().filter(c => c.controller.type === type).map(c => c.controller as T) as T[]
+  }
+
+  getSolidControllerRects(): Rect[] {
+    return this.controllers.get()
+      .filter(c => c.controller.solid && c.controller.sprite())
+      .map(c => {
+        const solid = c.controller.solid as Rect | true
+        return solid === true ? {
+          x: c.controller.data.x() + c.controller.solid,
+          y: c.controller.data.y() + c.controller.solid,
+          width: c.controller.sprite().width,
+          height: c.controller.sprite().width, // TODO Force height being set
+        } : {
+          x: c.controller.data.x() + solid.x,
+          y: c.controller.data.y() + solid.y,
+          width: solid.width,
+          height: solid.height,
+        }
+      })
   }
 
   handleWindowKeydown(event: KeyboardEvent) {
@@ -230,13 +251,14 @@ export class Scene<C extends Controller<any> = Controller<any>> {
     this.loadingAssetCount.set(0)
     this.loadingAssetTotal.set(imageAssets.length + audioAssets.length)
     const assetLoaded = () => this.loadingAssetCount.set(this.loadingAssetCount.get() + 1)
-    const images = imageAssets.map(asset => {
+    const assetSet = new Set([...imageAssets, ...audioAssets])
+    const images = imageAssets.map(path => {
       return new Promise<void>((resolve) => {
         const img = new Image()
-        img.src = asset
+        img.src = path
         img.onload = () => assetLoaded() && resolve()
         img.onerror = () => assetLoaded() && resolve()
-      })
+      }).then(() => assetSet.delete(path)).catch(() => console.error(`Error preloading "${path}"`))
     })
     const sounds = audioAssets.map(path => {
       return new Promise<void>((resolve) => {
@@ -251,8 +273,8 @@ export class Scene<C extends Controller<any> = Controller<any>> {
         audio.addEventListener('canplay', done)
         audio.addEventListener('loadeddata', done)
         audio.addEventListener('error', done)
-      })
+      }).then(() => assetSet.delete(path)).catch(() => console.error(`Error preloading "${path}"`))
     })
-    await Promise.all([...images, ...sounds])
+    await Promise.allSettled([...images, ...sounds])
   }
 }

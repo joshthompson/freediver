@@ -50,6 +50,7 @@ function createDiver(id: string, props: DiverControllerProps) {
   return createController(
     {
       frames: generateFrames(seadiverBodyAsset, 952 / 7, 315, 68, 7),
+      blockedBySolid: true,
       style: props.style,
       init() {
         const [x, setX] = createSignal<number>(props.x)

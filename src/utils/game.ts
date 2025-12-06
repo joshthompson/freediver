@@ -1,7 +1,8 @@
 import { Scene } from '@/engine'
 import { Sprite } from '@/engine/components/Sprite'
 import { cx } from '@style/css'
-import { Accessor, createMemo, createSignal, JSX } from 'solid-js'
+import { Accessor, createMemo, createSignal, JSX, Setter } from 'solid-js'
+import { blockBySolidsRectPlayer } from './blockBySolids'
 
 type Accessorise<T> = {
   [K in keyof T]: Accessor<T[K]>
@@ -48,12 +49,14 @@ export function playSound(
   return audio
 }
 
-type ControllerBaseType = {
+export type ControllerBaseType = {
   id: string
   type: string
   x: Accessor<Sprite['x']>
   y: Accessor<Sprite['y']>
-  game?: Scene
+  setX?: Setter<Sprite['x']>
+  setY?: Setter<Sprite['y']>
+  scene?: Scene
   style?: Accessor<Sprite['style']>
   width?: Accessor<Sprite['width']>
   height?: Accessor<number>
@@ -82,6 +85,8 @@ interface OnMountData<T extends ControllerBaseType> {
 interface ControllerProps<T extends ControllerBaseType> {
   init: () => T
   frames?: Sprite['frames']
+  solid?: boolean | Rect
+  blockedBySolid?: boolean
   randomStartFrame?: Sprite['randomStartFrame']
   class?: Sprite['class']
   style?: Sprite['style']
@@ -95,7 +100,8 @@ export interface Controller<
   type: string
   id: string
   frames?: Sprite['frames']
-  onEnterFrame: () => void
+  solid: boolean | Rect
+  onEnterFrame: (scene: Scene) => void
   destroy: () => void
   hitTest: (other: Controller<any>) => boolean
   distanceTo: (x: number, y: number) => number
@@ -115,7 +121,7 @@ export function createController<
   const [currentFrame, setCurrentFrame] = createSignal<number>(0)
   const data: CP = options.init()
   const destroy = () => {}
-  const setGame = (scene: Scene) => (data.game = scene)
+  const setGame = (scene: Scene) => (data.scene = scene)
   const hitTest = (other: Controller<any>) => {
     const ref1 = document.querySelector(`[data-controller-id="${data.id}"]`) as HTMLElement
     const ref2 = document.querySelector(`[data-controller-id="${other.id}"]`) as HTMLElement
@@ -132,17 +138,24 @@ export function createController<
     id: data.id,
     type: data.type,
     frames: options.frames,
-    onEnterFrame: () => {
-      if (data.game && data.game?.isActive()) {
-        onEnterFrame({
-          $: data,
-          $scene: data.game,
-          $age: age(),
-          $currentFrame: currentFrame(),
-          $controller: controller
-        })
-        setAge(age() + 1)
+    solid: options.solid ?? false,
+    onEnterFrame: $scene => {
+      const prevX = data.x()
+      const prevY = data.y()
+
+      onEnterFrame({
+        $: data,
+        $scene,
+        $age: age(),
+        $currentFrame: currentFrame(),
+        $controller: controller
+      })
+
+      if (options.blockedBySolid) {
+        // blockBySolids(data, prevX, prevY)
+        blockBySolidsRectPlayer(data, prevX, prevY)
       }
+      setAge(age() + 1)
     },
     destroy,
     hitTest,
@@ -177,7 +190,7 @@ export function createController<
         onMount: ({ $ref }) => {
           options.onMount && options.onMount({
             $: data,
-            $scene: data.game!,
+            $scene: data.scene!,
             $controller: controller,
             $currentFrame: currentFrame(),
             $ref: $ref,
