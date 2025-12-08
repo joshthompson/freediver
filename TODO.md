@@ -26,6 +26,9 @@
 [x] Dialog system doesn't run when you press space
 [ ] Level file format?
 [x] Replace logo image with text
+[x] Require height for controllers
+[ ] Change trigger fish to have a base position and choose random points around it to swim between, until it finds you
+[ ] Teleport between zones
 
 [x] Cow quest
     [x] Meet cow and start quest with a dialog
@@ -43,18 +46,3 @@
     [ ] Cow quest opens the cave to the new area
     [ ] New area looks different and has different fish?
     [ ] Maybe remove trigger fish from the ocean scene and put them in the new area
-
-
-## Level plan
-OCEAN
-
--5000: wall
--4900: cow
--2500: ship wreck
-    0: buoy - start location
- 2500: ???
- 5000: manatee cave
-
-CAVE
-   0: cave exit - start location
-1000: 

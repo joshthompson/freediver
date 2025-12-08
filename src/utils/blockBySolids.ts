@@ -75,7 +75,6 @@ export function blockBySolidsRectPlayer(data: ControllerBaseType, prevX: number,
   if (player.x === prevX && player.y === prevY) return
 
   const rects = data.scene?.getSolidControllerRects() ?? []
-  console.log(rects)
   const dx = player.x - prevX
   const dy = player.y - prevY
 

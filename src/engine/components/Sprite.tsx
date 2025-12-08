@@ -24,7 +24,7 @@ export interface Sprite {
   yScale?: number
   state?: 'play' | 'pause' | undefined
   width: number
-  height?: number
+  height: number
   class?: string
   style?: JSX.CSSProperties
   frameInterval?: number | Accessor<number>
@@ -54,14 +54,6 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
 
   let ref: HTMLDivElement
   
-  const [loading, setLoading] = createSignal(true)
-  const [imageSize, setImageSize] = createSignal<{
-    width: number
-    height: number
-  }>({
-    width: 0,
-    height: 0,
-  })
   const [currentFrame, setCurrentFrame] = createSignal(
     props.randomStartFrame
       ? Math.floor(Math.random() * props.frames.length)
@@ -85,13 +77,8 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
       }
     }),
   )
-  const width = createMemo(() => props.width ? props.width : imageSize().width)
-  const height = createMemo(() => props.height ? props.height : imageSize().height)
-
-  const size = createMemo(() => frames()[0].width
-      ? { width: frames()[0].width, height: frames()[0].height }
-      : imageSize()
-  )
+  const width = () => props.width
+  const height = () => props.height
 
   const frameStyle = createMemo(() => {
     const frame = frames()[currentFrame()]
@@ -106,19 +93,18 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
   })
 
   // Preload frames
-  Promise.all(
-    [...new Set(frames().map(f => f.image))].map(
-      frame =>
-        new Promise<HTMLImageElement>(resolve => {
-          const img = new Image()
-          img.src = frame
-          img.onload = () => resolve(img)
-        }),
-    ),
-  ).then(results => {
-    setLoading(false)
-    setImageSize({ width: results[0].width, height: results[0].height })
-  })
+  // Promise.all(
+  //   [...new Set(frames().map(f => f.image))].map(
+  //     frame =>
+  //       new Promise<HTMLImageElement>(resolve => {
+  //         const img = new Image()
+  //         img.src = frame
+  //         img.onload = () => resolve(img)
+  //       }),
+  //   ),
+  // ).then(results => {
+  //   setImageSize({ width: results[0].width, height: results[0].height })
+  // })
 
   let enterFrameTimeout: ReturnType<typeof setTimeout> | undefined
 
@@ -152,12 +138,11 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
       }}
       class={cx(styles.sprite, props.class)}
       style={{
-        display: loading() ? 'none' : 'block',
         top: (props.y - 0 * (props.parallax ?? 1)) + 'px',
         left: left(),
         transform: `scale(${(props.xScale ?? 1).toString()}, ${(props.yScale ?? 1).toString()})`,
-        width: width() + 'px',
-        'aspect-ratio': `${size().width} / ${size().height}`,
+        width: props.width + 'px',
+        height: props.height + 'px',
         'pointer-events': props.onClick ? 'auto' : 'none',
         rotate: props.rotation + 'deg',
         'z-index': props.z,

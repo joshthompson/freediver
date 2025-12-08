@@ -13,7 +13,8 @@ import { Translations } from '@/game/freediver/data/Translations'
 import { AchievementsScene } from './scene/AchievementsScene'
 import { MobileKeyboard } from './ui/MobileKeyboard'
 import { alertAsset, musicSound } from '@/assets'
-import { Achievement, AchievementsRecord } from '@/game/freediver/data/Achievements'
+import { Achievement } from '@/game/freediver/data/Achievements'
+import { CaveScene } from './scene/CaveScene'
 
 const testScene = 'ocean'
 
@@ -28,7 +29,10 @@ export const FreediverGame: Component = () => {
   const t = () => Translations[gameState.options.locale]
 
   const [scene, _setScene] = createSignal<string>(import.meta.env.DEV ? testScene : 'menu')
-  const setScene = (newScene: string) => {
+  const [sceneMode, setSceneMode] = createSignal<string | undefined>(undefined)
+  const setScene = (newScene: string, mode?: string) => {
+    setSceneMode(mode)
+    
     if (['ocean', 'surface'].includes(newScene) && !music()) {
       startMusic()
     }
@@ -58,13 +62,14 @@ export const FreediverGame: Component = () => {
   return (
     <GameStateContext.Provider value={[gameState, setGameState]}>
       <div class={styles.page} style={{ transform: `scale(${zoom()})`}}>
-        {scene() === 'menu' && <MenuScene setScene={setScene} />}
-        {scene() === 'instructions' && <InstructionsScene setScene={setScene} />}
-        {scene() === 'options' && <OptionsScene setScene={setScene} />}
-        {scene() === 'achievements' && <AchievementsScene setScene={setScene} />}
-        {scene() === 'surface' && <SurfaceScene setScene={setScene} />}
-        {scene() === 'ocean' && <OceanScene setScene={setScene} />}
-        {scene() === 'blackout' && <BlackoutScene setScene={setScene} />}
+        {scene() === 'menu' && <MenuScene setScene={setScene} mode={sceneMode()} />}
+        {scene() === 'instructions' && <InstructionsScene setScene={setScene} mode={sceneMode()} />}
+        {scene() === 'options' && <OptionsScene setScene={setScene} mode={sceneMode()} />}
+        {scene() === 'achievements' && <AchievementsScene setScene={setScene} mode={sceneMode()} />}
+        {scene() === 'surface' && <SurfaceScene setScene={setScene} mode={sceneMode()} />}
+        {scene() === 'ocean' && <OceanScene setScene={setScene} mode={sceneMode()} />}
+        {scene() === 'cave' && <CaveScene setScene={setScene} mode={sceneMode()} />}
+        {scene() === 'blackout' && <BlackoutScene setScene={setScene} mode={sceneMode()} />}
         {newAchievement().length > 0 && <div class={styles.achievements}>
           <For each={newAchievement()}>
             {achievement => (<div class={styles.achievement} style={{ 'background-image': `url(${alertAsset})` }}>

@@ -58,8 +58,8 @@ export type ControllerBaseType = {
   setY?: Setter<Sprite['y']>
   scene?: Scene
   style?: Accessor<Sprite['style']>
-  width?: Accessor<Sprite['width']>
-  height?: Accessor<number>
+  width: Accessor<Sprite['width']>
+  height: Accessor<number>
   inner?: {
     rotation?: Accessor<number>
     origin?: Accessor<{ x: number; y: number }>
@@ -85,7 +85,7 @@ interface OnMountData<T extends ControllerBaseType> {
 interface ControllerProps<T extends ControllerBaseType> {
   init: () => T
   frames?: Sprite['frames']
-  solid?: boolean | Rect
+  solid?: SolidRect
   blockedBySolid?: boolean
   randomStartFrame?: Sprite['randomStartFrame']
   class?: Sprite['class']
@@ -94,13 +94,16 @@ interface ControllerProps<T extends ControllerBaseType> {
   onMount?: (data: OnMountData<T>) => void
 }
 
+export type SolidRectInner = boolean | Rect
+export type SolidRect = SolidRectInner | Accessor<SolidRectInner>
+
 export interface Controller<
   CP extends ControllerBaseType,
 > {
   type: string
   id: string
   frames?: Sprite['frames']
-  solid: boolean | Rect
+  solid: SolidRect
   onEnterFrame: (scene: Scene) => void
   destroy: () => void
   hitTest: (other: Controller<any>) => boolean
@@ -176,7 +179,8 @@ export function createController<
         origin: data.origin?.(),
         xScale: data.xScale?.() ?? 1,
         yScale: data.yScale?.() ?? 1,
-        width: data.width?.() ?? 1,
+        width: data.width(),
+        height: data.height?.() ?? console.log(data.type) ?? 0,
         parallax: data.parallax?.() ?? 1,
         rotation: data.rotation?.() ?? 0,
         state: data.state?.(),
@@ -212,8 +216,9 @@ export function createConnectedController<C extends Controller<any>>(options: {
   offset: { x: number, y: number },
   transformOrigin?: { x: number, y: number },
   origin?: { x: number, y: number },
+  solid?: SolidRect
   width: ($: ExtractControllerType<C>) => number,
-  height?: ($: ExtractControllerType<C>) => number,
+  height: ($: ExtractControllerType<C>) => number,
   xScale?: ($: ExtractControllerType<C>) => number,
   rotation?: ($: ExtractControllerType<C>, $age: number) => number,
   frameInterval?: ($: ExtractControllerType<C>) => number,
@@ -244,6 +249,7 @@ export function createConnectedController<C extends Controller<any>>(options: {
         height: options.height,
         rotation: baseData.rotation,
         xScale: baseData.xScale,
+        solid: options.solid,
         origin: () => ({
           x: baseData.width() / 2 - options.offset.x + (options.transformOrigin?.x ?? 0),
           y: baseData.height() / 2 - options.offset.y + (options.transformOrigin?.y ?? 0),

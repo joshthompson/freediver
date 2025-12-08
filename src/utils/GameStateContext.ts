@@ -6,7 +6,7 @@ import {
   AchievementsRecord,
 } from '@/game/freediver/data/Achievements'
 import { Locale } from "@/game/freediver/data/Translations"
-import { OCEAN } from "@/game/freediver/scene/levels/ocean"
+import { OCEAN } from "@/game/freediver/scene/levels/data"
 
 export interface GameState {
   score: {

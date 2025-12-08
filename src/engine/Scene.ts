@@ -7,7 +7,8 @@ import { createObjectSignal, ObjectSignal } from "./utils"
 
 
 export type SceneComponent<T extends {} = any> = Component<{
-  setScene: (scene: string) => void
+  setScene: (scene: string, mode?: string) => void
+  mode?: string
 } & T>
 
 interface GameOptions {
@@ -118,17 +119,21 @@ export class Scene<C extends Controller<any> = Controller<any>> {
     return this.controllers.get()
       .filter(c => c.controller.solid && c.controller.sprite())
       .map(c => {
-        const solid = c.controller.solid as Rect | true
-        return solid === true ? {
-          x: c.controller.data.x() + c.controller.solid,
-          y: c.controller.data.y() + c.controller.solid,
-          width: c.controller.sprite().width,
-          height: c.controller.sprite().width, // TODO Force height being set
-        } : {
-          x: c.controller.data.x() + solid.x,
-          y: c.controller.data.y() + solid.y,
-          width: solid.width,
-          height: solid.height,
+        const solid = c.controller.solid as Accessor<Rect> | Rect | true
+        if (solid === true) {
+          return {
+            x: c.controller.data.x() + c.controller.solid,
+            y: c.controller.data.y() + c.controller.solid,
+            width: c.controller.sprite().width,
+            height: c.controller.sprite().width, // TODO Force height being set
+          }
+        }
+        const rect = typeof solid === 'function' ? solid() : solid
+        return {
+          x: c.controller.data.x() + rect.x,
+          y: c.controller.data.y() + rect.y,
+          width: rect.width,
+          height: rect.height,
         }
       })
   }
