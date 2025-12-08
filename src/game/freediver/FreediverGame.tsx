@@ -1,5 +1,5 @@
 import { Component, createMemo, createSignal, For } from 'solid-js'
-import { css } from '@style/css'
+import { css, cva } from '@style/css'
 import { OceanScene } from './scene/OceanScene'
 import { SurfaceScene } from './scene/SurfaceScene'
 import { MenuScene } from './scene/MenuScene'
@@ -17,6 +17,8 @@ import { Achievement } from '@/game/freediver/data/Achievements'
 import { CaveScene } from './scene/CaveScene'
 
 const testScene = 'ocean'
+const fadeScenes = ['ocean', 'surface', 'cave']
+const fadeDuration = 300
 
 export const FreediverGame: Component = () => {
   const [windowWidth, setWindowWidth] = createSignal(window.innerWidth)
@@ -30,8 +32,10 @@ export const FreediverGame: Component = () => {
 
   const [scene, _setScene] = createSignal<string>(import.meta.env.DEV ? testScene : 'menu')
   const [sceneMode, setSceneMode] = createSignal<string | undefined>(undefined)
+  const [sceneFade, setSceneFade] = createSignal<'in' | 'out' | undefined>(undefined)
   const setScene = (newScene: string, mode?: string) => {
-    setSceneMode(mode)
+    const fadeOut = fadeScenes.includes(newScene) ? fadeDuration : 0
+    const fadeIn = fadeScenes.includes(scene()) ? fadeDuration : 0
     
     if (['ocean', 'surface'].includes(newScene) && !music()) {
       startMusic()
@@ -41,7 +45,14 @@ export const FreediverGame: Component = () => {
       music()!.remove()
       setMusic(undefined)
     }
-    _setScene(newScene)
+
+    setSceneFade('out')
+    setTimeout(() => {
+      setSceneFade('in')
+      setSceneMode(mode)
+      _setScene(newScene)
+      setTimeout(() => setSceneFade(undefined), fadeIn)
+    }, fadeOut)
   }
 
   const [music, setMusic] = createSignal<HTMLAudioElement | undefined>(undefined)
@@ -61,7 +72,10 @@ export const FreediverGame: Component = () => {
 
   return (
     <GameStateContext.Provider value={[gameState, setGameState]}>
-      <div class={styles.page} style={{ transform: `scale(${zoom()})`}}>
+      <div
+        class={styles.page({ fade: sceneFade() })}
+        style={{ transform: `scale(${zoom()})`, '--fade-duration': `${fadeDuration}ms` }}
+      >
         {scene() === 'menu' && <MenuScene setScene={setScene} mode={sceneMode()} />}
         {scene() === 'instructions' && <InstructionsScene setScene={setScene} mode={sceneMode()} />}
         {scene() === 'options' && <OptionsScene setScene={setScene} mode={sceneMode()} />}
@@ -87,22 +101,37 @@ export const FreediverGame: Component = () => {
 }
 
 const styles = {
-  page: css({
-    '--u': 'min(1dvh, 1dvw)',
-    '--size': 'calc(80 * var(--u))',
-    width: '700px',
-    m: '0 auto',
-    position: 'relative',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'column',
-    fontFamily: '"Snowstorm", sans-serif',
-    transformOrigin: 'top left',
-
-    md: {
-      m: '20px auto',
-    }
+  page: cva({
+    base: {
+      '--u': 'min(1dvh, 1dvw)',
+      '--size': 'calc(80 * var(--u))',
+      width: '700px',
+      m: '0 auto',
+      position: 'relative',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      flexDirection: 'column',
+      fontFamily: '"Snowstorm", sans-serif',
+      transformOrigin: 'top left',
+  
+      md: {
+        m: '20px auto',
+      }
+    },
+    variants: {
+      fade: {
+        in: {
+          animation: `fadeIn var(--fade-duration) ease-in-out forwards`,
+          opacity: '1',
+        },
+        out: {
+          animation: `fadeOut var(--fade-duration) ease-in-out forwards`,
+          opacity: '0',
+        },
+        undefined: {}
+      },
+    },
   }),
   achievements: css({
     position: 'absolute',

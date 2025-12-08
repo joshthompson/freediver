@@ -27,8 +27,9 @@
 [ ] Level file format?
 [x] Replace logo image with text
 [x] Require height for controllers
-[ ] Change trigger fish to have a base position and choose random points around it to swim between, until it finds you
-[ ] Teleport between zones
+[x] Change trigger fish to have a base position and choose random points around it to swim between, until it finds you
+[x] Teleport between zones
+[x] Scene entry/exit fade
 
 [x] Cow quest
     [x] Meet cow and start quest with a dialog

@@ -55,6 +55,10 @@ export default defineConfig({
         from: { opacity: 0 },
         to: { opacity: 1 },
       },
+      fadeOut: {
+        from: { opacity: 1 },
+        to: { opacity: 0 },
+      },
       lightRay: {
         '0%, 100%': { opacity: 0 },
         '50%': { opacity: 'var(--fade-opacity, 0.2)' },

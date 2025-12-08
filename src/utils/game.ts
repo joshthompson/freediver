@@ -62,7 +62,7 @@ export type ControllerBaseType = {
   height: Accessor<number>
   inner?: {
     rotation?: Accessor<number>
-    origin?: Accessor<{ x: number; y: number }>
+    origin?: Accessor<Vector>
   },
 } & Partial<Accessorise<Sprite>>
 

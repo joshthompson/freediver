@@ -29,10 +29,10 @@ export interface Sprite {
   style?: JSX.CSSProperties
   frameInterval?: number | Accessor<number>
   rotation?: number
-  origin?: { x: number; y: number }
+  origin?: Vector
   inner?: {
     rotation?: number
-    origin?: { x: number; y: number }
+    origin?: Vector
     style?: JSX.CSSProperties
   }
   parallax?: number

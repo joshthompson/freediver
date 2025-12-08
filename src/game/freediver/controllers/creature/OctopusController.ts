@@ -6,10 +6,7 @@ import { createObjectSignal } from '@/engine/utils'
 
 export function createOctopusController(
   id: string,
-  props: {
-    x: number
-    y: number
-  },
+  props: Vector,
 ) {
   return createController({
     frames: generateFrames(octopusAsset, 271, 309 , 30, 10),

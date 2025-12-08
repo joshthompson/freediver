@@ -18,8 +18,6 @@ interface DiverControllerProps {
   style?: Sprite['style']
   goToSurface?: (x: number) => void
   blackout?: () => void
-  // maxX: number | ((y: number) => number)
-  // minX: number | ((y: number) => number)
 }
 
 const bubbleFrequency = 20
@@ -72,17 +70,12 @@ function createDiver(id: string, props: DiverControllerProps) {
           })
         }
 
-        // const maxX = () => typeof props.maxX === 'function' ? props.maxX(y()) : props.maxX
-        // const minX = () => typeof props.minX === 'function' ? props.minX(y()) : props.minX
-
         return {
           id,
           type: 'diver',
           x, setX,
           y, setY,
           initY: y(),
-          // maxX,
-          // minX,
           ...createObjectSignal(1, 'xScale'),
           ...createObjectSignal(250, 'frameInterval'),
           ...createObjectSignal(0, 'bubbleLevel'),
@@ -198,30 +191,12 @@ function createDiver(id: string, props: DiverControllerProps) {
         const float = Math.cos($age / 10)
         $.setY($.y() + float)
 
-        // const minY = -50
-        // const maxY = $scene.canvas.get().height - 160
+        const minY = -50
 
-        // if ($.y() < minY) {
-        //   $.goToSurface($.x())
-        //   $.setY(minY)
-        //   $scene.gameStateActions.registerCurrentDive()
-        // }
-        // if ($.y() > maxY) {
-        //   $.setY(maxY)
-        //   if ($.y() !== initY) $scene.playSound('thud')
-        // }
-
-        // if ($.x() > $.maxX()) {
-        //   $scene.gameStateActions.achievement('endOfTheWorld')
-        //   $.setX($.maxX())
-        //   if ($.x() !== initX) $scene.playSound('thud')
-        // }
-
-        // if ($.x() < $.minX()) {
-        //   $scene.gameStateActions.achievement('endOfTheWorld')
-        //   $.setX($.minX())
-        //   if ($.x() !== initX) $scene.playSound('thud')
-        // }
+        if ($.y() < minY) {
+          $.goToSurface($.x())
+          $scene.gameStateActions.registerCurrentDive()
+        }
 
         $.setBubbleLevel($.bubbleLevel() + Math.abs($.speed()) / 3 + 0.5)
         if ($.bubbleLevel() > bubbleFrequency) {

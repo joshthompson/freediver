@@ -10,7 +10,12 @@ type RecursivePartial<T> = {
         : T[P]
 }
 
-type Rect = {
+interface Vector {
+  x: number
+  y: number
+}
+
+interface Rect {
   x: number
   y: number
   width: number

@@ -8,12 +8,8 @@ const width = 30
 
 export function createFishController(
   id: string,
-  props: {
-    x: number
-    y: number
-  },
+  props: Vector,
 ) {
-
   function chooseFishFrames() {
     return Math.random() > 0.5
       ? randomItem([
@@ -28,7 +24,6 @@ export function createFishController(
         { frames: generateFrames(rareFish5Asset, 443, 150, width, 1), height: 10 },
       ]) 
   }
-
   const initalFrames = chooseFishFrames()
 
   return createController({

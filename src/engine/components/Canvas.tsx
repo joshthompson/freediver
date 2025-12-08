@@ -18,9 +18,9 @@ export interface CanvasProps {
   style?: JSX.CSSProperties
   class?: string
   debug?: boolean
-  onClick?: (event: { x: number, y: number }) => void
-  onMouseDown?: (event: { x: number, y: number }) => void
-  onMouseUp?: (event: { x: number, y: number }) => void
+  onClick?: (event: Vector) => void
+  onMouseDown?: (event: Vector) => void
+  onMouseUp?: (event: Vector) => void
 }
 
 export interface Canvas<T extends CanvasControllers = CanvasControllers> {
