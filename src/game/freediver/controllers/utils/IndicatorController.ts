@@ -1,5 +1,5 @@
 import { indicatorAsset } from '@/assets'
-import { Controller, createController } from '@/utils/game'
+import { Controller, createController } from '@/engine'
 
 export function createIndicatorController(enemy: Controller<any>, type: 'enemy' | 'friend') {
   const width = 10

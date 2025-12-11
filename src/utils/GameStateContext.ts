@@ -6,7 +6,7 @@ import {
   AchievementsRecord,
 } from '@/game/freediver/data/Achievements'
 import { Locale } from "@/game/freediver/data/Translations"
-import { OCEAN } from "@/game/freediver/scene/levels/data"
+import { LevelName, OCEAN } from "@/game/freediver/scene/levels/data"
 
 export interface GameState {
   score: {
@@ -19,6 +19,7 @@ export interface GameState {
     oxygen: number
     showDamage: boolean
     showHeal: boolean
+    level: LevelName
   }
   options: {
     locale: Locale
@@ -53,6 +54,7 @@ const baseState: GameState = {
     oxygen: 100,
     showDamage: false,
     showHeal: false,
+    level: 'ocean',
   },
   options: {
     locale: 'en',
@@ -62,14 +64,14 @@ const baseState: GameState = {
   achievements: {},
   questState: {
     cow: {
-      state: 'waiting',
+      state: "reunited",// 'waiting',
       x: OCEAN.minX + 500,
     },
     cave: {
-      state: 'closed',
+      state: 'open', //'closed',
     },
     corgi: {
-      bones: Array(10).fill(-1),
+      bones: [1,2,3,4,5,6,7,8,9,0], // Array(10).fill(-1),
       delivered: 0,
       open: false
     }
@@ -186,17 +188,10 @@ export const useGameState = () => {
         setGameState('options', 'volume', on ? 0 : 1)
       },
       clearGameData: () => {
-        setGameState('score', {
-          total: 0,
-          currentDive: 0,
-          maxDive: 0,
-        })
-        setGameState('achievements', achievements => Object.fromEntries(
-          Object.entries(achievements).map(([key]) => [key, undefined])
-        ))
-        setGameState('questState', questData => Object.fromEntries(
-          Object.entries(questData).map(([key]) => [key, undefined])
-        ))
+        setGameState((prev) => ({
+          ...baseState,
+          options: prev.options
+        }))
       },
       toggleLanguage: () => {
         const nextLocale: Record<Locale, Locale> = {
@@ -219,9 +214,30 @@ export const useGameState = () => {
         score(1)
         const totalBonesFound = gameState.questState.corgi.bones.filter(b => b !== -1).length
         const delivered = gameState.questState.corgi.delivered
-        const nextBoneId = totalBonesFound - delivered
-        setGameState('questState', 'corgi', 'bones', n, nextBoneId)
-        return 1
+        const nextBoneNumber = totalBonesFound - delivered
+        setGameState('questState', 'corgi', 'bones', n, nextBoneNumber)
+        return nextBoneNumber
+      },
+      depositBone: (n: number) => {
+        const prev = gameState.questState.corgi.bones[n]
+        setGameState('questState', 'corgi', 'bones', bones => bones.map(
+          (bone, i) => i === n
+            ? 'delivered'
+            : typeof bone === 'number' && typeof prev === 'number' && bone !== -1 && bone > prev
+              ? bone - 1
+              : bone
+        ))
+        setGameState('questState', 'corgi', 'delivered', prev => prev + 1)
+        if (gameState.questState.corgi.delivered === gameState.questState.corgi.bones.length) {
+          achievement('statue')
+          setGameState('questState', 'corgi', 'open', true)
+        }
+      },
+      blackout: () => {
+        setGameState('score', 'currentDive', 0)
+        setGameState('diver', 'x', 0)
+        setGameState('diver', 'level', 'ocean')
+        achievement('blackout')
       },
     }
   }

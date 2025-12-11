@@ -1,4 +1,4 @@
-import { createController } from '@/utils/game'
+import { createController } from '@/engine'
 import { whaleAsset } from '@/assets'
 import { createObjectSignal } from '@/engine/utils'
 

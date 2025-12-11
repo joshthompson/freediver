@@ -1,9 +1,10 @@
 import { SetStoreFunction } from "solid-js/store"
 import { GameState, GameStateActions } from "../utils/GameStateContext"
-import { Controller, Dialog } from "../utils/game"
+import { Dialog } from "../utils/game"
 import { Accessor, Component, createSignal, Setter } from "solid-js"
 import { Canvas, CanvasControllers } from "@/engine/components/Canvas"
 import { createObjectSignal, ObjectSignal } from "./utils"
+import { Controller } from "./Controller"
 
 
 export type SceneComponent<T extends {} = any> = Component<{
@@ -107,12 +108,19 @@ export class Scene<C extends Controller<any> = Controller<any>> {
     this.controllers.set(this.controllers.get().filter(({ id: name }) => name !== id))
   }
 
+  getAllControllers() {
+    return [
+      ...this.controllers.get().map(c => c.controller),
+      ...this.controllers.get().map(c => c.controller.childControllers()).flat(),
+    ]
+  }
+
   getControllerById<T = Controller<any>>(id: string) {
-    return this.controllers.get().find(c => c.id === id)?.controller as T | undefined
+    return this.getAllControllers().find(c => c.id === id) as T | undefined
   }
 
   getControllersByType<T = Controller<any>>(type: string) {
-    return this.controllers.get().filter(c => c.controller.type === type).map(c => c.controller as T) as T[]
+    return this.getAllControllers().filter(c => c.type === type) as T[]
   }
 
   getSolidControllerRects(): Rect[] {
@@ -124,8 +132,8 @@ export class Scene<C extends Controller<any> = Controller<any>> {
           return {
             x: c.controller.data.x() + c.controller.solid,
             y: c.controller.data.y() + c.controller.solid,
-            width: c.controller.sprite().width,
-            height: c.controller.sprite().width, // TODO Force height being set
+            width: c.controller.data.width,
+            height: c.controller.data.height, // TODO Force height being set
           }
         }
         const rect = typeof solid === 'function' ? solid() : solid

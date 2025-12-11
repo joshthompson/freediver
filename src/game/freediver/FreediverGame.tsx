@@ -16,7 +16,7 @@ import { alertAsset, musicSound } from '@/assets'
 import { Achievement } from '@/game/freediver/data/Achievements'
 import { CaveScene } from './scene/CaveScene'
 
-const testScene = 'ocean'
+const testScene = 'menu'
 const fadeScenes = ['ocean', 'surface', 'cave']
 const fadeDuration = 300
 

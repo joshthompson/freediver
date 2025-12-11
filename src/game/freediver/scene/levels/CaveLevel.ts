@@ -1,12 +1,12 @@
 import { Scene } from "@/engine"
 import { useGameState } from "@/utils/GameStateContext"
-import { createStatueController } from "../../controllers/scenary/StatueController"
+import { createStatueControllers } from "../../controllers/scenary/StatueController"
 import { createTriggerFishController } from "../../controllers/creature/TriggerFishController"
 import { createFishController } from "../../controllers/creature/FishController"
 import { createLightRayController } from "../../controllers/scenary/LightRayController"
 import { createCrabController } from "../../controllers/creature/CrabController"
 import { createOctopusController } from "../../controllers/creature/OctopusController"
-import { alertAsset, depth1Asset, depth2Asset, depth3Asset, equalisationSound, mudAsset, starfishSound, surfaceAsset, thudSound } from "@/assets"
+import { alertAsset, depth1Asset, depth2Asset, depth3Asset, equalisationSound, greenWaveAsset, mudAsset, starfishSound, surfaceAsset, thudSound } from "@/assets"
 import { JSX } from "solid-js/jsx-runtime"
 import { createPlantController } from "../../controllers/scenary/PlantController"
 import { createBoxController } from "../../controllers/utils/BoxController"
@@ -16,27 +16,34 @@ import { CAVE } from "./data"
 import { createTriggerController } from "../../controllers/utils/TriggerController"
 import { createDiverController, DiverController } from "../../controllers/main/DiverController"
 import { createCorgiController } from "../../controllers/main/CorgiController"
+import { createBoneController } from "../../controllers/scenary/BoneController"
 
 export function CaveLevel(props: {
   setScene: (scene: string, mode?: string) => void
-  state: ReturnType<typeof useGameState>
+  state: NonNullable<ReturnType<typeof useGameState>>
   mode?: string
 }) {
   const scene = new Scene('cave', {
-    ...props.state!,
+    ...props.state,
     width: 700,
     height: 700,
     setup($scene: Scene) {
+      props.state.setGameState('diver', 'level', 'cave')
+
       const diverStart = props.mode === 'ocean'
         ? { x: -250, y: 450, rotation: 90 }
         : { x: $scene.gameState.diver.x, rotation: 180 }
 
-      $scene.addController(createBoxController('floor', { x: -10000, y: 680, width: 20000, height: 100 }))
+      $scene.addController(createBoxController('floor1', { x: -1000, y: 680, width: 2100, height: 100 }))
+      $scene.addController(createBoxController('floor2', { x: 1200, y: 680, width: 10000, height: 100 }))
       $scene.addController(...createWallController('wall-left', { x: CAVE.minX - 510, cave: 'right', open: () => true }))
       $scene.addController(createBoxController('rightBound', { x: CAVE.maxX, y: 0, width: 1000, height: 1000 }))
       
-      $scene.addController(createStatueController('statue', { x: 1000 }))
-      $scene.addController(...createDiverController('diver', {
+      $scene.addController(...createStatueControllers('statue', {
+        x: 1000,
+        open: props.state.gameState.questState.corgi.open,
+      }))
+      $scene.addController(createDiverController('diver', {
         x: diverStart.x,
         y: diverStart.y,
         rotation: diverStart.rotation,
@@ -48,20 +55,19 @@ export function CaveLevel(props: {
           }
         },
         blackout: () => {
-          scene.setGameState('score', 'currentDive', 0)
-          scene.setGameState('diver', 'x', 0)
+          scene.gameStateActions.blackout()
           props.setScene('blackout')
-          scene.gameStateActions.achievement('blackout')
         },
       }))
 
       const plants = Array(40).fill(null)
         .map((_, n) => createPlantController('plant-' + n, { x: n * 50 }))
-        .sort((a, b) => a[0].data.y() - b[0].data.y())
-      plants.forEach(plant => $scene.addController(...plant))
+        .sort((a, b) => a.data.y() - b.data.y())
+      plants.forEach(plant => $scene.addController(plant))
 
-      $scene.addController(createCorgiController('corgi', { x: diverStart.x + 10, y: diverStart.y }))
-      $scene.addController(...createTriggerFishController('triggerfish-1', { x: 2000 }))
+      const corgi = createCorgiController('corgi', { x: diverStart.x + 10, y: diverStart.y })
+      $scene.addController(corgi)
+      $scene.addController(...createTriggerFishController('triggerfish-1', { x: 3000 }))
       $scene.addController(...createTriggerFishController('triggerfish-2', { x: 6000 }))
 
       $scene.addController(createTriggerController('trigger-1', {
@@ -111,6 +117,19 @@ export function CaveLevel(props: {
         })
       ).sort((a, b) => b.data.y() - a.data.y())
       octopi.forEach(octopus => $scene.addController(octopus))
+
+      const totalBones = props.state.gameState.questState.corgi.bones.length
+      Array(totalBones).fill(null).forEach((_, n) => {
+        const bone = props.state.gameState.questState.corgi.bones[n]
+        if (bone !== 'delivered' && bone !== -1) {
+          $scene.addController(createBoneController('bone-' + n, {
+            x: diverStart.x * n + Math.random() * 400 - 200,
+            boneId: n,
+            boneNumber: bone,
+            corgi,
+          }))
+        }
+      })
     },
     afterEnterFrames: ({ $scene }) => {
       const diver = $scene.getControllerById<DiverController>('diver')
@@ -122,6 +141,7 @@ export function CaveLevel(props: {
     assetOrder: [
       [
         'plant-fg',
+        'statue-hole-front',
       ],
       [
         'fish',
@@ -149,6 +169,7 @@ export function CaveLevel(props: {
       [
         'wreck',
         'statue',
+        'statue-hole',
       ],
       [
         'plant-bg',
@@ -166,6 +187,7 @@ export function CaveLevel(props: {
   const style = () => ({
     'background-image': `
       url(${mudAsset}),
+      url(${greenWaveAsset}),
       linear-gradient(
         0deg,
         #000000 0%,
@@ -176,13 +198,11 @@ export function CaveLevel(props: {
     filter: 'hue-rotate(10deg)',
     'background-position': `
       ${-scene.canvas.get().x()}px bottom,
-      ${-scene.canvas.get().x() / 1.5}px 85%,
-      ${-scene.canvas.get().x() / 2.0}px 85%,
-      ${-scene.canvas.get().x() / 2.5}px 85%,
+      ${-scene.canvas.get().x() / 1.5}px bottom,
       ${-scene.canvas.get().x()}px bottom
     `,
     'background-repeat': 'repeat-x',
-    'background-size': '330px, 612px, 612px, 612px, cover',
+    'background-size': '330px, 900px, cover',
   } satisfies JSX.CSSProperties)
 
   return { scene, style, surface: false }

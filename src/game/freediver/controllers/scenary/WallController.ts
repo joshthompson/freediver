@@ -1,5 +1,5 @@
 import { wallAsset, wallCaveAsset, wallCaveFgAsset } from '@/assets'
-import { createConnectedController, createController } from '@/utils/game'
+import { createController } from '@/engine'
 import { Accessor } from 'solid-js'
 
 export function createWallController(id: string, props: {
@@ -19,33 +19,35 @@ export function createWallController(id: string, props: {
     } : {
       x: 0, y: 0, width: width, height: height,
     },
-    init() {
-      return {
-        id,
-        type: 'wall',
-        x: () => props.x,
-        xScale: () => xScale,
-        y: () => 20,
-        width: () => width,
-        height: () => height,
-      }
-    },
+    init: () => ({
+      id,
+      type: 'wall',
+      x: () => props.x,
+      xScale: () => xScale,
+      y: () => 20,
+      width: () => width,
+      height: () => height,
+    }),
   })
 
   if (props.cave) {
-    const wallFgController = createConnectedController({
-      type: 'fg',
-      base: wallController,
+    const wallFgController = createController({
+      frames: [wallCaveFgAsset],
       solid: () => ({
-        x: 0,
-        y: 0,
+        x: wallController.data.x(),
+        y: wallController.data.y(),
         height: 0,
         width: 0,
       }),
-      frames: [wallCaveFgAsset],
-      width: () => width,
-      height: () => height,
-      offset: { x: 0, y: 0 },
+      init: () => ({
+        id: `${id}-fg`,
+        type: 'wall-fg',
+        x: () => props.x,
+        y: () => 20,
+        width: () => width,
+        height: () => height,
+        xScale: () => xScale,
+      })
     })
     return [wallController, wallFgController]
   } else {

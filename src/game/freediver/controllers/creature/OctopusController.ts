@@ -1,5 +1,5 @@
 import { generateFrames, randomItem } from '@/utils'
-import { createController } from '@/utils/game'
+import { createController } from '@/engine'
 import { DiverController } from '../main/DiverController'
 import { octopusAsset } from '@/assets'
 import { createObjectSignal } from '@/engine/utils'

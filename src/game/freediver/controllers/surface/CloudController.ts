@@ -1,6 +1,6 @@
 import { cloudAsset } from '@/assets'
 import { createObjectSignal } from '@/engine/utils'
-import { createController } from '@/utils/game'
+import { createController } from '@/engine'
 
 export function createCloudController(
   id: string,

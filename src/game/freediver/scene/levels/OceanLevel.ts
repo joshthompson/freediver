@@ -25,7 +25,7 @@ import { createTriggerController } from "../../controllers/utils/TriggerControll
 
 export function OceanLevel(props: {
   setScene: (scene: string, mode?: string) => void
-  state: ReturnType<typeof useGameState>
+  state: NonNullable<ReturnType<typeof useGameState>>
   mode?: string
 }) {
   const state = useGameState()!
@@ -35,6 +35,8 @@ export function OceanLevel(props: {
     width: 700,
     height: 700,
     setup($scene: Scene) {
+      props.state.setGameState('diver', 'level', 'ocean')
+      
       const diverStart = props.mode === 'cave'
         ? { x: OCEAN.maxX + 100, y: 500, rotation: -90 }
         : { x: $scene.gameState.diver.x, rotation: 180 }
@@ -44,7 +46,7 @@ export function OceanLevel(props: {
       $scene.addController(createWhaleSharkController('whale-shark'))
       $scene.addController(createSharkController('shark'))
       $scene.addController(createWreckController('wreck'))
-      $scene.addController(...createDiverController('diver', {
+      $scene.addController(createDiverController('diver', {
         x: diverStart.x,
         y: diverStart.y,
         rotation: diverStart.rotation,
@@ -101,7 +103,7 @@ export function OceanLevel(props: {
         if (bone !== 'delivered') {
           $scene.addController(createBoneController('bone-' + n, {
             x: boneStart + boneGap * n + Math.random() * 400 - 200,
-            n: n,
+            boneId: n,
             boneNumber: bone,
             corgi,
           }))

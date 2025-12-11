@@ -1,5 +1,5 @@
 import { cva } from '@style/css'
-import { createController } from '@/utils/game'
+import { createController } from '@/engine'
 import { lightAsset, lightGreenAsset } from '@/assets'
 import { createObjectSignal } from '@/engine/utils'
 

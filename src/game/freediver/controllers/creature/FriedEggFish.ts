@@ -1,4 +1,4 @@
-import { createController } from '@/utils/game'
+import { createController } from '@/engine'
 import { createSignal } from 'solid-js'
 import { DiverController } from '../main/DiverController'
 import { createBubbleController } from '../scenary/BubbleController'

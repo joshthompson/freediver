@@ -4,6 +4,8 @@ import {
   createEffect,
   createMemo,
   createSignal,
+  For,
+  Index,
   JSX,
   onCleanup,
   onMount,
@@ -11,6 +13,7 @@ import {
 } from 'solid-js'
 import { css, cx } from '@style/css'
 import { SceneContext } from '@/utils/SceneContext'
+import { Controller } from '../Controller'
 
 export interface Sprite {
   ref?: HTMLDivElement | undefined
@@ -19,7 +22,6 @@ export interface Sprite {
   randomStartFrame?: boolean
   x: number
   y: number
-  z?: number
   xScale?: number
   yScale?: number
   state?: 'play' | 'pause' | undefined
@@ -40,12 +42,14 @@ export interface Sprite {
   onClick?: () => void
   onChangeFrame?: (frameIndex: number) => void
   onMount?: (data: { $ref: HTMLDivElement | undefined }) => void
+  controllers?: Accessor<Controller<any>[]>
 }
 
 interface SpriteExtendedProps {
   active?: boolean
   id?: string
   type?: string
+  fixed?: boolean
 }
 
 export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
@@ -77,8 +81,6 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
       }
     }),
   )
-  const width = () => props.width
-  const height = () => props.height
 
   const frameStyle = createMemo(() => {
     const frame = frames()[currentFrame()]
@@ -91,20 +93,6 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
           : '100% 100%',
     }
   })
-
-  // Preload frames
-  // Promise.all(
-  //   [...new Set(frames().map(f => f.image))].map(
-  //     frame =>
-  //       new Promise<HTMLImageElement>(resolve => {
-  //         const img = new Image()
-  //         img.src = frame
-  //         img.onload = () => resolve(img)
-  //       }),
-  //   ),
-  // ).then(results => {
-  //   setImageSize({ width: results[0].width, height: results[0].height })
-  // })
 
   let enterFrameTimeout: ReturnType<typeof setTimeout> | undefined
 
@@ -124,7 +112,13 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
   onMount(() => props.onMount?.({ $ref: ref }))
   onCleanup(() => clearTimeout(enterFrameTimeout))
 
+  const top = createMemo(() => {
+    if (props.fixed) return props.y + 'px'
+    return (props.y - 0 * (props.parallax ?? 1)) + 'px'
+  })
+
   const left = createMemo(() => {
+    if (props.fixed) return props.x + 'px'
     return (props.x - scene.canvas.get().x() * (props.parallax ?? 1)) + 'px'
   })
 
@@ -138,14 +132,13 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
       }}
       class={cx(styles.sprite, props.class)}
       style={{
-        top: (props.y - 0 * (props.parallax ?? 1)) + 'px',
+        top: top(),
         left: left(),
         transform: `scale(${(props.xScale ?? 1).toString()}, ${(props.yScale ?? 1).toString()})`,
         width: props.width + 'px',
         height: props.height + 'px',
         'pointer-events': props.onClick ? 'auto' : 'none',
         rotate: props.rotation + 'deg',
-        'z-index': props.z,
         "transform-origin": props.origin ? `${props.origin.x}px ${props.origin.y}px` : 'center',
         ...props.style,
       }}
@@ -160,6 +153,15 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
         ...(props.inner?.style ?? {}),
         ...frameStyle(),
       }} />
+      <Index each={props.controllers?.() ?? []}>
+        {controller => <Sprite
+          {...controller().sprite()}
+          id={controller().id}
+          type={controller().type}
+          active={props.active}
+          fixed
+        />}
+      </Index>
     </div>
   )
 }

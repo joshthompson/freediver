@@ -1,6 +1,6 @@
 import { Accessor, Component, For, JSX, onCleanup, Setter } from 'solid-js'
 import { css, cx } from '@style/css'
-import { Controller } from '@/utils/game'
+import { Controller } from '@/engine'
 import { SceneContext } from '@/utils/SceneContext'
 import { Debugger } from './Debugger'
 import { Scene } from '@/engine'

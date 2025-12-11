@@ -1,5 +1,5 @@
-import { createController } from '@/utils/game'
-import { manatee0Asset, manateeSadAsset } from '@/assets'
+import { createController } from '@/engine'
+import { manateeAsset, manateeSadAsset } from '@/assets'
 import { generateFrames } from '@/utils'
 import { createObjectSignal } from '@/engine/utils'
 import { CowQuest } from '../../data/Dialogs'
@@ -11,10 +11,10 @@ type ManateeMood = 'happy' | 'sad'
 
 export function createManateeController(id: string, props: { x: number, y: number }) {
   const width = 200
-  const height = 116
+  const height = 106
 
   const frames: Record<ManateeMood, string[]> = {
-    happy: generateFrames(manatee0Asset, 244, 141, width, 4),
+    happy: generateFrames(manateeAsset, 200, 102, width, 4, true),
     sad: generateFrames(manateeSadAsset, 244, 141, width, 6, true),
   }
 

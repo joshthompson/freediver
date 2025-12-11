@@ -24,7 +24,7 @@ export const SurfaceScene: SceneComponent = props => {
       $scene.addController(
         createBoatController('boat'),
         createSignController('sign'),
-        ...createDiverSurfaceController('diver-surface'),
+        createDiverSurfaceController('diver-surface'),
         createCorgiSurfaceController('corgi-surface', {
           x: 200,
           y: 380,
@@ -58,7 +58,7 @@ export const SurfaceScene: SceneComponent = props => {
     if (oxygen() > 100) {
       state.setGameState('score', 'currentDive', 0)
       state.setGameState('diver', 'oxygen', 100)
-      props.setScene('ocean')
+      props.setScene(state.gameState.diver.level)
       game.gameStateActions.achievement('firstDive')
     }
   })

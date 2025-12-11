@@ -1,5 +1,5 @@
 import { wreckAsset } from '@/assets'
-import { createController } from '@/utils/game'
+import { createController } from '@/engine'
 
 export function createWreckController(id: string) {
   return createController({

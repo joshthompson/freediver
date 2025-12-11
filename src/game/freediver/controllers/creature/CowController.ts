@@ -1,9 +1,9 @@
-import { createController } from '@/utils/game'
+import { createController } from '@/engine'
 import { cowAsset } from '@/assets'
 import { CorgiController } from '../main/CorgiController'
 import { CowQuest } from '../../data/Dialogs'
 import { ManateeController } from './ManateeController'
-import { createObjectSignal } from '@/engine/utils'
+import { createObjectSignal } from '@/engine'
 
 export type CowController = ReturnType<typeof createCowController>
 

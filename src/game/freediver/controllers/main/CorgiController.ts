@@ -1,4 +1,4 @@
-import { createController } from '@/utils/game'
+import { createController } from '@/engine'
 import { DiverController } from './DiverController'
 import { createBubbleController } from '../scenary/BubbleController'
 import { BoneController } from '../scenary/BoneController'

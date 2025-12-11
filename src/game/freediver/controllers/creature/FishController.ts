@@ -1,7 +1,7 @@
 import { fish1Asset, fish2Asset, rareFish1Asset, rareFish2Asset, rareFish3Asset, rareFish4Asset, rareFish5Asset } from '@/assets'
 import { createObjectSignal } from '@/engine/utils'
 import { generateFrames, randomItem } from '@/utils'
-import { createController } from '@/utils/game'
+import { createController } from '@/engine'
 import { createSignal } from 'solid-js'
 
 const width = 30

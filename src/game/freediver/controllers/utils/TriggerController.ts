@@ -1,9 +1,9 @@
-import { Controller, ControllerBaseType, createController } from '@/utils/game'
+import { Controller, ControllerBaseType, createController } from '@/engine'
 import { css } from '@style/css'
 import { emptyAsset } from '@/assets'
 import { createObjectSignal } from '@/engine/utils'
 import { useGameState } from '@/utils/GameStateContext'
-import { Accessor, Setter } from 'solid-js'
+import { Accessor, children, Setter } from 'solid-js'
 
 export function createTriggerController<CP extends ControllerBaseType>(
   id: string,
@@ -35,7 +35,7 @@ export function createTriggerController<CP extends ControllerBaseType>(
         triggered,
         ...(state.gameState.options.debug ? {
           class: () => css({ outline: '1px solid blue', background: '#0000FF33' }),
-        } : {})
+        } : {}),
       }
     },
     onEnterFrame({ $, $controller }) {

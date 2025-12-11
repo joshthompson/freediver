@@ -1,4 +1,4 @@
-import { createController } from '@/utils/game'
+import { createController } from '@/engine'
 import { createSignal } from 'solid-js'
 import { css } from '@style/css'
 import { GameState, useGameState } from '@/utils/GameStateContext'

@@ -1,5 +1,5 @@
 import { generateFrames, randomItem } from '@/utils'
-import { createController } from '@/utils/game'
+import { createController } from '@/engine/Controller'
 import { DiverController } from '../main/DiverController'
 import { Sprite } from '@/engine/components/Sprite'
 import { crabAsset } from '@/assets'

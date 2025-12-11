@@ -1,4 +1,4 @@
-import { createController } from '@/utils/game'
+import { createController } from '@/engine'
 import { Sprite } from '@/engine/components/Sprite'
 import { linkFrontAsset } from '@/assets'
 import { createObjectSignal } from '@/engine/utils'

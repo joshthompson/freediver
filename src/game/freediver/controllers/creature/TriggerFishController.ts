@@ -1,4 +1,4 @@
-import { createController } from '@/utils/game'
+import { createController } from '@/engine'
 import { createSignal } from 'solid-js'
 import { DiverController } from '../main/DiverController'
 import { createIndicatorController } from '../utils/IndicatorController'
@@ -37,6 +37,7 @@ export function createTriggerFishController(
         ...createObjectSignal(1, 'xScale'),
         ...createObjectSignal(5, 'speed'),
         ...createObjectSignal(0, 'rotation'),
+        ...createObjectSignal(1, 'yScale'),
         ...createObjectSignal(false, 'attack'),
         width: () => 80,
         height: () => 44,
@@ -75,6 +76,7 @@ export function createTriggerFishController(
       // Move to target/diver
       const direction = Math.atan2($.y() - targetY, $.x() - targetX)
       $.setRotation((direction * 180 / Math.PI) + 180)
+      $.setYScale($.rotation() > 90 && $.rotation() < 270 ? -1 : 1)
       $.setX($.x() - $.speed() * Math.cos(direction))
       $.setY($.y() - $.speed() * Math.sin(direction))
       $.setJitter({

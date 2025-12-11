@@ -1,8 +1,9 @@
-import { createConnectedController, createController, playTone } from '@/utils/game'
+import { createConnectedController, createController } from '@/engine'
 import { Sprite } from '@/engine/components/Sprite'
 import { generateFrames } from '@/utils'
 import { seadiverFrontBodyAsset, seadiverFrontHeadAsset } from '@/assets'
 import { createObjectSignal, Key } from '@/engine'
+import { playTone } from '@/utils/game'
 
 export type DiverSurfaceBodyController = ReturnType<typeof createDiverSurfaceBodyController>
 export type DiverSurfaceHeadController = ReturnType<typeof createDiverSurfaceHeadController>
@@ -18,9 +19,9 @@ const oxygenUpRate = 20
 const oxygenDownRate = 3
 
 export function createDiverSurfaceController(id: string, props?: DiverSurfaceControllerProps) {
-  const body = createDiverSurfaceBodyController(id, props)
-  const head = createDiverSurfaceHeadController(body)
-  return [body, head]
+  const diverSurface = createDiverSurfaceBodyController(id, props)
+  diverSurface.attach(createDiverSurfaceHeadController(diverSurface))
+  return diverSurface
 }
 
 function createDiverSurfaceBodyController(id: string, props?: DiverSurfaceControllerProps) {

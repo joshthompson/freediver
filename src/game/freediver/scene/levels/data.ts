@@ -7,3 +7,5 @@ export const OCEAN = {
   minX: -4000,
   maxX: 8000,
 } as const
+
+export type LevelName = 'ocean' | 'cave'

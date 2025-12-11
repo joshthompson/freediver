@@ -1,6 +1,5 @@
 import { Canvas } from '@/engine/components/Canvas'
 import { createBubbleController } from '../controllers/scenary/BubbleController'
-import { DiverController } from '../controllers/DiverController'
 import { SceneComponent } from '@/engine'
 import { Accessor, Component, JSX, onCleanup } from 'solid-js'
 import { css, cva } from '@style/css'
@@ -12,7 +11,8 @@ import { Translations } from '@/game/freediver/data/Translations'
 import { surfaceAsset } from '@/assets'
 import { Dialog } from '../ui/Dialog'
 import { Scene } from '@/engine'
-import { Controller } from '@/utils/game'
+import { Controller } from '@/engine'
+import { DiverController } from '../controllers/main/DiverController'
 
 export const Level: SceneComponent<{
   scene: Scene<Controller<any>>,
