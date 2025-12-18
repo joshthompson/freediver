@@ -10,17 +10,17 @@ import { Scene, SceneComponent } from "@/engine"
 
 export const AchievementsScene: SceneComponent = props => {
   const state = useGameState()!
-  const game = new Scene('achievements', {
+  const scene = new Scene('achievements', {
     ...state,
     width: 700,
     height: 700,
     images: [trophyAsset, menu2Asset],
   })
-  onCleanup(() => game.destroy())
+  onCleanup(() => scene.destroy())
   const t = () => Translations[state.gameState.options.locale]
 
   return <Canvas
-    scene={game}
+    scene={scene}
     style={{ background: `url(${menu2Asset})`, 'background-size': 'cover' }}
     overlay={<div class={styles.overlay}>
       <div class={styles.title}>{t().achievements.title}</div>

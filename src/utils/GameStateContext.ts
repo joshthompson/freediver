@@ -43,6 +43,13 @@ export interface GameState {
   achievements: AchievementsRecord
 }
 
+declare global {
+  interface Window {
+    gameState?: GameState
+    setGameState?: SetStoreFunction<GameState>
+  }
+}
+
 const baseState: GameState = {
   score: {
     total: 0,
@@ -64,14 +71,15 @@ const baseState: GameState = {
   achievements: {},
   questState: {
     cow: {
-      state: "reunited",// 'waiting',
+      state: 'waiting',
       x: OCEAN.minX + 500,
     },
     cave: {
-      state: 'open', //'closed',
+      state: 'closed',
     },
     corgi: {
-      bones: [1,2,3,4,5,6,7,8,9,0], // Array(10).fill(-1),
+      // bones: [1,2,3,4,5,6,7,8,9,0],
+      bones: Array(10).fill(-1),
       delivered: 0,
       open: false
     }
@@ -80,7 +88,7 @@ const baseState: GameState = {
 
 export function initialState(): GameState {
   const loadedState = loadState()
-  return {
+  const state = {
     score: {
       ...baseState.score,
       ...loadedState.score,
@@ -107,6 +115,7 @@ export function initialState(): GameState {
           .map(([key, value]) => [key as Achievement, value === 'new' ? 'shown' : value])
     ) as AchievementsRecord
   }
+  return state
 }
 
 export function setGameStateWithSaveWrapper(
@@ -197,7 +206,8 @@ export const useGameState = () => {
         const nextLocale: Record<Locale, Locale> = {
           en: 'ru',
           ru: 'sv',
-          sv: 'en',
+          sv: 'fl',
+          fl: 'en',
         }
         setGameState('options', 'locale', nextLocale[gameState.options.locale])
         achievement('bilingual')

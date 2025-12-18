@@ -9,7 +9,7 @@ import { alertAsset, menu1Asset } from "@/assets"
 import { Logo } from "../ui/Logo"
 
 export const MenuScene: SceneComponent = props => {
-  const game = new Scene('menu', {
+  const scene = new Scene('menu', {
       ...useGameState()!,
     width: 700,
     height: 700,
@@ -18,22 +18,22 @@ export const MenuScene: SceneComponent = props => {
       alertAsset,
     ],
   })
-  onCleanup(() => game.destroy())
-  const locale = () => game.gameState.options.locale
+  onCleanup(() => scene.destroy())
+  const locale = () => scene.gameState.options.locale
   const t = () => Translations[locale()]
 
   return <Canvas
-    scene={game}
+    scene={scene}
     style={{ background: `url(${menu1Asset})`, 'background-size': 'cover' }}
     overlay={<div class={styles.overlay}>
       <Logo class={styles.logo} />
       <img
-        src={LocaleFlags[game.gameState.options.locale]}
+        src={LocaleFlags[scene.gameState.options.locale]}
         class={styles.flag}
-        onClick={game.gameStateActions.toggleLanguage}
+        onClick={scene.gameStateActions.toggleLanguage}
       />
       <Button onClick={() => props.setScene('surface')}>
-        {game.gameState.score.total > 0 ? t().menu.continue : t().menu.start}
+        {scene.gameState.score.total > 0 ? t().menu.continue : t().menu.start}
       </Button>
       <Button onClick={() => props.setScene('instructions')} size="small">{t().menu.instructions}</Button>
       <Button onClick={() => props.setScene('achievements')} size="small">{t().achievements.title}</Button>

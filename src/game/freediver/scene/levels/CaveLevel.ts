@@ -36,12 +36,14 @@ export function CaveLevel(props: {
 
       $scene.addController(createBoxController('floor1', { x: -1000, y: 680, width: 2100, height: 100 }))
       $scene.addController(createBoxController('floor2', { x: 1200, y: 680, width: 10000, height: 100 }))
+      $scene.addController(createBoxController('floor-cave-block', { x: 1050, y: 680, width: 200, height: 100 }))
       $scene.addController(...createWallController('wall-left', { x: CAVE.minX - 510, cave: 'right', open: () => true }))
       $scene.addController(createBoxController('rightBound', { x: CAVE.maxX, y: 0, width: 1000, height: 1000 }))
       
       $scene.addController(...createStatueControllers('statue', {
         x: 1000,
         open: props.state.gameState.questState.corgi.open,
+        doorId: 'floor-cave-block',
       }))
       $scene.addController(createDiverController('diver', {
         x: diverStart.x,
@@ -141,7 +143,6 @@ export function CaveLevel(props: {
     assetOrder: [
       [
         'plant-fg',
-        'statue-hole-front',
       ],
       [
         'fish',
@@ -169,6 +170,7 @@ export function CaveLevel(props: {
       [
         'wreck',
         'statue',
+        'statue-hole-front',
         'statue-hole',
       ],
       [

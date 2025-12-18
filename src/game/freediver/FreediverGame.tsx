@@ -25,6 +25,8 @@ export const FreediverGame: Component = () => {
   const zoom = createMemo(() => windowWidth() < 700 ? windowWidth() / 700 : 1)
 
   const [gameState, _setGameState] = createStore<GameState>(initialState())
+  window.gameState = gameState
+  window.setGameState = _setGameState
 
   const setGameState = setGameStateWithSaveWrapper(gameState, _setGameState)
 

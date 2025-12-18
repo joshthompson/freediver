@@ -2,7 +2,7 @@ import { statueAsset, statueHoleAsset, statueHoleFrontAsset } from '@/assets'
 import { createController, createObjectSignal } from '@/engine'
 
 
-export function createStatueControllers(id: string, props: { x: number, open: boolean }) {
+export function createStatueControllers(id: string, props: { x: number, open: boolean, doorId: string }) {
   return [
     createStatueController(id, props),
     createStatueHoleController(id + '-hole', { x: props.x + 50 }),
@@ -10,7 +10,7 @@ export function createStatueControllers(id: string, props: { x: number, open: bo
   ]
 }
 
-function createStatueController(id: string, props: { x: number, open: boolean }) {
+function createStatueController(id: string, props: { x: number, open: boolean, doorId: string }) {
   const closedY = 260
   const openY = 210
 
@@ -22,12 +22,18 @@ function createStatueController(id: string, props: { x: number, open: boolean })
         type: 'statue',
         x: () => props.x,
         ...createObjectSignal(props.open ? openY : closedY, 'y'),
+        ...createObjectSignal(false, 'removedBlocker'),
         width: () => 360,
         height: () => 433,
       }
     },
     onEnterFrame({ $, $scene }) {
-      if ($scene.gameState.questState.corgi.open && $.y() > openY) {
+      const open = $scene.gameState.questState.corgi.open
+      if (open && !$.removedBlocker()) {
+        $scene.removeController(props.doorId)
+        $.setRemovedBlocker(true)
+      }
+      if (open && $.y() > openY) {
         $.setY($.y() - 1)
       }
     }

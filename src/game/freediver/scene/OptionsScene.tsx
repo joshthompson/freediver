@@ -10,17 +10,17 @@ import { alertAsset, menu1Asset } from "@/assets"
 
 export const OptionsScene: SceneComponent = props => {
   const state = useGameState()!
-  const game = new Scene('options', {
+  const scene = new Scene('options', {
     ...state,
     width: 700,
     height: 700,
     images: [menu1Asset, alertAsset],
   })
-  onCleanup(() => game.destroy())
+  onCleanup(() => scene.destroy())
   const t = () => Translations[state.gameState.options.locale]
 
   return <Canvas
-    scene={game}
+    scene={scene}
     style={{ background: `url(${menu1Asset})`, 'background-size': 'cover' }}
     overlay={<div class={styles.overlay}>
       <div class={styles.options}>

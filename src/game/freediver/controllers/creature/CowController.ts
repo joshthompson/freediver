@@ -4,10 +4,17 @@ import { CorgiController } from '../main/CorgiController'
 import { CowQuest } from '../../data/Dialogs'
 import { ManateeController } from './ManateeController'
 import { createObjectSignal } from '@/engine'
+import { generateFrames } from '@/utils'
+import { Sprite } from '@/engine/components'
+import { QuestComplete, QuestCompleteModal } from '../../data/Quests'
 
 export type CowController = ReturnType<typeof createCowController>
 
 const crabMessageX = 400
+const width = 233 / 2
+const height = 178 / 2
+
+let test = false
 
 export function createCowController(
   id: string,
@@ -17,7 +24,7 @@ export function createCowController(
   },
 ) {
   return createController({
-    frames: [cowAsset],
+    frames: generateFrames(cowAsset, width, height, width, 4, true),
     init() {
       return {
         id,
@@ -28,23 +35,33 @@ export function createCowController(
         ...createObjectSignal(1, 'xScale'),
         ...createObjectSignal(undefined as CorgiController | undefined, 'target'),
         ...createObjectSignal(props.x >= crabMessageX, 'crabMessage'),
-        width: () => 80,
-        height: () => 99,
+        ...createObjectSignal('pause' as Sprite['state'], 'state'),
+        frameInterval: () => 150,
+        width: () => width,
+        height: () => height,
       }
     },
     onEnterFrame({ $, $scene, $age }) {
       const float = Math.cos($age / 10 - 0.8)
       $.setY($.y() + float)
 
-      const state = $scene.gameState.questState.cow.state
+      const cowState = $scene.gameState.questState.cow.state
       const corgi = $scene.getControllerById<CorgiController>('corgi')
       const manatee = $scene.getControllerById<ManateeController>('manatee')
       if (!corgi || !manatee) return
       const corgiDistance = corgi.distanceTo($.x(), $.y() + 80)
       const manateeDistance = manatee.distanceTo($.x() + manatee.data.width() / 2, $.y())
 
+      $.setState(cowState === 'following' || cowState === 'reunited' ? 'play' : 'pause')
+
+
+      if (!test) {
+        QuestComplete('cow', $scene)
+        test = true
+      }
+
       // Waiting to meet Link
-      if (state === 'waiting') {
+      if (cowState === 'waiting') {
         if (corgiDistance < 200) {
           $scene.startDialog({
             messages: CowQuest.intro,
@@ -58,7 +75,7 @@ export function createCowController(
       }
 
       // Following Link
-      else if (state === 'following') { 
+      else if (cowState === 'following') { 
         const corgiDirection = corgi.direction($.x(), $.y() + 80)
         if ($.x() < corgi.data.x()) $.setXScale(1)
         else $.setXScale(-1)
@@ -92,7 +109,8 @@ export function createCowController(
             messages: CowQuest.reunion,
             onComplete: () => {
               $scene.setGameState('questState', 'cow', 'state', 'reunited')
-              $scene.setGameState('questState', 'cave', { state: 'open' })
+              $scene.setGameState('questState', 'cave', 'state', 'open')
+              $scene.modal.set(QuestCompleteModal.cow)
               $scene.gameStateActions.achievement('cow')
             },
             pauseGameplay: true,
@@ -101,7 +119,7 @@ export function createCowController(
       }
 
       // Link was too fast
-      else if (state === 'lost') {
+      else if (cowState === 'lost') {
         if (corgiDistance <= 300) {
           $scene.startDialog({
             messages: CowQuest.foundYou,
@@ -112,7 +130,7 @@ export function createCowController(
       }
 
       // Reunited with the manatee
-      else if (state === 'reunited') {
+      else if (cowState === 'reunited') {
         const manateeDirection = manatee.direction($.x() + manatee.data.width() / 2, $.y())
         const speed = manatee.data.speed() * (manateeDistance > 200 ? 1.1 : 0.9)
 

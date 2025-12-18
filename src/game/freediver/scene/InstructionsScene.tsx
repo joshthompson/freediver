@@ -8,17 +8,17 @@ import { Translations } from "@/game/freediver/data/Translations"
 import { menu2Asset } from "@/assets"
 
 export const InstructionsScene: SceneComponent = props => {
-  const game = new Scene('instructions', {
+  const scene = new Scene('instructions', {
     ...useGameState()!,
     width: 700,
     height: 700,
     images: [menu2Asset],
   })
-  onCleanup(() => game.destroy())
-  const t = () => Translations[game.gameState.options.locale]
+  onCleanup(() => scene.destroy())
+  const t = () => Translations[scene.gameState.options.locale]
 
   return <Canvas
-    scene={game}
+    scene={scene}
     style={{ background: `url(${menu2Asset})`, 'background-size': 'cover' }}
     overlay={<div class={styles.overlay}>
       <div class={styles.description}>

@@ -5,6 +5,7 @@ import { SceneContext } from '@/utils/SceneContext'
 import { Debugger } from './Debugger'
 import { Scene } from '@/engine'
 import { Sprite } from './Sprite'
+import { Modal } from './Modal'
 
 export type CanvasControllers = { id: string, controller: Controller<any> }[]
 
@@ -103,6 +104,7 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
           />}
         </For>
         {props.dialog && <props.dialog scene={props.scene} />}
+        {props.scene.modal.get() && <Modal>{props.scene.modal.get()}</Modal>}
         {props.overlay}
         {props.loading && props.scene.loading.get() && <props.loading scene={props.scene} />}
         {!!props.debug && <Debugger scene={props.scene} />}

@@ -16,7 +16,7 @@ import { alertAsset } from "@/assets"
 
 export const SurfaceScene: SceneComponent = props => {
   const state = useGameState()!
-  const game = new Scene('surface', {
+  const scene = new Scene('surface', {
     ...state,
     width: 700,
     height: 700,
@@ -45,27 +45,27 @@ export const SurfaceScene: SceneComponent = props => {
     },
     images: [alertAsset],
   })
-  const t = () => Translations[game.gameState.options.locale]
-  onCleanup(() => game.destroy())
+  const t = () => Translations[scene.gameState.options.locale]
+  onCleanup(() => scene.destroy())
 
   const exitToMenu = () => {
     props.setScene('menu')
   }
 
-  const oxygen = () => game.getControllerById('diver-surface')?.data.oxygen() ?? 0
+  const oxygen = () => scene.getControllerById('diver-surface')?.data.oxygen() ?? 0
 
   createEffect(() => {
     if (oxygen() > 100) {
       state.setGameState('score', 'currentDive', 0)
       state.setGameState('diver', 'oxygen', 100)
       props.setScene(state.gameState.diver.level)
-      game.gameStateActions.achievement('firstDive')
+      scene.gameStateActions.achievement('firstDive')
     }
   })
   
   return <Canvas
-    debug={game.gameState.options.debug}
-    scene={game}
+    debug={scene.gameState.options.debug}
+    scene={scene}
     loading={LoadingScreen}
     class={styles.canvas}
     overlay={
@@ -73,7 +73,7 @@ export const SurfaceScene: SceneComponent = props => {
         <div class={styles.instructions}>{t().surface.relax}<br />{t().surface.getReady}</div>
         <Bar percent={oxygen()} class={styles.bar({ show: oxygen() > 0 })} />
         <div class={styles.surfaceLayer} />
-        {game.paused.get() && <PauseMenu scene={game} exitToMenu={exitToMenu} />}
+        {scene.paused.get() && <PauseMenu scene={scene} exitToMenu={exitToMenu} />}
       </>
     }
   />

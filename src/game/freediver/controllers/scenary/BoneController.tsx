@@ -18,10 +18,10 @@ export function createBoneController(id: string, props: {
 
     const age = corgi.age()
     const center = {
-      x: corgi.data.x() + corgi.data.width() / 2,
-      y: corgi.data.y() + corgi.data.height() / 2,
+      x: corgi.data.x() + corgi.data.width() / 2 + (corgi.data.xScale() > 0 ? -10 : -20),
+      y: corgi.data.y() + corgi.data.height() / 2 - 5,
     }
-    const rotateDistance = 50
+    const rotateDistance = 40 + claimedBones * 4
     const segmentSize = Math.PI * 2 / claimedBones
 
 
@@ -42,8 +42,8 @@ export function createBoneController(id: string, props: {
         ...createObjectSignal(isClaimed ? target(props.boneNumber, 1).y : 620, 'y'),
         ...createObjectSignal(Math.random() * 20, 'rotation'),
         ...claimed,
-        width: () => 60 * (claimed.claimed() ? 0.4 : 1),
-        height: () => 40 * (claimed.claimed() ? 0.4 : 1),
+        width: () => 60 * (claimed.claimed() ? 0.5 : 1),
+        height: () => 40 * (claimed.claimed() ? 0.5 : 1),
       }
     },
     onEnterFrame({ $, $scene, $controller, $age }) {
@@ -72,7 +72,7 @@ export function createBoneController(id: string, props: {
 
         const distance = Math.hypot($.x() - targetX, $.y() - targetY)
         const direction = Math.atan2($.y() - targetY, $.x() - targetX)
-        const speed = goToStatue ? 20 : distance / 4
+        const speed = goToStatue ? 20 : distance / 2
 
         if (distance > speed) {
           $.setX($.x() - speed * Math.cos(direction))

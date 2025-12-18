@@ -54,16 +54,20 @@ export { default as watchAsset } from '@assets/sprites/watch/watch.png'
 export { default as enFlagAsset } from '@assets/flags/en.png'
 export { default as svFlagAsset } from '@assets/flags/sv.png'
 export { default as ruFlagAsset } from '@assets/flags/ru.png'
+export { default as flFlagAsset } from '@assets/flags/fl.png'
 export { default as cowAsset } from '@assets/sprites/cow.png'
 export { default as manateeAsset } from '@assets/sprites/manatee/manatee.png'
-export { default as manateeSadAsset } from '@assets/sprites/manatee/manatee-sad.png'
-export { default as manatee0Asset } from '@assets/sprites/manatee/manatee0.png'
+export { default as manateeCryAsset } from '@assets/sprites/manatee/manatee-cry.png'
 export { default as plantAsset } from '@assets/sprites/plant/plant.png'
 
 // Dialog Images
 export { default as cowDialogAsset } from '@assets/dialog/cow.png'
 export { default as linkDialogAsset } from '@assets/dialog/link.png'
-export { default as manateeDialogAsset } from '@assets/dialog/manatee.png'
+export { default as manateeHappyDialogAsset } from '@assets/dialog/manatee-happy.png'
+export { default as manateeSadDialogAsset } from '@assets/dialog/manatee-sad.png'
+
+// Quest Complete Modal Images
+export { default as cowQuestCompleteAsset } from '@assets/quest/cow-quest-complete.png'
 
 // Audio
 export { default as musicSound } from '@assets/sounds/ocean1.mp3'

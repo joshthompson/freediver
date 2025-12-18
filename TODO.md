@@ -1,4 +1,4 @@
-# [x] Birthday Release v1.0
+# [x] v1.0 - Birthday Release
 [x] Shared game state
     [x] Total breath
     [x] Points - collect star fish
@@ -14,7 +14,9 @@
 [x] Dog bone + achievement
 [x] Gift every 3 achievements
 
-# [x] Version v1.1
+# [ ] v1.1 - 2 New Zones!
+
+## [ ] Misc
 [x] Remember diver's x position
 [x] Convert Game object into Scene object
 [x] Add a service worker for asset caching
@@ -33,27 +35,50 @@
 [ ] Achievement tooltip alignment
 [ ] Quest completion screen
 [ ] New equalisation UI - less in your face
+[ ] Fix cave entry blocked before unlock
 
-# [x] Cow Quest
+## [x] Cow Quest
     [x] Meet cow and start quest with a dialog
     [x] Have cow follow Link across the level (remember cow X)
     [x] Add cave and put manatee in the cave
     [x] Once you meet the manatee dialog ends quest
     [x] Manatee then moves out of the cave... new area
 
-# [x] Corgi statue quest
+## [x] Corgi statue quest
     [x] Collect bones and remember which bones are collected
     [x] Transition bones to new level
     [x] Deliver the bones to the statue
     [x] When the bones are all delivered open the new area below
 
-# [ ] New area
+## [ ] New area
     [x] Cow quest opens the cave to the new area
     [x] New area looks different and has different fish?
-    [ ] Maybe remove trigger fish from the ocean scene and put them in the new area
+    [x] Maybe remove trigger fish from the ocean scene and put them in the new area
 
-# [ ] New sounds
+## [ ] New sounds
     [ ] Better equalisation
     [ ] Bone delivered
     [ ] Statue move
-    
+
+# [ ] v1.2 - Proper game?
+
+## Structure
+[ ] Better game introduction
+[ ] Controls explanation
+[ ] Overall goal
+[ ] Quest hub
+[ ] End goal?
+
+Idea
+- Alisa and Linkosha wake to find the family's magical conch shell has been stolen from their home on the beach
+- There are footsteps leading into the sea
+
+## Shop
+[ ] Build shop
+[ ] List of items to buy
+    [ ] Bait
+    [ ] Flippers (speed boost)
+    [ ] Monofin (bigger speed boost)
+    [ ]
+
+

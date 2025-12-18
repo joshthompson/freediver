@@ -30,7 +30,7 @@ export function createFishController(
     frames: initalFrames.frames,
     init() {
       const [size, setSize] = createSignal(Math.random() + 0.5)
-      const [hue, setHue] = createSignal(Math.random() * 360)
+      const [hue, setHue] = createSignal(Math.random() * 30)
       const [jitter, setJitter] = createSignal({ x: 0, y: 0 })
       const direction = createObjectSignal(randomItem([-1, 1]), 'direction')
       return {
@@ -66,7 +66,7 @@ export function createFishController(
         $.setY(Math.random() * 500 + 100)
         $.setSize(Math.random() + 0.5)
         $.setDirection(randomItem([-1, 1]))
-        $.setHue(Math.random() * 360)
+        $.setHue(Math.random() * 30)
         const { frames, height } = chooseFishFrames()
         $.setFrames(frames)
         $.setHeight(height)

@@ -1,5 +1,5 @@
 import { createController } from '@/engine'
-import { manateeAsset, manateeSadAsset } from '@/assets'
+import { manateeAsset, manateeCryAsset } from '@/assets'
 import { generateFrames } from '@/utils'
 import { createObjectSignal } from '@/engine/utils'
 import { CowQuest } from '../../data/Dialogs'
@@ -11,31 +11,35 @@ type ManateeMood = 'happy' | 'sad'
 
 export function createManateeController(id: string, props: { x: number, y: number }) {
   const width = 200
-  const height = 106
-
-  const frames: Record<ManateeMood, string[]> = {
-    happy: generateFrames(manateeAsset, 200, 102, width, 4, true),
-    sad: generateFrames(manateeSadAsset, 244, 141, width, 6, true),
+  
+  const mooooods: Record<ManateeMood, { frames: string[], height: number }> = {
+    happy: {
+      frames: generateFrames(manateeAsset, 200, 106, width, 4, true),
+      height: 106,
+    },
+    sad: {
+      frames: generateFrames(manateeCryAsset, 400, 218, width, 6, true),
+      height: 109,
+    },
   }
 
   return createController({
-    frames: frames.sad,
+    frames: mooooods.sad.frames,
     init() {
       return {
         id,
         type: 'manatee',
         ...createObjectSignal(props.x, 'x'),
         ...createObjectSignal(props.y, 'y'),
+        ...createObjectSignal(mooooods.sad.height, 'height'),
         ...createObjectSignal(-1, 'xScale'),
-        ...createObjectSignal('sad' as ManateeMood, 'mood'),
-        ...createObjectSignal(frames.sad, 'frames'),
+        ...createObjectSignal(mooooods.sad.frames, 'frames'),
         ...createObjectSignal(false, 'preQuestDialog'),
         ...createObjectSignal({
           x: Math.random() * 20000 - 10000,
           y: Math.random() * 400 + 100
         }, 'target'),
         width: () => 200,
-        height: () => height,
         speed: () => 5,
         state: () => 'play',
       }
@@ -58,7 +62,8 @@ export function createManateeController(id: string, props: { x: number, y: numbe
         }
       }
       if (questState === 'reunited') {
-        $.setFrames(frames.happy)
+        $.setFrames(mooooods.happy.frames)
+        $.setHeight(mooooods.happy.height)
         const direction = Math.atan2($.y() - $.target().y, $.x() - $.target().x)
         const distance = Math.hypot($.x() - $.target().x, $.y() - $.target().y)
         $.setX($.x() - $.speed() * Math.cos(direction))
@@ -72,7 +77,8 @@ export function createManateeController(id: string, props: { x: number, y: numbe
           })
         } 
       } else {
-        $.setFrames(frames.sad)
+        $.setFrames(mooooods.sad.frames)
+        $.setHeight(mooooods.sad.height)
       }
     }
   })

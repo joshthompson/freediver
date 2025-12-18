@@ -1,7 +1,7 @@
 import { SetStoreFunction } from "solid-js/store"
 import { GameState, GameStateActions } from "../utils/GameStateContext"
 import { Dialog } from "../utils/game"
-import { Accessor, Component, createSignal, Setter } from "solid-js"
+import { Accessor, Component, createSignal, JSX, Setter } from "solid-js"
 import { Canvas, CanvasControllers } from "@/engine/components/Canvas"
 import { createObjectSignal, ObjectSignal } from "./utils"
 import { Controller } from "./Controller"
@@ -32,20 +32,25 @@ export class Scene<C extends Controller<any> = Controller<any>> {
   gameState: GameState
   setGameState: SetStoreFunction<GameState>
   gameStateActions: GameStateActions
-  canvas: ObjectSignal<Canvas>
-  controllers: ObjectSignal<CanvasControllers>
-  paused: ObjectSignal<boolean>
+  // canvas: ObjectSignal<Canvas>
+  // controllers: ObjectSignal<CanvasControllers>
   sounds: Record<string, HTMLAudioElement>
-  loading: ObjectSignal<boolean>
-  loadingAssetCount: ObjectSignal<number>
-  loadingAssetTotal: ObjectSignal<number>
+  // loadingAssetCount: ObjectSignal<number>
+  // loadingAssetTotal: ObjectSignal<number>
   interval: number
   dialog: {
     data: Accessor<Dialog | undefined>
     setData: Setter<Dialog | undefined>
     messageIndex: Accessor<number>
     setMessageIndex: Setter<number>
-  } 
+  }
+  loading = createObjectSignal(false)
+  paused = createObjectSignal(false)
+  modal = createObjectSignal(undefined as JSX.Element | undefined)
+  loadingAssetCount = createObjectSignal(0)
+  loadingAssetTotal = createObjectSignal(0)
+  controllers = createObjectSignal([] as CanvasControllers)
+  canvas: ObjectSignal<Canvas>
 
   constructor(public id: string, public options: GameOptions) {
     // Store setup options
@@ -58,14 +63,10 @@ export class Scene<C extends Controller<any> = Controller<any>> {
     Object.entries(options.sounds ?? {}).forEach(([name, path]) => {
       this.sounds[name] = new Audio(path)
     })
-    
+
+
     // Setup signals
-    this.loading = createObjectSignal(false)
-    this.loadingAssetCount = createObjectSignal(0)
-    this.loadingAssetTotal = createObjectSignal(0)
-    this.controllers = createObjectSignal([] as CanvasControllers)
     this.canvas = createObjectSignal(this.createCanvas())
-    this.paused = createObjectSignal(false)
 
     // Dialog setup
     const [dialog, setDialog] = createSignal<Dialog | undefined>(undefined)
@@ -160,6 +161,7 @@ export class Scene<C extends Controller<any> = Controller<any>> {
     return !this.paused.get()
         && !this.loading.get()
         && ((this.dialog.data()?.pauseGameplay ?? false) !== true)
+        && !this.modal.get()
   }
 
   destroy() {

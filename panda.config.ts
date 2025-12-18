@@ -63,6 +63,10 @@ export default defineConfig({
         '0%, 100%': { opacity: 0 },
         '50%': { opacity: 'var(--fade-opacity, 0.2)' },
       },
+      bounce: {
+        '0%, 100%': { transform: 'translateY(0) scale(1)' },
+        '50%': { transform: 'translateY(-20%) scale(1.1)' },
+      },
     },
   },
 

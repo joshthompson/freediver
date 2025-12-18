@@ -1,9 +1,10 @@
-import { cowDialogAsset, linkDialogAsset, manateeDialogAsset } from '@/assets'
+import { cowDialogAsset, linkDialogAsset, manateeHappyDialogAsset, manateeSadDialogAsset } from '@/assets'
 import { DialogMessage } from '@/utils/game'
 
 const cow = { speaker: 'Wanda the Cow', image: cowDialogAsset }
 const link = { speaker: 'Linkosha', image: linkDialogAsset }
-const manatee = { speaker: 'Manny the Manatee', image: manateeDialogAsset }
+const manateeSad = { speaker: 'Manny the Manatee', image: manateeSadDialogAsset }
+const manateeHappy = { ...manateeSad, image: manateeHappyDialogAsset }
 
 export const CowQuest = {
   intro: [
@@ -19,7 +20,7 @@ export const CowQuest = {
     { ...cow, text: `I'll try and keep up with you but I'm not the fastest swimmer` },
   ],
   preQuestManatee: [
-    { ...manatee, text: 'Mwoorp, I lost my cousin somewhere. Mwoorp!'}
+    { ...manateeSad, text: 'Mwoorp, I lost my cousin somewhere. Mwoorp!'}
   ],
   slowDown: [
     { ...cow, text: `Slow down, I've lost you!` },
@@ -31,13 +32,13 @@ export const CowQuest = {
     { ...cow, text: `I think I recognise those crabs, let's keep going this way!` },
   ],
   reunion: [
-    { ...manatee, text: 'Mwoorp?' },
+    { ...manateeHappy, text: 'Mwoorp?' },
     { ...cow, text: 'Mooooo!' },
-    { ...manatee, text: 'Mwoooorrrp!!!' },
+    { ...manateeHappy, text: 'Mwoooorrrp!!!' },
     { ...cow, text: `Manny! It's really you!` },
     { ...cow, text: 'Thank you for helping! Linkosha, you are legen-dairy!' },
     { ...link, text: 'Woof woof!' },
-    { ...manatee, text: 'I was hiding in my cave, but to say thank you, maybe I can let you swim through it?' },
+    { ...manateeHappy, text: 'I was hiding in my cave, but to say thank you, maybe I can let you swim through it?' },
     { ...link, text: 'Woof woof!' },
   ],
 } as const satisfies Record<string, DialogMessage[]>

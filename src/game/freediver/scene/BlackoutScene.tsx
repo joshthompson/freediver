@@ -8,18 +8,18 @@ import { Scene, SceneComponent } from "@/engine"
 
 export const BlackoutScene: SceneComponent = props => {
   const { gameState, setGameState, gameStateActions } = useGameState()!
-  const game = new Scene('blackout', {
+  const scene = new Scene('blackout', {
     gameState,
     setGameState,
     gameStateActions,
     width: 700,
     height: 700,
   })
-  onCleanup(() => game.destroy())
+  onCleanup(() => scene.destroy())
   const t = () => Translations[gameState.options.locale]
 
   return <Canvas
-    scene={game}
+    scene={scene}
     overlay={<div class={styles.overlay}>
       <div class={styles.text}>{t().blackout.youBlackedOut}</div>
       <div class={styles.button}><Button onClick={props.setScene('menu')}>

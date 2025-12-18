@@ -1,4 +1,4 @@
-import { enFlagAsset, ruFlagAsset, svFlagAsset } from '@/assets'
+import { enFlagAsset, ruFlagAsset, svFlagAsset, flFlagAsset } from '@/assets'
 import { Achievement } from './Achievements'
 
 export type Locale = keyof typeof Translations
@@ -7,12 +7,14 @@ export const LocaleNames: Record<Locale, string> = {
   en: 'English',
   ru: 'Русский',
   sv: 'Svenska',
+  fl: 'Fvelyntari',
 }
 
 export const LocaleFlags: Record<Locale, string> = {
   en: enFlagAsset,
   sv: svFlagAsset,
   ru: ruFlagAsset,
+  fl: flFlagAsset,
 }
 
 const baseTranslations = {
@@ -106,7 +108,7 @@ const baseTranslations = {
     blackout: 'Landlubber',
     blackoutDescription: 'Experience a blackout',
     bone: 'Give A Dog A Bone',
-    boneDescription: 'Find Linkosha 5 bones',
+    boneDescription: 'Bring the bones to the Linkosha statue',
     endOfTheWorld: 'The End of the World',
     endOfTheWorldDescription: 'Reach the end of the world',
     cow: 'Cow Cousins',
@@ -207,7 +209,7 @@ export const Translations = {
       blackout: 'Сухопутная крыса',
       blackoutDescription: 'Испытайте отключение сознания',
       bone: 'Дай Собачке кость',
-      boneDescription: 'Найдите 5 костей Линкоши',
+      boneDescription: 'Принесите кости статуе Линкоши',
       endOfTheWorld: 'Доберись до края мира',
       endOfTheWorldDescription: 'Достигните конца света',
       cow: 'Коровьи кузены',
@@ -305,11 +307,109 @@ export const Translations = {
       blackout: 'Landkrabba',
       blackoutDescription: 'Upplev ett medvetslöshetstillstånd',
       bone: 'Ge Hunden Ett Ben',
-      boneDescription: 'Hitta 5 av Linkoshas ben',
+      boneDescription: 'Ta benen till Linkosha-statyn',
       endOfTheWorld: 'Världens ände',
       endOfTheWorldDescription: 'Nå fram till världens slut',
       cow: 'Kokusiner',
       cowDescription: 'Återförena kon med hennes kusin'
     },
-  }
+  },
+  fl: {
+    common: {
+      title1: 'Alisa',
+      title2: 'Frjíðoka',
+      back: 'Zhäl neren',
+      volumeOn: 'Vorin: tal',
+      volumeOff: 'Vorin: nel',
+      resume: 'Telvora',
+      exitToMenu: 'Renvor a Menul',
+    },
+    menu: {
+      start: 'Kalyra',
+      continue: 'Fenlora',
+      instructions: 'Drevokin',
+      options: 'Solkarim',
+      credits: 'A silen dra Josh Thompson vä Olesia Vasileva',
+    },
+    options: {
+      clearGameData: 'Salkir dena-vor',
+    },
+    surface: {
+      relax: 'Lerosh enna!',
+      getReady: 'Tavan sel, pryn HOTRAITK for shalvin',
+    },
+    score: {
+      lastDive: 'Viron-drek',
+      bestDive: 'Savor-drek',
+      totalScore: 'Talvori shèn',
+    },
+    ocean: {
+      holdSpace: <>Ril <em>HOTRAITK</em> to venqorin</>,
+      warningLowOxygen: 'Vayren: Losh oxira!',
+    },
+    watch: {
+      meters: 'm',
+      oxygen: <>O<sub>2</sub></>,
+    },
+    blackout: {
+      youBlackedOut: 'Zhevra melun',
+    },
+    pause: {
+      title: 'NERA-TAL',
+      resume: 'Telvorä',
+    },
+    instructions: {
+      description: 'Drekal vä shonari enna korli Linkosha!',
+      up: 'Shavoren drel',
+      down: 'Shavoren delun',
+      left: 'Ravälon eshra',
+      right: 'Ravälon estu',
+      space: 'Shalvin / Venqorin',
+      spacebar: 'HOTRAITK',
+      pause: 'Neralin',
+      or: 'ASHO',
+    },
+    achievements: {
+      new: 'Veshra Telvin!',
+      title: 'Telvinar',
+      firstDive: 'Fes drekal',
+      firstDiveDescription: 'Shon drekal feslin',
+      whale: 'Morvashra',
+      whaleDescription: 'Naril vä drelan morva',
+      whaleShark: 'Vashkolar',
+      whaleSharkDescription: 'Naril vä drelan vashkola',
+      shark: 'Kreshnar',
+      sharkDescription: 'Naril vä drelan kreshna',
+      wreck: 'Salkorin',
+      wreckDescription: 'Naril vä rovun selkir',
+      almostFaint: 'Vrena-shol',
+      almostFaintDescription: 'Rinvor el naren 1 oxira',
+      crabJump: 'Trekh-jolin',
+      crabJumpDescription: 'Felan trekha jolun',
+      total100: 'Shèn 100',
+      total100Description: 'Talvori shèn 100',
+      dive15: 'Drekal yona',
+      dive15Description: 'Shon 15 shèn en drekal',
+      dive30: 'Drekal onvash',
+      dive30Description: 'Shon 30 shèn en drekal',
+      bilingual: 'Dren-shavos',
+      bilingualDescription: 'Renva spravin menul',
+      surviveTitanTriggerFish: 'Tironvyr Shalvos',
+      surviveTitanTriggerFishDescription: 'Vrenor tironvyr shalvo',
+      prequalisation: 'Prelivena',
+      prequalisationDescription: 'Venqo shalva larven',
+      statue: 'Lorva Linkosha!',
+      statueDescription: 'Naril vä drelan statur Linkosha',
+      eggFishKiss: 'Kavri Eshshol',
+      eggFishKissDescription: 'Melnor kavri eshshol',
+      blackout: 'Laval-zen',
+      blackoutDescription: 'Shon kelun merval',
+      bone: 'Dralon shon bena',
+      boneDescription: 'Naril benal ta stara Linkosha',
+      endOfTheWorld: 'Voryn-Esh',
+      endOfTheWorldDescription: 'Soryn tal voryn-esh',
+      cow: 'Kavurin',
+      cowDescription: 'Talvor kavur vä kushel'
+    },
+  },  
 } as const satisfies  Record<string, typeof baseTranslations>
