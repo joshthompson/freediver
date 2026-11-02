@@ -14,8 +14,6 @@ const crabMessageX = 400
 const width = 233 / 2
 const height = 178 / 2
 
-let test = false
-
 export function createCowController(
   id: string,
   props: {
@@ -53,12 +51,6 @@ export function createCowController(
       const manateeDistance = manatee.distanceTo($.x() + manatee.data.width() / 2, $.y())
 
       $.setState(cowState === 'following' || cowState === 'reunited' ? 'play' : 'pause')
-
-
-      if (!test) {
-        QuestComplete('cow', $scene)
-        test = true
-      }
 
       // Waiting to meet Link
       if (cowState === 'waiting') {
@@ -110,8 +102,9 @@ export function createCowController(
             onComplete: () => {
               $scene.setGameState('questState', 'cow', 'state', 'reunited')
               $scene.setGameState('questState', 'cave', 'state', 'open')
-              $scene.modal.set(QuestCompleteModal.cow)
-              $scene.gameStateActions.achievement('cow')
+              QuestComplete('cow', $scene).then(() => {
+                $scene.gameStateActions.achievement('cow')
+              })
             },
             pauseGameplay: true,
           })

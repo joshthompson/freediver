@@ -1,12 +1,12 @@
-import { Canvas } from "@/engine/components/Canvas"
-import { Scene, SceneComponent } from "@/engine"
-import { onCleanup } from "solid-js"
-import { css } from "@style/css"
-import { Button } from "../ui/Button"
-import { useGameState } from "@/utils/GameStateContext"
-import { LocaleFlags, Translations } from "@/game/freediver/data/Translations"
-import { alertAsset, menu1Asset } from "@/assets"
-import { Logo } from "../ui/Logo"
+import { Canvas } from '@/engine/components/Canvas'
+import { Scene, SceneComponent } from '@/engine'
+import { onCleanup } from 'solid-js'
+import { css } from '@style/css'
+import { Button } from '../ui/Button'
+import { useGameState } from '@/utils/GameStateContext'
+import { LocaleFlags, Translations } from '@/game/freediver/data/Translations'
+import { alertAsset, menu1Asset } from '@/assets'
+import { Logo } from '../ui/Logo'
 
 export const MenuScene: SceneComponent = props => {
   const scene = new Scene('menu', {

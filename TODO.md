@@ -33,7 +33,7 @@
 [ ] Level file format?
 [ ] Make a parent Game object that handles state and other stuff
 [ ] Achievement tooltip alignment
-[ ] Quest completion screen
+[x] Quest completion screen
 [ ] New equalisation UI - less in your face
 [ ] Fix cave entry blocked before unlock
 
@@ -50,7 +50,7 @@
     [x] Deliver the bones to the statue
     [x] When the bones are all delivered open the new area below
 
-## [ ] New area
+## [x] New area
     [x] Cow quest opens the cave to the new area
     [x] New area looks different and has different fish?
     [x] Maybe remove trigger fish from the ocean scene and put them in the new area
@@ -80,5 +80,3 @@ Idea
     [ ] Flippers (speed boost)
     [ ] Monofin (bigger speed boost)
     [ ]
-
-

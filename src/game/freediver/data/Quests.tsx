@@ -35,8 +35,11 @@ export const QuestCompleteModal = {
 
 export function QuestComplete(quest: keyof typeof QuestCompleteModal, scene: Scene) {
   scene.modal.set(QuestCompleteModal[quest])
-  setTimeout(() => {
-    scene.modal.set(null)
-  }, duration)
+  return new Promise<void>(resolve => {
+    setTimeout(() => {
+      scene.modal.set(null)
+      resolve()
+    }, duration)
+  })
 }
 
