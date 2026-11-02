@@ -43,14 +43,15 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
   })
 
   const sprites = () => {
-    const assetOrder = props.scene.options.assetOrder?.flat() ?? []
+    const assetOrder = new Map<string, number>()
+    props.scene.options.assetOrder?.flat().forEach((type, index) => {
+      // Keep the first index, as findIndex did
+      if (!assetOrder.has(type)) assetOrder.set(type, index)
+    })
+    const priority = (type: string) => assetOrder.get(type) ?? -1
     return props.scene.controllers.get()
       .map(({ controller }) => controller)
-      .toSorted((a, b) => {
-        const aP = assetOrder.findIndex(type => type === a.type)
-        const bP = assetOrder.findIndex(type => type === b.type)
-        return bP - aP
-      })
+      .sort((a, b) => priority(b.type) - priority(a.type))
   }
 
   const getMousePosition = (event: MouseEvent | TouchEvent) => {

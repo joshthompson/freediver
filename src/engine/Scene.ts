@@ -43,7 +43,16 @@ export class Scene<C extends Controller<any> = Controller<any>> {
     setData: Setter<Dialog | undefined>
     messageIndex: Accessor<number>
     setMessageIndex: Setter<number>
-  } 
+  }
+
+  // Lookup indexes, rebuilt lazily whenever the controllers array changes
+  #indexSource?: CanvasControllers
+  #byId = new Map<string, Controller<any>>()
+  #byType = new Map<string, Controller<any>[]>()
+
+  // Bound once so destroy() can remove the same function references
+  #onKeydown = (event: KeyboardEvent) => this.handleWindowKeydown(event)
+  #onPauseGame = () => this.togglePause()
 
   constructor(public id: string, public options: GameOptions) {
     // Store setup options
@@ -82,34 +91,53 @@ export class Scene<C extends Controller<any> = Controller<any>> {
     }, this.options.frameRate ?? 40)
 
     // Set window event listeners
-    window.addEventListener('keydown', this.handleWindowKeydown.bind(this))
-    window.addEventListener('pause-game', this.togglePause.bind(this))
+    window.addEventListener('keydown', this.#onKeydown)
+    window.addEventListener('pause-game', this.#onPauseGame)
 
     // Run setup
     this.setup()
   }
 
   addController(...controllers: (C | undefined)[]) {
+    const added: CanvasControllers = []
     controllers.forEach(controller => {
       if (!controller) return
       controller.setGame(this)
-      this.controllers.set([
-        ...this.controllers.get(),
-        { id: controller.id, controller },
-      ])
+      added.push({ id: controller.id, controller })
     })
+    if (added.length) {
+      this.controllers.set([...this.controllers.get(), ...added])
+    }
   }
 
   removeController(id: string) {
     this.controllers.set(this.controllers.get().filter(({ id: name }) => name !== id))
   }
 
+  #updateIndexes() {
+    // Reading the signal keeps callers subscribed to controller list changes
+    const controllers = this.controllers.get()
+    if (controllers === this.#indexSource) return
+    this.#indexSource = controllers
+    this.#byId.clear()
+    this.#byType.clear()
+    controllers.forEach(({ id, controller }) => {
+      // Keep the first match, as Array.find did
+      if (!this.#byId.has(id)) this.#byId.set(id, controller)
+      const ofType = this.#byType.get(controller.type)
+      if (ofType) ofType.push(controller)
+      else this.#byType.set(controller.type, [controller])
+    })
+  }
+
   getControllerById<T = Controller<any>>(id: string) {
-    return this.controllers.get().find(c => c.id === id)?.controller as T | undefined
+    this.#updateIndexes()
+    return this.#byId.get(id) as T | undefined
   }
 
   getControllersByType<T = Controller<any>>(type: string) {
-    return this.controllers.get().filter(c => c.controller.type === type).map(c => c.controller as T) as T[]
+    this.#updateIndexes()
+    return (this.#byType.get(type)?.slice() ?? []) as T[]
   }
 
   handleWindowKeydown(event: KeyboardEvent) {
@@ -130,8 +158,8 @@ export class Scene<C extends Controller<any> = Controller<any>> {
 
   destroy() {
     clearInterval(this.interval)
-    window.removeEventListener('keydown', this.handleWindowKeydown.bind(this))
-    window.removeEventListener('pause-game', this.togglePause.bind(this))
+    window.removeEventListener('keydown', this.#onKeydown)
+    window.removeEventListener('pause-game', this.#onPauseGame)
   }
 
   createCanvas(): Canvas {

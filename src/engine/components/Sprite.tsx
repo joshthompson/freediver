@@ -39,6 +39,22 @@ export interface Sprite {
   onChangeFrame?: (frameIndex: number) => void
 }
 
+// Shared across sprites so repeatedly spawned sprites (e.g. bubbles) reuse one load
+const imageCache = new Map<string, Promise<HTMLImageElement>>()
+
+const loadImage = (src: string) => {
+  let image = imageCache.get(src)
+  if (!image) {
+    image = new Promise<HTMLImageElement>(resolve => {
+      const img = new Image()
+      img.src = src
+      img.onload = () => resolve(img)
+    })
+    imageCache.set(src, image)
+  }
+  return image
+}
+
 interface SpriteExtendedProps {
   active?: boolean
   id?: string
@@ -63,8 +79,11 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
   )
   createEffect(() => props.onChangeFrame?.(currentFrame()))
   createEffect(() => typeof props.frame === 'number' && setCurrentFrame(props.frame))
+  // Every prop read goes through the controller's sprite memo, so isolate the
+  // frames array to only re-parse when the array itself changes
+  const rawFrames = createMemo(() => props.frames)
   const frames = createMemo(() =>
-    props.frames.map(frame => {
+    rawFrames().map(frame => {
       const image = frame.split('#')[0]
       const [left, top, width, height] = frame
         .split('#')[1]
@@ -100,14 +119,7 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
 
   // Preload frames
   Promise.all(
-    [...new Set(frames().map(f => f.image))].map(
-      frame =>
-        new Promise<HTMLImageElement>(resolve => {
-          const img = new Image()
-          img.src = frame
-          img.onload = () => resolve(img)
-        }),
-    ),
+    [...new Set(frames().map(f => f.image))].map(loadImage),
   ).then(results => {
     setLoading(false)
     setImageSize({ width: results[0].width, height: results[0].height })
@@ -119,7 +131,7 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
     if (props.active !== false && props.state === 'play' && props.frames.length) {
       setCurrentFrame(prev => (prev + 1) % props.frames.length)
     }
-    setTimeout(
+    enterFrameTimeout = setTimeout(
       runAnimation,
       typeof props.frameInterval === 'function'
         ? props.frameInterval()
