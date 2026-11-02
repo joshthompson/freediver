@@ -1,10 +1,11 @@
-import { cowDialogAsset, linkDialogAsset, manateeHappyDialogAsset, manateeSadDialogAsset } from '@/assets'
+import { cowDialogAsset, kingDialogAsset, linkDialogAsset, manateeHappyDialogAsset, manateeSadDialogAsset } from '@/assets'
 import { DialogMessage } from '@/utils/game'
 
 const cow = { speaker: 'Wanda the Cow', image: cowDialogAsset }
 const link = { speaker: 'Linkosha', image: linkDialogAsset }
 const manateeSad = { speaker: 'Manny the Manatee', image: manateeSadDialogAsset }
 const manateeHappy = { ...manateeSad, image: manateeHappyDialogAsset }
+const king = { speaker: 'The Corgi King', image: kingDialogAsset }
 
 export const CowQuest = {
   intro: [
@@ -43,3 +44,17 @@ export const CowQuest = {
   ],
 } as const satisfies Record<string, DialogMessage[]>
 
+// TODO: Placeholder quest text until the king's quest is written
+export const KingQuest = {
+  intro: [
+    { ...king, text: 'Who dares swim into the Corgi Kingdom?' },
+    { ...link, text: 'Woof woof!' },
+    { ...king, text: 'Linkosha! Welcome, brave pup. You have come at just the right time.' },
+    { ...king, text: 'Link I have a royal quest for you...' },
+    { ...link, text: 'Woof woof!' },
+    { ...king, text: 'Link Return to me when it is done, and you shall be rewarded!' },
+  ],
+  reminder: [
+    { ...king, text: 'Link Have you completed my royal quest yet?' },
+  ],
+} as const satisfies Record<string, DialogMessage[]>

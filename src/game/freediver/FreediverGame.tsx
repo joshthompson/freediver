@@ -15,9 +15,10 @@ import { MobileKeyboard } from './ui/MobileKeyboard'
 import { alertAsset, musicSound } from '@/assets'
 import { Achievement } from '@/game/freediver/data/Achievements'
 import { CaveScene } from './scene/CaveScene'
+import { KingdomScene } from './scene/KingdomScene'
 
 const testScene = 'menu'
-const fadeScenes = ['ocean', 'surface', 'cave']
+const fadeScenes = ['ocean', 'surface', 'cave', 'kingdom']
 const fadeDuration = 300
 
 export const FreediverGame: Component = () => {
@@ -85,6 +86,7 @@ export const FreediverGame: Component = () => {
         {scene() === 'surface' && <SurfaceScene setScene={setScene} mode={sceneMode()} />}
         {scene() === 'ocean' && <OceanScene setScene={setScene} mode={sceneMode()} />}
         {scene() === 'cave' && <CaveScene setScene={setScene} mode={sceneMode()} />}
+        {scene() === 'kingdom' && <KingdomScene setScene={setScene} mode={sceneMode()} />}
         {scene() === 'blackout' && <BlackoutScene setScene={setScene} mode={sceneMode()} />}
         {newAchievement().length > 0 && <div class={styles.achievements}>
           <For each={newAchievement()}>

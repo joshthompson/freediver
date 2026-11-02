@@ -39,6 +39,9 @@ export interface GameState {
       delivered: number
       open: boolean
     }
+    king: {
+      state: 'new' | 'accepted',
+    }
   }
   achievements: AchievementsRecord
 }
@@ -82,7 +85,10 @@ const baseState: GameState = {
       bones: Array(10).fill(-1),
       delivered: 0,
       open: false
-    }
+    },
+    king: {
+      state: 'new',
+    },
   },
 }
 

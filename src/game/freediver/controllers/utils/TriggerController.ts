@@ -4,6 +4,7 @@ import { emptyAsset } from '@/assets'
 import { createObjectSignal } from '@/engine/utils'
 import { useGameState } from '@/utils/GameStateContext'
 import { Accessor, children, Setter } from 'solid-js'
+import { showDebugOutlines } from './BoxController'
 
 export function createTriggerController<CP extends ControllerBaseType>(
   id: string,
@@ -33,7 +34,7 @@ export function createTriggerController<CP extends ControllerBaseType>(
         ...createObjectSignal(props.height, 'height'),
         ...createObjectSignal(0, 'tally'),
         triggered,
-        ...(state.gameState.options.debug ? {
+        ...(showDebugOutlines && state.gameState.options.debug ? {
           class: () => css({ outline: '1px solid blue', background: '#0000FF33' }),
         } : {}),
       }

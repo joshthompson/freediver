@@ -4,6 +4,9 @@ import { emptyAsset } from '@/assets'
 import { createObjectSignal } from '@/engine/utils'
 import { useGameState } from '@/utils/GameStateContext'
 
+// Draw solid boxes and triggers as coloured squares when debugging collisions
+export const showDebugOutlines = false
+
 export function createBoxController(
   id: string,
   props: Rect,
@@ -21,7 +24,7 @@ export function createBoxController(
         ...createObjectSignal(props.y, 'y'),
         ...createObjectSignal(props.width, 'width'),
         ...createObjectSignal(props.height, 'height'),
-        ...(state.gameState.options.debug ? {
+        ...(showDebugOutlines && state.gameState.options.debug ? {
           class: () => css({ outline: '1px solid red', background: '#FF000033' }),
         } : {})
       }

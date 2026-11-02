@@ -21,6 +21,8 @@ interface DiverControllerProps {
   rotation?: number
   speed?: number
   style?: Sprite['style']
+  depthOffset?: number
+  canBreathe?: boolean // Oxygen doesn't run down and there's no need to equalise
   goToSurface?: (x: number) => void
   blackout?: () => void
 }
@@ -104,7 +106,7 @@ function createDiver(id: string, props: DiverControllerProps) {
           blackout,
           showDamageLevel, setShowDamageLevel,
           showHealLevel, setShowHealLevel,
-          depth: () => Math.max(0, Math.floor(y() / pxInMeter - 0.5)),
+          depth: () => Math.max(0, Math.floor((y() + (props.depthOffset ?? 0)) / pxInMeter - 0.5)),
           style: () => (showDamageLevel() ? {
             filter: `
               sepia(${showDamageLevel() / maxShowDamageLevel})
@@ -139,7 +141,7 @@ function createDiver(id: string, props: DiverControllerProps) {
           $.setShowHealLevel($.showHealLevel() - 1)
         }
 
-        if ($age % 20 === 0) {
+        if ($age % 20 === 0 && !props.canBreathe) {
           const oxygen = $scene.gameState.diver.oxygen
           let consumption = 0.5 + 0.5 * Math.abs($.speed()) / currentMaxSpeed
           if ($.eqLevel() > $.eqTolerance) consumption *= 1.5
@@ -207,7 +209,7 @@ function createDiver(id: string, props: DiverControllerProps) {
 
         // Equalisation
         const yDiff = $.y() - initY
-        $.setEqLevel(Math.max(0, $.eqLevel() + yDiff / pxInMeter))
+        $.setEqLevel(props.canBreathe ? 0 : Math.max(0, $.eqLevel() + yDiff / pxInMeter))
         if (space()) {
           if ($.eqLevel() > $.eqTolerance) {
             $scene.playSound('equalisation', { volume: 0.4 })

@@ -8,4 +8,12 @@ export const OCEAN = {
   maxX: 8000,
 } as const
 
+// The corgi kingdom sits beneath the statue in the cave level
+export const KINGDOM = {
+  minX: 0,
+  maxX: 2400,
+  hole: { x: 1110, width: 120 },
+  depthOffset: 720,
+} as const
+
 export type LevelName = 'ocean' | 'cave'

@@ -17,6 +17,7 @@ import { createTriggerController } from "../../controllers/utils/TriggerControll
 import { createDiverController, DiverController } from "../../controllers/main/DiverController"
 import { createCorgiController } from "../../controllers/main/CorgiController"
 import { createBoneController } from "../../controllers/scenary/BoneController"
+import { createStatueSignController } from "../../controllers/scenary/StatueSignController"
 
 export function CaveLevel(props: {
   setScene: (scene: string, mode?: string) => void
@@ -32,7 +33,9 @@ export function CaveLevel(props: {
 
       const diverStart = props.mode === 'ocean'
         ? { x: -250, y: 450, rotation: 90 }
-        : { x: $scene.gameState.diver.x, rotation: 180 }
+        : props.mode === 'kingdom'
+          ? { x: 1116, y: 560, rotation: 0 } // Coming up out of the hole under the statue
+          : { x: $scene.gameState.diver.x, rotation: 180 }
 
       $scene.addController(createBoxController('floor1', { x: -1000, y: 680, width: 2100, height: 100 }))
       $scene.addController(createBoxController('floor2', { x: 1200, y: 680, width: 10000, height: 100 }))
@@ -40,6 +43,7 @@ export function CaveLevel(props: {
       $scene.addController(...createWallController('wall-left', { x: CAVE.minX - 510, cave: 'right', open: () => true }))
       $scene.addController(createBoxController('rightBound', { x: CAVE.maxX, y: 0, width: 1000, height: 1000 }))
       
+      $scene.addController(createStatueSignController('statue-sign', { x: 780 }))
       $scene.addController(...createStatueControllers('statue', {
         x: 1000,
         open: props.state.gameState.questState.corgi.open,
@@ -80,6 +84,18 @@ export function CaveLevel(props: {
         targets: [$scene.getControllerById('diver')!],
         trigger: () => {
           props.setScene('ocean', 'cave')
+        }
+      }))
+
+      // Down through the hole under the statue to the corgi kingdom, once it's open
+      $scene.addController(createTriggerController('trigger-kingdom', {
+        x: 1100,
+        y: 760,
+        width: 100,
+        height: 100,
+        targets: [$scene.getControllerById('diver')!],
+        trigger: () => {
+          props.setScene('kingdom', 'cave')
         }
       }))
 
@@ -168,6 +184,7 @@ export function CaveLevel(props: {
         'manatee',
       ],
       [
+        'statue-sign',
         'wreck',
         'statue',
         'statue-hole-front',
