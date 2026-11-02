@@ -19,8 +19,7 @@ export const IntroCutscene: SceneComponent = () => {
 
   return <Canvas
     scene={scene}
-    overlay={<div class={styles.overlay}>
-    </div>}
+    overlay={<div class={styles.overlay} />}
   />
 }
 

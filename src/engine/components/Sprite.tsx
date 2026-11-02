@@ -65,8 +65,11 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
   )
   createEffect(() => props.onChangeFrame?.(currentFrame()))
   createEffect(() => typeof props.frame === 'number' && setCurrentFrame(props.frame))
+  // Every prop read goes through the controller's sprite memo, so isolate the
+  // frames array to only re-parse when the array itself changes
+  const rawFrames = createMemo(() => props.frames)
   const frames = createMemo(() =>
-    props.frames.map(frame => {
+    rawFrames().map(frame => {
       const image = frame.split('#')[0]
       const [left, top, width, height] = frame
         .split('#')[1]
@@ -100,7 +103,7 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
     if (props.active !== false && props.state === 'play' && props.frames.length) {
       setCurrentFrame(prev => (prev + 1) % props.frames.length)
     }
-    setTimeout(
+    enterFrameTimeout = setTimeout(
       runAnimation,
       typeof props.frameInterval === 'function'
         ? props.frameInterval()

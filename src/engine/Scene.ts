@@ -1,7 +1,7 @@
 import { SetStoreFunction } from "solid-js/store"
 import { GameState, GameStateActions } from "../utils/GameStateContext"
 import { Dialog } from "../utils/game"
-import { Accessor, Component, createSignal, JSX, Setter } from "solid-js"
+import { Accessor, Component, createMemo, createSignal, JSX, Setter } from "solid-js"
 import { Canvas, CanvasControllers } from "@/engine/components/Canvas"
 import { createObjectSignal, ObjectSignal } from "./utils"
 import { Controller } from "./Controller"
@@ -52,6 +52,24 @@ export class Scene<C extends Controller<any> = Controller<any>> {
   controllers = createObjectSignal([] as CanvasControllers)
   canvas: ObjectSignal<Canvas>
 
+  // Lookup indexes over controllers and their children, rebuilt only when either list changes
+  #indexes = createMemo(() => {
+    const byId = new Map<string, Controller<any>>()
+    const byType = new Map<string, Controller<any>[]>()
+    this.getAllControllers().forEach(controller => {
+      // Keep the first match, as Array.find did
+      if (!byId.has(controller.id)) byId.set(controller.id, controller)
+      const ofType = byType.get(controller.type)
+      if (ofType) ofType.push(controller)
+      else byType.set(controller.type, [controller])
+    })
+    return { byId, byType }
+  })
+
+  // Bound once so destroy() can remove the same function references
+  #onKeydown = (event: KeyboardEvent) => this.handleWindowKeydown(event)
+  #onPauseGame = () => this.togglePause()
+
   constructor(public id: string, public options: GameOptions) {
     // Store setup options
     this.gameState = options.gameState
@@ -87,22 +105,23 @@ export class Scene<C extends Controller<any> = Controller<any>> {
     }, this.options.frameRate ?? 40)
 
     // Set window event listeners
-    window.addEventListener('keydown', this.handleWindowKeydown.bind(this))
-    window.addEventListener('pause-game', this.togglePause.bind(this))
+    window.addEventListener('keydown', this.#onKeydown)
+    window.addEventListener('pause-game', this.#onPauseGame)
 
     // Run setup
     this.setup()
   }
 
   addController(...controllers: (C | undefined)[]) {
+    const added: CanvasControllers = []
     controllers.forEach(controller => {
       if (!controller) return
       controller.setGame(this)
-      this.controllers.set([
-        ...this.controllers.get(),
-        { id: controller.id, controller },
-      ])
+      added.push({ id: controller.id, controller })
     })
+    if (added.length) {
+      this.controllers.set([...this.controllers.get(), ...added])
+    }
   }
 
   removeController(id: string) {
@@ -117,11 +136,11 @@ export class Scene<C extends Controller<any> = Controller<any>> {
   }
 
   getControllerById<T = Controller<any>>(id: string) {
-    return this.getAllControllers().find(c => c.id === id) as T | undefined
+    return this.#indexes().byId.get(id) as T | undefined
   }
 
   getControllersByType<T = Controller<any>>(type: string) {
-    return this.getAllControllers().filter(c => c.type === type) as T[]
+    return (this.#indexes().byType.get(type)?.slice() ?? []) as T[]
   }
 
   getSolidControllerRects(): Rect[] {
@@ -166,8 +185,8 @@ export class Scene<C extends Controller<any> = Controller<any>> {
 
   destroy() {
     clearInterval(this.interval)
-    window.removeEventListener('keydown', this.handleWindowKeydown.bind(this))
-    window.removeEventListener('pause-game', this.togglePause.bind(this))
+    window.removeEventListener('keydown', this.#onKeydown)
+    window.removeEventListener('pause-game', this.#onPauseGame)
   }
 
   createCanvas(): Canvas {
