@@ -59,3 +59,6 @@ const styles = {
     },
   }),
 }
+
+// Chat Messages use the same speech bubble
+export const bubbleStyle = styles.bubble

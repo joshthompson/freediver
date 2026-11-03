@@ -15,7 +15,36 @@ export type DiverHeadController = ReturnType<typeof createDiverHead>
 export type DiverArmController = ReturnType<typeof createDiverArm>
 export type DiverArmLowerController = ReturnType<typeof createDiverArmLower>
 
+// The sprites a diver is drawn with, so multiplayer can give each Player their own suit colour
+export interface DiverSkin {
+  body: string
+  head: string
+  armUpper: string
+  armLower: string
+  armHand: string
+}
+
+const defaultSkin: DiverSkin = {
+  body: seadiverBodyAsset,
+  head: seadiverHeadAsset,
+  armUpper: armFrontUpper,
+  armLower: armFrontLower,
+  armHand: armFrontHand,
+}
+
+// Everything another screen needs to draw this diver as a Puppet
+export interface DiverPose {
+  x: number
+  y: number
+  rotation: number
+  speed: number
+  arms: Record<'back' | 'front', { swimPosition: number, rotation: number, isSwimming: boolean }>
+}
+
 interface DiverControllerProps {
+  type?: string
+  skin?: DiverSkin
+  puppet?: () => DiverPose | undefined // Copies these poses instead of reading the keyboard
   x: number
   y?: number
   rotation?: number
@@ -25,6 +54,8 @@ interface DiverControllerProps {
   canBreathe?: boolean // Oxygen doesn't run down and there's no need to equalise
   equalise?: boolean // Whether pressure builds up with depth. Defaults to !canBreathe
   oxygenUse?: (depth: number) => number // Multiplies how fast oxygen runs down. 0 for none
+  spaceEqualises?: boolean // Whether holding Space equalises and blows bubbles. Defaults to true
+  canSurface?: boolean // When false there's a ceiling instead of the surface. Defaults to true
   goToSurface?: (x: number) => void
   blackout?: () => void
 }
@@ -46,12 +77,27 @@ const down = () => Key.isDown('ArrowDown') || Key.isDown('s')
 const space = () => Key.isDown(' ')
 
 export function createDiverController(id: string, props: DiverControllerProps) {
+  const skin = props.skin ?? defaultSkin
   const diver = createDiver(id, props)
-  diver.attach(createDiverArm(diver, 'back'))
-  diver.attach(createDiverBody(diver))
-  diver.attach(createDiverHead(diver))
-  diver.attach(createDiverArm(diver, 'front'))
+  diver.attach(createDiverArm(diver, 'back', skin, props.puppet))
+  diver.attach(createDiverBody(diver, skin))
+  diver.attach(createDiverHead(diver, skin))
+  diver.attach(createDiverArm(diver, 'front', skin, props.puppet))
   return diver
+}
+
+export function readDiverPose(diver: DiverController): DiverPose {
+  const arm = (type: 'back' | 'front') => {
+    const { data } = diver.childControllers().find(c => c.id === `${diver.id}-arm-${type}`) as DiverArmController
+    return { swimPosition: data.swimPosition(), rotation: data.rotation(), isSwimming: data.isSwimming() }
+  }
+  return {
+    x: diver.data.x(),
+    y: diver.data.y(),
+    rotation: diver.data.rotation(),
+    speed: diver.data.speed(),
+    arms: { back: arm('back'), front: arm('front') },
+  }
 }
 
 function createDiver(id: string, props: DiverControllerProps) {
@@ -63,7 +109,7 @@ function createDiver(id: string, props: DiverControllerProps) {
   return createController(
     {
       frames: [emptyAsset],
-      blockedBySolid: true,
+      blockedBySolid: !props.puppet, // Puppets pass through the world
       style: props.style,
       init() {
         const [x, setX] = createSignal<number>(props.x)
@@ -102,7 +148,7 @@ function createDiver(id: string, props: DiverControllerProps) {
 
         return {
           id,
-          type: 'diver',
+          type: props.type ?? 'diver',
           x, setX,
           y, setY,
           initY: y(),
@@ -139,6 +185,24 @@ function createDiver(id: string, props: DiverControllerProps) {
         }
       },
       onEnterFrame({ $, $scene, $age }) {
+        if (props.puppet) {
+          const pose = props.puppet()
+          if (pose) {
+            $.setX(pose.x)
+            $.setY(pose.y)
+            $.setRotation(pose.rotation)
+            $.setSpeed(pose.speed)
+          }
+          $.setFrameInterval(250 - 150 * ($.speed() / maxSpeed))
+          $.setXScale($.rotation() > 0 ? 1 : -1)
+          $.setBubbleLevel($.bubbleLevel() + Math.abs($.speed()) / 3 + 0.5)
+          if ($.bubbleLevel() > bubbleFrequency) {
+            $.setBubbleLevel(0)
+            $scene.addController($.makeBubble(0, 0))
+          }
+          return
+        }
+
         const currentMaxSpeed = maxSpeed * ($.eqLevel() > $.eqTolerance ? equalisationSpeedPenaly : 1)
 
         if ($scene.gameState.diver.showDamage) {
@@ -215,7 +279,9 @@ function createDiver(id: string, props: DiverControllerProps) {
 
         const minY = -50
 
-        if ($.y() < minY) {
+        if (props.canSurface === false) {
+          $.setY(Math.max(minY, $.y()))
+        } else if ($.y() < minY) {
           $.goToSurface($.x())
           $scene.gameStateActions.registerCurrentDive()
         }
@@ -229,7 +295,7 @@ function createDiver(id: string, props: DiverControllerProps) {
         // Equalisation
         const yDiff = $.y() - initY
         $.setEqLevel(equalise ? Math.max(0, $.eqLevel() + yDiff / pxInMeter) : 0)
-        if (space()) {
+        if (space() && props.spaceEqualises !== false) {
           if ($.eqLevel() > $.eqTolerance) {
             $scene.playSound('equalisation', { volume: 0.4 })
           }
@@ -251,11 +317,11 @@ function createDiver(id: string, props: DiverControllerProps) {
   )
 }
 
-function createDiverHead(diver: DiverController) {
+function createDiverHead(diver: DiverController, skin: DiverSkin) {
   return createConnectedController({
     type: 'head',
     base: diver,
-    frames: [seadiverHeadAsset],
+    frames: [skin.head],
     width: () => 20,
     height: () => 34,
     rotation: $ => -70 * $.speed() / maxSpeed,
@@ -264,11 +330,11 @@ function createDiverHead(diver: DiverController) {
   })
 }
 
-function createDiverBody(diver: DiverController) {
+function createDiverBody(diver: DiverController, skin: DiverSkin) {
   return createConnectedController({
     type: 'body',
     base: diver,
-    frames: generateFrames(seadiverBodyAsset, 952 / 7, 315, 68, 7),
+    frames: generateFrames(skin.body, 952 / 7, 315, 68, 7),
     width: diver.data.width,
     height: diver.data.height,
     offset: { x: 0, y: 0 },
@@ -279,22 +345,36 @@ function createDiverBody(diver: DiverController) {
   })
 }
 
-function createDiverArm(diver: DiverController, type: 'front' | 'back') {
+function createDiverArm(
+  diver: DiverController,
+  type: 'front' | 'back',
+  skin: DiverSkin,
+  puppet?: () => DiverPose | undefined,
+) {
   const arm = createConnectedController({
     type: 'arm-' + type,
     base: diver,
-    frames: [armFrontUpper],
+    frames: [skin.armUpper],
     width: () => 101 / 3,
     height: () => 28 / 3,
     offset: { x: 48, y: 7 },
     origin: { x: 5, y: 4.5 },
     init: $ => ({
-      isSwimming: () => up(),
+      isSwimming: () => puppet ? (puppet()?.arms[type].isSwimming ?? false) : up(),
       rotationSpeed: () => Math.max(3, $.speed() * 1),
       ...createObjectSignal(0, 'swimPosition'), // Value between 0 and 360
       ...createObjectSignal(0, 'rotation'),
     }),
     onEnterFrame({ $ }) {
+      if (puppet) {
+        const pose = puppet()?.arms[type]
+        if (pose) {
+          $.setSwimPosition(pose.swimPosition)
+          $.setRotation(pose.rotation)
+        }
+        return
+      }
+
       if ($.isSwimming()) {
         $.setSwimPosition(($.swimPosition() + $.rotationSpeed() + 360) % 360)
       } else {
@@ -308,15 +388,15 @@ function createDiverArm(diver: DiverController, type: 'front' | 'back') {
       ))
     }
   })
-  arm.attach(createDiverArmLower(arm, type))
+  arm.attach(createDiverArmLower(arm, type, skin))
   return arm
 }
 
-function createDiverArmLower(arm: DiverArmController, type: 'front' | 'back') {
+function createDiverArmLower(arm: DiverArmController, type: 'front' | 'back', skin: DiverSkin) {
   const armLower = createConnectedController({
     type: 'lower',
     base: arm,
-    frames: [armFrontLower],
+    frames: [skin.armLower],
     width: () => 83 / 3,
     height: () => 19 / 3,
     offset: { x: 27, y: 3 },
@@ -353,15 +433,15 @@ function createDiverArmLower(arm: DiverArmController, type: 'front' | 'back') {
       },
     }),
   })
-  armLower.attach(createDiverArmHand(armLower))
+  armLower.attach(createDiverArmHand(armLower, skin))
   return armLower
 }
 
-function createDiverArmHand(armLower: DiverArmLowerController) {
+function createDiverArmHand(armLower: DiverArmLowerController, skin: DiverSkin) {
   return createConnectedController({
     type: 'hand',
     base: armLower,
-    frames: [armFrontHand],
+    frames: [skin.armHand],
     width: () => 48 / 3,
     height: () => 15 / 3,
     offset: { x: 25, y: 2 },

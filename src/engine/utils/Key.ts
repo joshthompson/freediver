@@ -1,5 +1,11 @@
 import { Accessor, createSignal, Setter } from 'solid-js'
 
+// Typing in a text field shouldn't steer the diver or pause the game
+export function isTyping(event: KeyboardEvent) {
+  const target = event.target as HTMLElement | null
+  return !!target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
+}
+
 class KeyController {
   #keys = new Map<string, [Accessor<boolean>, Setter<boolean>]>()
   #timeouts = new Map<string, number>()
@@ -25,6 +31,7 @@ class KeyController {
   }
 
   #keydown(event: KeyboardEvent) {
+    if (isTyping(event)) return
     this.#get(event.key)[1](true)
   }
 

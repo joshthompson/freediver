@@ -92,3 +92,43 @@ _Avoid_: Death, game over
 
 **Achievement**:
 A milestone the player unlocks, announced by a popup that disappears after a countdown which only runs while gameplay is running.
+
+## Multiplayer
+
+**Room**:
+A shared session of up to four Players swimming together in the Empty Ocean. It ends when its Host leaves.
+_Avoid_: Lobby, server, match, game
+
+**Lobby**:
+The list of open Rooms shown after choosing Multi Player, where you join a Room or create your own.
+_Avoid_: Room list, matchmaking
+
+**Host**:
+The Player who created a Room. Their game decides who is in the Room, each Player's colour and Display Name, and passes everyone's movement and Chat Messages on to the others.
+_Avoid_: Server, owner, leader
+
+**Player**:
+A person in a Room, with a username, a colour, a Diver and a corgi.
+_Avoid_: User, client, peer
+
+**Display Name**:
+A Player's username as shown in the Room. The first Player with a given username shows it as is, and later ones get " (2)", " (3)" and so on.
+_Avoid_: Nickname, tag
+
+**Puppet**:
+Another Player's Diver and corgi as they appear on your screen, copying their movements but taking no part in the world.
+_Avoid_: Ghost, remote player, avatar
+
+**Chat Message**:
+A line a Player types that appears in a speech bubble above their Diver for everyone in the Room. It looks like Background Dialog but is spoken by a Player, not a Character.
+_Avoid_: Background Dialog (for player-typed lines), whisper
+
+**Pointer**:
+An arrow at the edge of the screen showing which way an off-screen Puppet is, in that Player's colour and labelled with their Display Name.
+_Avoid_: Indicator, marker, compass
+
+**Empty Ocean**:
+The ocean of the first dive with every Character, creature and item taken out, where Rooms take place.
+_Avoid_: First level, multiplayer level
+
+In multiplayer no corgi is Linkosha. Each is "<Display Name>'s corgi", including your own.
