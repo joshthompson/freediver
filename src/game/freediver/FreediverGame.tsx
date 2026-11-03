@@ -25,6 +25,8 @@ import { TriggerFishLairLevel } from './scene/levels/TriggerFishLairLevel'
 import { FriedEggLevel } from './scene/levels/FriedEggLevel'
 import { DepthsLevel } from './scene/levels/DepthsLevel'
 import { HellLevel } from './scene/levels/HellLevel'
+import { LobbyScene } from './scene/LobbyScene'
+import { MultiplayerScene } from './scene/MultiplayerScene'
 
 const RealmScenes: Record<RealmName, SceneComponent> = {
   corgosphere: RealmScene(CorgosphereLevel),
@@ -35,8 +37,8 @@ const RealmScenes: Record<RealmName, SceneComponent> = {
 }
 
 const testScene = 'menu'
-const fadeScenes = ['ocean', 'surface', 'cave', 'kingdom', 'credits', ...RealmNames]
-const levelScenes = ['ocean', 'cave', 'kingdom', ...RealmNames]
+const fadeScenes = ['ocean', 'surface', 'cave', 'kingdom', 'credits', 'multiplayer', ...RealmNames]
+const levelScenes = ['ocean', 'cave', 'kingdom', 'multiplayer', ...RealmNames]
 const fadeDuration = 300
 
 export const FreediverGame: Component = () => {
@@ -99,6 +101,8 @@ export const FreediverGame: Component = () => {
         {scene() === 'cave' && <CaveScene setScene={setScene} mode={sceneMode()} />}
         {scene() === 'kingdom' && <KingdomScene setScene={setScene} mode={sceneMode()} />}
         {isRealm(scene()) && <Dynamic component={RealmScenes[scene() as RealmName]} setScene={setScene} mode={sceneMode()} />}
+        {scene() === 'lobby' && <LobbyScene setScene={setScene} mode={sceneMode()} />}
+        {scene() === 'multiplayer' && <MultiplayerScene setScene={setScene} mode={sceneMode()} />}
         {scene() === 'credits' && <CreditsScene setScene={setScene} mode={sceneMode()} />}
         {scene() === 'blackout' && <BlackoutScene setScene={setScene} mode={sceneMode()} />}
         {/* Levels draw these inside their canvas so they sit beneath dialog */}

@@ -3,7 +3,7 @@ import { GameState, GameStateActions } from "../utils/GameStateContext"
 import { BackgroundDialog, Dialog } from "../utils/game"
 import { Accessor, Component, createMemo, createSignal, JSX, Setter } from "solid-js"
 import { Canvas, CanvasControllers } from "@/engine/components/Canvas"
-import { createObjectSignal, ObjectSignal } from "./utils"
+import { createObjectSignal, isTyping, ObjectSignal } from "./utils"
 import { Controller } from "./Controller"
 
 
@@ -26,6 +26,7 @@ interface GameOptions {
   images?: string[] // These are other assets that are not in controllers
   frameRate?: number
   assetOrder?: (string | string[])[]
+  pauseStopsGameplay?: boolean // False in multiplayer, where pausing only opens the menu. Defaults to true
 }
 
 export class Scene<C extends Controller<any> = Controller<any>> {
@@ -169,6 +170,7 @@ export class Scene<C extends Controller<any> = Controller<any>> {
   }
 
   handleWindowKeydown(event: KeyboardEvent) {
+    if (isTyping(event)) return
     if (event.key === 'p' || event.key === 'Escape') {
       this.togglePause()
     }
@@ -179,7 +181,7 @@ export class Scene<C extends Controller<any> = Controller<any>> {
   }
 
   isActive() {
-    return !this.paused.get()
+    return (!this.paused.get() || this.options.pauseStopsGameplay === false)
         && !this.loading.get()
         && ((this.dialog.data()?.pauseGameplay ?? false) !== true)
         && !this.modal.get()

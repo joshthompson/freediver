@@ -6,6 +6,7 @@ import { clickSound } from "@/assets"
 
 export const Button: Component<{
   size?: 'medium' | 'small'
+  disabled?: boolean
   onClick?: (event: MouseEvent) => void
   children?: JSX.Element
 }> = props => {
@@ -17,6 +18,7 @@ export const Button: Component<{
   }
   return <button
     class={styles.button({ size: props.size ?? 'medium' })}
+    disabled={props.disabled}
     onClick={onClick}
     children={props.children}
   />
@@ -56,6 +58,12 @@ const styles = {
 
       _hover: {
         background: '#FDBA00',
+      },
+
+      _disabled: {
+        opacity: 0.5,
+        cursor: 'not-allowed',
+        background: '#FDD000',
       },
     },
     variants: {

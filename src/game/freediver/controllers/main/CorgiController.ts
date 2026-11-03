@@ -1,4 +1,4 @@
-import { createConnectedController, createController } from '@/engine'
+import { createConnectedController, createController, Scene } from '@/engine'
 import { DiverController } from './DiverController'
 import { createBubbleController } from '../scenary/BubbleController'
 import { BoneController } from '../scenary/BoneController'
@@ -15,22 +15,41 @@ let bubbleN = 0
 
 export type CorgiController = ReturnType<typeof createCorgiController>
 
+// Everything another screen needs to draw this corgi as a Puppet
+export interface CorgiPose {
+  x: number
+  y: number
+  rotation: number
+  xScale: number
+  speed: number
+}
+
+export function readCorgiPose(corgi: CorgiController): CorgiPose {
+  const { data } = corgi
+  return { x: data.x(), y: data.y(), rotation: data.rotation(), xScale: data.xScale(), speed: data.speed() }
+}
+
 export function createCorgiController(
   id: string,
   props: {
     x: number
     y?: number
+    type?: string
+    diverId?: string // The diver to follow. Defaults to 'diver'
+    skin?: string // The sprite sheet, so multiplayer can give each Player's corgi their suit colour
+    crown?: boolean // Whether to wear the crown once the Corgi King hands it over. Defaults to true
+    puppet?: () => CorgiPose | undefined // Copies these poses instead of following a diver
   },
 ) {
   const followDistance = 50
   const boostDistance = 200 // If the corgi is further than this from the diver, he goes faster
 
   const corgi = createController({
-    frames: generateFrames(linkAsset, 634, 394, 70, 3, true),
+    frames: generateFrames(props.skin ?? linkAsset, 634, 394, 70, 3, true),
     init() {
       return {
         id,
-        type: 'corgi',
+        type: props.type ?? 'corgi',
         ...createObjectSignal(props.x, 'x'),
         ...createObjectSignal(props.y ?? 40, 'y'),
         ...createObjectSignal(1, 'xScale'),
@@ -45,7 +64,21 @@ export function createCorgiController(
       }
     },
     onEnterFrame({ $, $scene, $age }) {
-      const diver = $scene.getControllerById('diver') as DiverController
+      if (props.puppet) {
+        const pose = props.puppet()
+        if (pose) {
+          $.setX(pose.x)
+          $.setY(pose.y)
+          $.setRotation(pose.rotation)
+          $.setXScale(pose.xScale)
+          $.setSpeed(pose.speed)
+        }
+        $.setFrameInterval(250 - 100 * $.speed() / maxSpeed)
+        makeBubbles($, $scene)
+        return
+      }
+
+      const diver = $scene.getControllerById(props.diverId ?? 'diver') as DiverController
       const bones = $scene.getControllersByType('bone') as BoneController[]
       if (!diver) return
 
@@ -113,21 +146,12 @@ export function createCorgiController(
 
       $.setY($.y() + Math.cos($age / 10 - 0.5))
 
-      $.setBubbleLevel($.bubbleLevel() + $.speed() / 4 + 0.5)
-      if ($.bubbleLevel() > bubbleFrequency) {
-        $.setBubbleLevel(0)
-        $scene.addController?.(
-          createBubbleController('corgi-bubble-' + bubbleN++, {
-            x: $.x() + $.width() / 2,
-            y: $.y(),
-          }),
-        )
-      }
+      makeBubbles($, $scene)
     },
   })
 
   // Linkosha wears the Corgi King's crown once he hands it over
-  if (useGameState()?.gameState.questState.king.state === 'crowned') {
+  if (props.crown !== false && useGameState()?.gameState.questState.king.state === 'crowned') {
     corgi.attach(createConnectedController({
       type: 'crown',
       base: corgi,
@@ -139,4 +163,17 @@ export function createCorgiController(
   }
 
   return corgi
+}
+
+function makeBubbles($: CorgiController['data'], $scene: Scene) {
+  $.setBubbleLevel($.bubbleLevel() + $.speed() / 4 + 0.5)
+  if ($.bubbleLevel() > bubbleFrequency) {
+    $.setBubbleLevel(0)
+    $scene.addController?.(
+      createBubbleController('corgi-bubble-' + bubbleN++, {
+        x: $.x() + $.width() / 2,
+        y: $.y(),
+      }),
+    )
+  }
 }

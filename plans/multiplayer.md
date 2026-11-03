@@ -24,13 +24,13 @@ Terms (Room, Lobby, Host, Player, Display Name, Puppet, Chat Message, Pointer, E
 
 ## Menu and Lobby
 
-- A new "Multi Player" button sits below Start/Continue on the main menu.
+- A new "Multiplayer" button sits below Start/Continue on the main menu.
 - Flow: Menu → enter username → Lobby → Room. "Leave room" returns to the Lobby, and "Back" in the Lobby returns to the menu.
 - Usernames are 1–12 characters, trimmed and required. The username is remembered on this device and pre-filled next time. This is the only thing multiplayer saves.
 - Room names are 1–20 characters, trimmed and required. The default is "<username>'s room". Room names don't need to be unique.
 - Each Lobby row shows the Room name, the Host's Display Name and "n/4", newest first. Full Rooms are greyed out and can't be joined.
 - With no Rooms, the list says "No rooms yet: create one".
-- The "Multi Player" button is greyed out with "Needs internet" when the browser reports being offline.
+- The "Multiplayer" button is greyed out with "Needs internet" when the browser reports being offline.
 - Every new on-screen label is translated into all 4 languages. Chat Messages, usernames and Room names are always shown as typed.
 
 ## Players

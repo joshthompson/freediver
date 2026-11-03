@@ -1,6 +1,6 @@
 import { Canvas } from '@/engine/components/Canvas'
 import { Scene, SceneComponent } from '@/engine'
-import { onCleanup } from 'solid-js'
+import { createSignal, onCleanup } from 'solid-js'
 import { css } from '@style/css'
 import { Button } from '../ui/Button'
 import { useGameState } from '@/utils/GameStateContext'
@@ -22,6 +22,16 @@ export const MenuScene: SceneComponent = props => {
   const locale = () => scene.gameState.options.locale
   const t = () => Translations[locale()]
 
+  // Multiplayer needs the internet, though the rest of the game works offline
+  const [online, setOnline] = createSignal(navigator.onLine)
+  const updateOnline = () => setOnline(navigator.onLine)
+  window.addEventListener('online', updateOnline)
+  window.addEventListener('offline', updateOnline)
+  onCleanup(() => {
+    window.removeEventListener('online', updateOnline)
+    window.removeEventListener('offline', updateOnline)
+  })
+
   return <Canvas
     scene={scene}
     style={{ background: `url(${menu1Asset})`, 'background-size': 'cover' }}
@@ -36,6 +46,9 @@ export const MenuScene: SceneComponent = props => {
         ? props.setScene('kingdom', 'portal') // Left partway through a Crystal Realm
         : props.setScene('surface')}>
         {scene.gameState.score.total > 0 ? t().menu.continue : t().menu.start}
+      </Button>
+      <Button onClick={() => props.setScene('lobby')} size="small" disabled={!online()}>
+        {online() ? t().menu.multiplayer : t().multiplayer.needsInternet}
       </Button>
       <Button onClick={() => props.setScene('instructions')} size="small">{t().menu.instructions}</Button>
       <Button onClick={() => props.setScene('achievements')} size="small">{t().achievements.title}</Button>
