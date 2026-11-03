@@ -147,6 +147,13 @@ export const loadState = (): GameState => {
   return JSON.parse(window.localStorage.getItem('game-state') ?? '{}')
 }
 
+// Achievement popups only count down while gameplay is running
+const achievementCountdownTick = 100
+let achievementCountdownPaused = false
+export const setAchievementCountdownPaused = (paused: boolean) => {
+  achievementCountdownPaused = paused
+}
+
 export const GameStateContext = createContext<[GameState, SetStoreFunction<GameState>]>()
 export type GameStateActions = NonNullable<ReturnType<typeof useGameState>>['gameStateActions']
 
@@ -159,9 +166,15 @@ export const useGameState = () => {
   function achievement(name: Achievement) {
     if (!gameState.achievements[name]) {
       setGameState('achievements', name, 'new')
-      setTimeout(() => {
-        setGameState('achievements', name, 'shown')
-      }, AchievementDisplayDuration)
+      let timeLeft = AchievementDisplayDuration
+      const countdown = setInterval(() => {
+        if (achievementCountdownPaused) return
+        timeLeft -= achievementCountdownTick
+        if (timeLeft <= 0) {
+          clearInterval(countdown)
+          setGameState('achievements', name, 'shown')
+        }
+      }, achievementCountdownTick)
       return true
     } else {
       return false

@@ -44,13 +44,31 @@ export const CowQuest = {
   ],
 } as const satisfies Record<string, DialogMessage[]>
 
+// TODO: Placeholder lines until they're rewritten
+export const BackgroundDialogLines = {
+  cow: [
+    'Moo-rning, Linkosha!',
+    'Hay there, pup!',
+    'Manny and I are having a whale of a time!',
+    'What an udderly lovely day for a swim!',
+  ],
+  manatee: [
+    'Mwoorp! Hello again!',
+    'Mwoorp mwoorp!',
+    'Thanks again, little pup!',
+    'Sea-cows never forget a friend. Mwoorp!',
+  ],
+} as const satisfies Record<string, readonly string[]>
+
 // TODO: Placeholder quest text until the king's quest is written
 export const KingQuest = {
   intro: [
     { ...king, text: 'Who dares swim into the Corgi Kingdom?' },
     { ...link, text: 'Woof woof!' },
     { ...king, text: 'Linkosha! Welcome, brave pup. You have come at just the right time.' },
-    { ...king, text: 'Link I have a royal quest for you...' },
+    { ...king, text: 'Link, I have a royal quest for you.' },
+    { ...king, text: 'I need to you to bring to me the 5 crystal corgis.' },
+    // { ...king, text: 'The first is lost in the Corgosphere.' },
     { ...link, text: 'Woof woof!' },
     { ...king, text: 'Link Return to me when it is done, and you shall be rewarded!' },
   ],

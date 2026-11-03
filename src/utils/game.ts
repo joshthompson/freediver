@@ -51,6 +51,12 @@ export interface Dialog {
   pauseGameplay?: boolean,
 }
 
+export interface BackgroundDialog {
+  controllerId: string
+  text: string
+  framesLeft: number
+}
+
 export interface DialogMessage {
   text: string
   speaker?: string

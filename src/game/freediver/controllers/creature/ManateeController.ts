@@ -2,7 +2,8 @@ import { createController } from '@/engine'
 import { manateeAsset, manateeCryAsset } from '@/assets'
 import { generateFrames } from '@/utils'
 import { createObjectSignal } from '@/engine/utils'
-import { CowQuest } from '../../data/Dialogs'
+import { BackgroundDialogLines, CowQuest } from '../../data/Dialogs'
+import { createBackgroundDialogTrigger } from '../utils/BackgroundDialogTrigger'
 import { OCEAN } from '../../scene/levels/data'
 
 export type ManateeController = ReturnType<typeof createManateeController>
@@ -22,6 +23,8 @@ export function createManateeController(id: string, props: { x: number, y: numbe
       height: 109,
     },
   }
+
+  const backgroundDialog = createBackgroundDialogTrigger(BackgroundDialogLines.manatee)
 
   return createController({
     frames: mooooods.sad.frames,
@@ -44,7 +47,7 @@ export function createManateeController(id: string, props: { x: number, y: numbe
         state: () => 'play',
       }
     },
-    onEnterFrame({ $, $age, $scene }) {
+    onEnterFrame({ $, $age, $scene, $controller }) {
       const float = Math.cos($age / 10 - 0.2)
       $.setY($.y() + float)
 
@@ -75,7 +78,8 @@ export function createManateeController(id: string, props: { x: number, y: numbe
             x: Math.random() * (OCEAN.maxX - OCEAN.minX) + OCEAN.minX,
             y: Math.random() * 400 + 100
           })
-        } 
+        }
+        backgroundDialog($scene, $controller)
       } else {
         $.setFrames(mooooods.sad.frames)
         $.setHeight(mooooods.sad.height)

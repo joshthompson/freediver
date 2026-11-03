@@ -1,6 +1,6 @@
 import { SetStoreFunction } from "solid-js/store"
 import { GameState, GameStateActions } from "../utils/GameStateContext"
-import { Dialog } from "../utils/game"
+import { BackgroundDialog, Dialog } from "../utils/game"
 import { Accessor, Component, createMemo, createSignal, JSX, Setter } from "solid-js"
 import { Canvas, CanvasControllers } from "@/engine/components/Canvas"
 import { createObjectSignal, ObjectSignal } from "./utils"
@@ -44,6 +44,7 @@ export class Scene<C extends Controller<any> = Controller<any>> {
     messageIndex: Accessor<number>
     setMessageIndex: Setter<number>
   }
+  backgroundDialogs = createObjectSignal([] as BackgroundDialog[])
   loading = createObjectSignal(false)
   paused = createObjectSignal(false)
   modal = createObjectSignal(undefined as JSX.Element | undefined)
@@ -100,6 +101,7 @@ export class Scene<C extends Controller<any> = Controller<any>> {
     this.interval = window.setInterval(() => {
       if (this.isActive()) {
         this.controllers.get().forEach(({ controller }) => controller.onEnterFrame(this))
+        this.#tickBackgroundDialogs()
       }
       this.options.afterEnterFrames?.({ $scene: this })
     }, this.options.frameRate ?? 40)
@@ -200,8 +202,33 @@ export class Scene<C extends Controller<any> = Controller<any>> {
   }
 
   startDialog(dialog: Dialog, options?: { firstMessageIndex?: number }) {
+    this.backgroundDialogs.set([])
     this.dialog.setMessageIndex(options?.firstMessageIndex ?? 0)
     this.dialog.setData(dialog)
+  }
+
+  // Only one shows at a time, and none while a dialog is open. Returns whether it started
+  startBackgroundDialog(backgroundDialog: BackgroundDialog) {
+    if (this.dialog.data() || this.backgroundDialogs.get().length) return false
+    this.backgroundDialogs.set([backgroundDialog])
+    return true
+  }
+
+  // Drop background dialogs that have run out of frames or whose speaker has left the screen
+  #tickBackgroundDialogs() {
+    const dialogs = this.backgroundDialogs.get()
+    if (!dialogs.length) return
+    const canvas = this.canvas.get()
+    const remaining = dialogs.filter(dialog => {
+      dialog.framesLeft--
+      const speaker = this.getControllerById(dialog.controllerId)
+      if (!speaker || dialog.framesLeft <= 0) return false
+      const x = speaker.data.x() - canvas.x()
+      const y = speaker.data.y() - canvas.y()
+      return x + speaker.data.width() > 0 && x < canvas.width
+        && y + speaker.data.height() > 0 && y < canvas.height
+    })
+    if (remaining.length !== dialogs.length) this.backgroundDialogs.set(remaining)
   }
 
   diaglogAction(optionIndex: number) {

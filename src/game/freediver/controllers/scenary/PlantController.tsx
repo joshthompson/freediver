@@ -64,6 +64,7 @@ function createPlantBase(id: string, x: number) {
 
       const touchingStuff = false
         || $scene.getControllerById('statue')?.hitTest($controller)
+        || $scene.getControllerById('statue-sign')?.hitTest($controller)
         || $scene.getControllerById('wall-left')?.hitTest($controller)
 
       $.setVisibility(touchingStuff ? 'hidden' : 'visible')

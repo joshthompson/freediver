@@ -1,7 +1,8 @@
 import { createController } from '@/engine'
 import { cowAsset } from '@/assets'
 import { CorgiController } from '../main/CorgiController'
-import { CowQuest } from '../../data/Dialogs'
+import { BackgroundDialogLines, CowQuest } from '../../data/Dialogs'
+import { createBackgroundDialogTrigger } from '../utils/BackgroundDialogTrigger'
 import { ManateeController } from './ManateeController'
 import { createObjectSignal } from '@/engine'
 import { generateFrames } from '@/utils'
@@ -21,6 +22,8 @@ export function createCowController(
     y?: number
   },
 ) {
+  const backgroundDialog = createBackgroundDialogTrigger(BackgroundDialogLines.cow)
+
   return createController({
     frames: generateFrames(cowAsset, width, height, width, 4, true),
     init() {
@@ -39,7 +42,7 @@ export function createCowController(
         height: () => height,
       }
     },
-    onEnterFrame({ $, $scene, $age }) {
+    onEnterFrame({ $, $scene, $age, $controller }) {
       const float = Math.cos($age / 10 - 0.8)
       $.setY($.y() + float)
 
@@ -131,6 +134,7 @@ export function createCowController(
         else $.setXScale(-1)
         $.setX($.x() - speed * Math.cos(manateeDirection))
         $.setY($.y() - speed * Math.sin(manateeDirection))
+        backgroundDialog($scene, $controller)
       }
     },
   })

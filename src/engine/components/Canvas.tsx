@@ -14,6 +14,7 @@ export interface CanvasProps {
   scene: Scene
   loading?: Component<{ scene: Scene }>
   dialog?: Component<{ scene: Scene }>
+  underDialog?: JSX.Element // Drawn above sprites but beneath the dialog
   overlay?: JSX.Element
   underlay?: JSX.Element
   style?: JSX.CSSProperties
@@ -104,6 +105,7 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
             active={props.scene.isActive()}
           />}
         </For>
+        {props.underDialog}
         {props.dialog && <props.dialog scene={props.scene} />}
         {props.scene.modal.get() && <Modal>{props.scene.modal.get()}</Modal>}
         {props.overlay}

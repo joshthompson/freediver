@@ -1,5 +1,5 @@
-import { Component, createMemo, createSignal, For } from 'solid-js'
-import { css, cva } from '@style/css'
+import { Component, createMemo, createSignal } from 'solid-js'
+import { cva } from '@style/css'
 import { OceanScene } from './scene/OceanScene'
 import { SurfaceScene } from './scene/SurfaceScene'
 import { MenuScene } from './scene/MenuScene'
@@ -9,16 +9,16 @@ import { createStore } from 'solid-js/store'
 import { GameState, GameStateContext, initialState, setGameStateWithSaveWrapper } from '@/utils/GameStateContext'
 import { BlackoutScene } from './scene/BlackoutScene'
 import { OptionsScene } from './scene/OptionsScene'
-import { Translations } from '@/game/freediver/data/Translations'
 import { AchievementsScene } from './scene/AchievementsScene'
 import { MobileKeyboard } from './ui/MobileKeyboard'
-import { alertAsset, musicSound } from '@/assets'
-import { Achievement } from '@/game/freediver/data/Achievements'
+import { musicSound } from '@/assets'
+import { AchievementPopups } from './ui/AchievementPopups'
 import { CaveScene } from './scene/CaveScene'
 import { KingdomScene } from './scene/KingdomScene'
 
 const testScene = 'menu'
 const fadeScenes = ['ocean', 'surface', 'cave', 'kingdom']
+const levelScenes = ['ocean', 'cave', 'kingdom']
 const fadeDuration = 300
 
 export const FreediverGame: Component = () => {
@@ -31,7 +31,6 @@ export const FreediverGame: Component = () => {
 
   const setGameState = setGameStateWithSaveWrapper(gameState, _setGameState)
 
-  const t = () => Translations[gameState.options.locale]
 
   const [scene, _setScene] = createSignal<string>(import.meta.env.DEV ? testScene : 'menu')
   const [sceneMode, setSceneMode] = createSignal<string | undefined>(undefined)
@@ -67,12 +66,6 @@ export const FreediverGame: Component = () => {
     setWindowWidth(window.innerWidth)
   })
 
-  const newAchievement = () => {
-    return Object.entries(gameState.achievements)
-      .filter(([, state]) => state === 'new')
-      .map(([achievement]) => achievement) as Achievement[]
-  }
-
   return (
     <GameStateContext.Provider value={[gameState, setGameState]}>
       <div
@@ -88,16 +81,8 @@ export const FreediverGame: Component = () => {
         {scene() === 'cave' && <CaveScene setScene={setScene} mode={sceneMode()} />}
         {scene() === 'kingdom' && <KingdomScene setScene={setScene} mode={sceneMode()} />}
         {scene() === 'blackout' && <BlackoutScene setScene={setScene} mode={sceneMode()} />}
-        {newAchievement().length > 0 && <div class={styles.achievements}>
-          <For each={newAchievement()}>
-            {achievement => (<div class={styles.achievement} style={{ 'background-image': `url(${alertAsset})` }}>
-            <div class={styles.achievementInner}>
-              <small>{t().achievements.new}</small>
-              <div>{t().achievements[achievement]}</div>
-            </div>
-          </div>)}
-          </For>
-        </div>}
+        {/* Levels draw these inside their canvas so they sit beneath dialog */}
+        {!levelScenes.includes(scene()) && <AchievementPopups />}
       </div>
       {isMobileBrowser() && <MobileKeyboard scene={scene()} />}
     </GameStateContext.Provider>
@@ -136,30 +121,5 @@ const styles = {
         undefined: {}
       },
     },
-  }),
-  achievements: css({
-    position: 'absolute',
-    bottom: '20px',
-    right: '20px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '15px',
-  }),
-  achievement: css({
-    height: '100px',
-    aspectRatio: '1323 / 510',
-    backgroundSize: 'cover',
-    p: '25px 35px 30px 35px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  }),
-  achievementInner: css({
-    rotate: '-1deg',
-    maxHeight: '90px',
-    overflow: 'hidden',
-    textAlign: 'center',
-    fontSize: '26px',
-    lineHeight: '0.7em',
   }),
 }

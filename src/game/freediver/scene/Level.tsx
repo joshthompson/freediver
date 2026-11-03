@@ -1,7 +1,7 @@
 import { Canvas } from '@/engine/components/Canvas'
 import { createBubbleController } from '../controllers/scenary/BubbleController'
 import { SceneComponent } from '@/engine'
-import { Accessor, Component, JSX, onCleanup } from 'solid-js'
+import { Accessor, Component, createEffect, JSX, onCleanup } from 'solid-js'
 import { css, cva } from '@style/css'
 import { PauseMenu } from '../ui/PauseMenu'
 import { Bar } from '../ui/Bar'
@@ -13,6 +13,9 @@ import { Dialog } from '../ui/Dialog'
 import { Scene } from '@/engine'
 import { Controller } from '@/engine'
 import { DiverController } from '../controllers/main/DiverController'
+import { AchievementPopups } from '../ui/AchievementPopups'
+import { BackgroundDialog } from '../ui/BackgroundDialog'
+import { setAchievementCountdownPaused } from '@/utils/GameStateContext'
 
 export const Level: SceneComponent<{
   scene: Scene<Controller<any>>,
@@ -20,6 +23,9 @@ export const Level: SceneComponent<{
   surface: boolean
 }> = props => {
   onCleanup(() => props.scene.destroy())
+
+  createEffect(() => setAchievementCountdownPaused(!props.scene.isActive()))
+  onCleanup(() => setAchievementCountdownPaused(false))
 
   const exitToMenu = () => {
     props.setScene('menu')
@@ -30,6 +36,10 @@ export const Level: SceneComponent<{
     scene={props.scene}
     loading={LoadingScreen}
     dialog={Dialog}
+    underDialog={<>
+      <BackgroundDialog scene={props.scene} />
+      <AchievementPopups />
+    </>}
     overlay={<GameOverlay scene={props.scene} exitToMenu={exitToMenu} />}
     underlay={props.surface && <GameUnderlay scene={props.scene} />}
     class={styles.level}
