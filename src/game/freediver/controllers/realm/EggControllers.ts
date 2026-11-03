@@ -1,7 +1,7 @@
 import { eggBulletAsset, friedEggAsset, scrambledEggMonsterAsset, scrambledEggMonsterHappyAsset } from '@/assets'
 import { createController } from '@/engine'
 import { createObjectSignal } from '@/engine/utils'
-import { hitDiverIfTouching, touchesDiver } from './Hazard'
+import { getDiver, hitDiverIfTouching, touchesDiver } from './Hazard'
 
 // Generous, since the diver is long and only their middle is checked
 const grabRadius = 50
@@ -40,24 +40,33 @@ export function createFriedEggController(id: string, props: Vector & { onCollect
   })
 }
 
-// A Fried Egg flying from the diver into the monster's mouth once the Egg-o-meter is full
-export function createFlyingEggController(id: string, props: { from: Vector, to: () => Vector, delay: number }) {
+// A Fried Egg flying from the diver into the monster's mouth once the Egg-o-meter is full.
+// It stays hidden until `delay` is up, then sets off from wherever the diver is by then
+export function createFlyingEggController(id: string, props: { from: () => Vector, to: () => Vector, delay: number }) {
   const size = 40
   return createController({
     frames: [friedEggAsset],
     init() {
+      const launched = createObjectSignal(false, 'launched')
       return {
         id,
         type: 'fried-egg',
-        ...createObjectSignal(props.from.x, 'x'),
-        ...createObjectSignal(props.from.y, 'y'),
+        ...createObjectSignal(props.from().x - size / 2, 'x'),
+        ...createObjectSignal(props.from().y - size / 2, 'y'),
         ...createObjectSignal(0, 'rotation'),
+        ...launched,
         width: () => size,
         height: () => size * 0.85,
+        style: () => launched.launched() ? {} : { opacity: 0 },
       }
     },
     onEnterFrame({ $, $scene, $age }) {
-      if ($age < props.delay) return
+      if ($age < props.delay) {
+        $.setX(props.from().x - size / 2)
+        $.setY(props.from().y - size / 2)
+        return
+      }
+      $.setLaunched(true)
       const to = props.to()
       const direction = Math.atan2(to.y - $.y(), to.x - $.x())
       $.setX($.x() + Math.cos(direction) * 14)
@@ -70,8 +79,9 @@ export function createFlyingEggController(id: string, props: { from: Vector, to:
 
 // An egg fired by the Scrambled Egg Monster. A Hazard
 export function createEggBulletController(id: string, props: Vector & { velocity: Vector, bounds: Rect }) {
-  const width = 22
-  const height = 28
+  // Drawn with room for its glow. Only the egg itself hurts
+  const width = 30
+  const height = 38
   const { bounds } = props
 
   return createController({
@@ -106,13 +116,13 @@ export type ScrambledEggMonsterController = ReturnType<typeof createScrambledEgg
 // The Fried Egg realm's boss. The level moves it about with goTo and sets its size and mood
 export function createScrambledEggMonsterController(id: string, props: Vector) {
   const baseWidth = 160
-  const baseHeight = 144
+  const baseHeight = 163
 
   return createController({
     frames: [scrambledEggMonsterAsset, scrambledEggMonsterHappyAsset],
     init() {
       const size = createObjectSignal(1, 'size')
-      const happy = createObjectSignal(false, 'happy')
+      const happy = createObjectSignal(true, 'happy') // Cheerful until he reveals it was all a yolk
       // Positioned by its centre
       const centerX = createObjectSignal(props.x, 'centerX')
       const centerY = createObjectSignal(props.y, 'centerY')
@@ -125,6 +135,7 @@ export function createScrambledEggMonsterController(id: string, props: Vector) {
         ...bob,
         ...createObjectSignal({ ...props } as Vector, 'target'),
         ...createObjectSignal(4, 'speed'),
+        ...createObjectSignal(1, 'xScale'),
         ...size,
         ...happy,
         x: () => centerX.centerX() - baseWidth * size.size() / 2,
@@ -135,13 +146,20 @@ export function createScrambledEggMonsterController(id: string, props: Vector) {
         state: () => 'pause' as const,
       }
     },
-    onEnterFrame({ $, $age }) {
+    onEnterFrame({ $, $scene, $age }) {
       const target = $.target()
       const distance = Math.hypot(target.x - $.centerX(), target.y - $.centerY())
       if (distance > $.speed()) {
         const direction = Math.atan2(target.y - $.centerY(), target.x - $.centerX())
         $.setCenterX($.centerX() + Math.cos(direction) * $.speed())
         $.setCenterY($.centerY() + Math.sin(direction) * $.speed())
+        // The art faces right, so flip it when he's heading left. Mostly-vertical moves keep his facing
+        const dx = Math.cos(direction)
+        if (Math.abs(dx) > 0.3) $.setXScale(dx > 0 ? 1 : -1)
+      } else {
+        // Standing still, he keeps an eye on the diver
+        const diver = getDiver($scene)
+        if (diver) $.setXScale(diver.data.center().x > $.centerX() ? 1 : -1)
       }
       $.setBob(Math.sin($age / 10) * 4)
     },

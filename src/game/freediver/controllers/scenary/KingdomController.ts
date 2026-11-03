@@ -20,7 +20,7 @@ import { DiverController } from '../main/DiverController'
 import { CorgiCitizenBackgroundDialogLines, KingQuest, KingReminderBackgroundDialogLines, OldKingBackgroundDialogLines } from '../../data/Dialogs'
 import { createBackgroundDialogTrigger } from '../utils/BackgroundDialogTrigger'
 
-const floorY = 690
+export const floorY = 625
 const ceilingY = 92
 
 export function createKingdomOpeningController(id: string, props: { x: number }) {
@@ -74,7 +74,7 @@ export function createKingdomColumnController(id: string, props: { x: number }) 
         x: () => props.x,
         y: () => 100,
         width: () => 90,
-        height: () => 600,
+        height: () => floorY - 90,
       }
     },
   })
@@ -124,7 +124,7 @@ export function createGlowCoralController(id: string, props: { x: number, scale?
         id,
         type: 'glow-coral',
         x: () => props.x,
-        y: () => floorY - 40 - height,
+        y: () => floorY - 10 - height,
         width: () => 90 * scale,
         height: () => height,
         style: () => ({ filter: `hue-rotate(${props.hue ?? 0}deg)` }),
@@ -218,16 +218,16 @@ export function createCorgiKingController(id: string, props: {
       type: 'crown',
       base: king,
       frames: [kingdomCrownAsset],
-      offset: { x: 78, y: -20 },
+      offset: { x: 78, y: -21 },
       width: () => 34,
-      height: () => 26,
+      height: () => 27,
     }))
   }
 
   return king
 }
 
-export const plinthSize = { width: 90, height: 70 }
+export const plinthSize = { width: 84, height: 70 }
 
 // A stand behind the throne for one Crystal Corgi
 export function createPlinthController(id: string, props: { x: number }) {

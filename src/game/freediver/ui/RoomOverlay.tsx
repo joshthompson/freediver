@@ -9,6 +9,7 @@ import { Translations } from '../data/Translations'
 import { isMobileBrowser } from '@/utils/game'
 import { bubbleStyle } from './BackgroundDialog'
 import { Button } from './Button'
+import { Options } from './Options'
 
 // Keeps bubbles (max 200px wide) and their tails inside the screen, as Background Dialog does
 const edgeX = 110
@@ -154,6 +155,7 @@ const RoomPauseMenu: Component<{ scene: Scene, leave: () => void }> = props => {
   return <div class={styles.paused}>
     <div>{t().pause.title}</div>
     <Button onClick={() => props.scene.togglePause()} size="small">{t().pause.resume}</Button>
+    <Options mode="pause" achievements={false} />
     <Button onClick={() => props.leave()} size="small">{t().multiplayer.leaveRoom}</Button>
   </div>
 }

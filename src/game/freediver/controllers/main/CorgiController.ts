@@ -156,9 +156,9 @@ export function createCorgiController(
       type: 'crown',
       base: corgi,
       frames: [kingdomCrownAsset],
-      offset: { x: 44, y: -11 },
+      offset: { x: 44, y: -12 },
       width: () => 20,
-      height: () => 15,
+      height: () => 16,
     }))
   }
 

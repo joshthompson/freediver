@@ -59,6 +59,8 @@ export const Dialog: Component<{scene: Scene}> = props => {
   }
 
   const message = () => props.scene.dialog.data()?.messages[props.scene.dialog.messageIndex()]
+  // Every portrait in this dialog, stacked so they're all decoded up front and switching between them doesn't flicker
+  const portraits = () => [...new Set(props.scene.dialog.data()?.messages.map(message => message.image).filter(image => !!image))] as string[]
   const options = () => message()?.options || []
   onMount(() => {
     window.addEventListener('keydown', handleKeyDown)
@@ -72,7 +74,12 @@ export const Dialog: Component<{scene: Scene}> = props => {
   return <Show when={message()}>
     <div class={styles.dialog({ hasImage: !!message()!.image })}>
       <Show when={message()!.image}>
-        <img src={message()!.image} class={styles.image} />
+        <div class={styles.portrait}>
+          <For each={portraits()}>
+            {/* The current one sits on top, its white circle hiding the rest */}
+            {image => <img src={image} class={styles.image} style={{ 'z-index': image === message()!.image ? 1 : 0 }} />}
+          </For>
+        </div>
       </Show>
       <div class={styles.message}>
         <Show when={message()!.speaker}>
@@ -122,10 +129,18 @@ const styles = {
       },
     },
   }),
-  image: css({
+  portrait: css({
+    position: 'relative',
+    flexShrink: 0,
     m: '-15px 10px -15px -50px',
     height: '100px',
     aspectRatio: '1',
+  }),
+  image: css({
+    position: 'absolute',
+    inset: 0,
+    width: '100%',
+    height: '100%',
     border: '4px solid black',
     borderRadius: '50%',
     background: 'white',

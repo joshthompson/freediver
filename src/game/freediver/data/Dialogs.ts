@@ -36,7 +36,7 @@ const yolko = { speaker: say('Yolko the Eggy Corgi', 'Желток, яичный
 const fathom = { speaker: say('Judge Fathom', 'Судья Глубин', 'Domare Famn', 'Drekun Fathom'), image: judgeCorgiDialogAsset }
 const ember = { speaker: say('Ember', 'Уголёк', 'Glöd', 'Ember'), image: hellCorgiDialogAsset }
 const eggMonster = { speaker: say('The Scrambled Egg Monster', 'Монстр-Омлет', 'Äggröremonstret', 'Eshrova Morgul'), image: scrambledEggMonsterAsset }
-const eggMonsterSorry = { ...eggMonster, image: scrambledEggMonsterHappyAsset }
+const eggMonsterHappy = { ...eggMonster, image: scrambledEggMonsterHappyAsset }
 const demon = { speaker: say('The Demon Corgi Fish', 'Демон корги-рыба', 'Demoncorgifisken', 'Vashkur Korlishol'), image: demonCorgiFishAsset }
 const devil = { speaker: say('The Devil Corgi Fish', 'Дьявольская корги-рыба', 'Djävulscorgifisken', 'Vashkalun Korlishol'), image: devilCorgiFishAsset }
 const devilFriend = { ...devil, image: devilCorgiFishHappyAsset }
@@ -282,6 +282,12 @@ export const CorgiCitizenBackgroundDialogLines = {
     say('They say the Crystal Corgis are hidden in five strange realms.', 'Говорят, Хрустальные Корги спрятаны в пяти странных мирах.', 'Det sägs att Kristallcorgisarna är gömda i fem konstiga riken.', 'Kristal Korli tal 5 rielm nerval.'),
     say('Nice snorkel!', 'Классная трубка!', 'Snygg snorkel!', 'Lerosh snorkul!'),
     say('The King has looked so worried lately.', 'Король в последнее время такой встревоженный.', 'Kungen har sett så orolig ut på sistone.', 'Kalun varil losh talun.'),
+    say('Is that a human with you? How exciting!', 'С тобой человек? Как интересно!', 'Är det en människa med dig? Vad spännande!', 'Terra-shonari vä shon? Lerosh!'),
+    say(`We don't get many visitors from up above.`, 'Сверху к нам редко заглядывают гости.', 'Vi får inte många besökare uppifrån.', 'Terra shonari nel talvori.'),
+    say('I heard one Crystal Corgi ended up in outer space!', 'Говорят, один Хрустальный Корги попал в открытый космос!', 'Jag hörde att en Kristallcorgi hamnade i rymden!', 'Fes Kristal Korli tal estrel!'),
+    say(`Paddle, paddle, paddle. That's how we get about down here.`, 'Гребём, гребём, гребём. Так мы тут и плаваем.', 'Paddla, paddla, paddla. Så tar vi oss fram här nere.', 'Shavor, shavor, shavor. Korli tal drekal!'),
+    say('Fancy a nap? The water down here is lovely and warm.', 'Не хочешь вздремнуть? Вода здесь такая тёплая.', 'Sugen på en tupplur? Vattnet här nere är skönt och varmt.', 'Shon nera? Vashra tal lerosh vä vashel.'),
+    say(`Please help the King. He hasn't wagged his tail in weeks.`, 'Пожалуйста, помоги Королю. Он уже несколько недель не виляет хвостом.', 'Snälla, hjälp kungen. Han har inte viftat på svansen på flera veckor.', 'Naril Kalun, korli. Kalun nel wagra talun.'),
   ],
   king: [
     say('Long live King Linkosha!', 'Да здравствует король Линкоша!', 'Länge leve kung Linkosha!', 'Lorva Kalun Linkosha!'),
@@ -290,6 +296,12 @@ export const CorgiCitizenBackgroundDialogLines = {
     say('The crown suits you, Your Majesty!', 'Корона вам к лицу, Ваше Величество!', 'Kronan klär er, Ers Majestät!', 'Kalun-krona savor tal shon, Kalun-vor!'),
     say('Thank you for bringing the Crystal Corgis home!', 'Спасибо, что вернули Хрустальных Корги домой!', 'Tack för att du tog hem Kristallcorgisarna!', 'Telvor for naril Kristal Korli renvor!'),
     say(`Best king ever. Don't tell the old one.`, 'Лучший король на свете. Только старому не говорите.', 'Bästa kungen någonsin. Säg inget till den gamla.', 'Savor kalun talvori. Nel dralon ta Kalun-neren.'),
+    say('Three cheers for King Linkosha!', 'Троекратное ура королю Линкоше!', 'Ett fyrfaldigt leve för kung Linkosha!', 'Lorva, lorva, lorva Kalun Linkosha!'),
+    say('A king who swims with humans! How modern!', 'Король, который плавает с людьми! Как современно!', 'En kung som simmar med människor! Så modernt!', 'Kalun shavor vä terra-shonari! Lerosh!'),
+    say('Is it true you swam through a realm of fire?', 'Правда, что вы проплыли через огненный мир?', 'Är det sant att ni simmade genom ett rike av eld?', 'Shon shavor tal fyrra rielm?'),
+    say('Will there be a royal feast, Your Majesty?', 'Будет ли королевский пир, Ваше Величество?', 'Blir det en kunglig fest, Ers Majestät?', 'Kalun-festra, Kalun-vor?'),
+    say('I bowed so low I bumped my nose on the floor!', 'Я так низко поклонился, что ударился носом об пол!', 'Jag bugade så djupt att jag slog näsan i golvet!', 'Mel drekal losh, mel nosra au!'),
+    say('The whole kingdom is wagging its tail for you!', 'Всё королевство виляет хвостом в вашу честь!', 'Hela riket viftar på svansen för er!', 'Kalunra wagra for shon!'),
   ],
 } as const satisfies Record<string, readonly Localised[]>
 
@@ -548,14 +560,27 @@ export const RealmDialogs = {
 } as const satisfies Record<RealmName, { intro: DialogMessage[], end: DialogMessage[] }>
 
 export const EggMonsterDialog = {
+  bring: [
+    { ...eggMonsterHappy, text: say(
+      `You've got them all! Bring them to me!`,
+      'Все яйца собраны! Неси их мне!',
+      'Du har samlat alla! Kom hit med dem till mig!',
+      'Esh tal! Naril esh ta mel!',
+    ) },
+  ],
   full: [
-    { ...eggMonster, text: say(
+    { ...eggMonsterHappy, text: say(
       'One hundred eggs! Oh, these are egg-squisite...',
       'Сто яиц! О, они яйц-исканные...',
       'Hundra ägg! Åh, de är ägg-kvisita...',
       'Hundar esh! Ooh, esh-savor...',
     ) },
-    { ...eggMonster, text: say('Gulp. Gulp. GULP.', 'Ням. Ням. НЯМ.', 'Glupp. Glupp. GLUPP.', 'Gulp. Gulp. GULP.') },
+  ],
+  gulp: [
+    { ...eggMonsterHappy, text: say('Gulp. Gulp. GULP.', 'Ням. Ням. НЯМ.', 'Glupp. Glupp. GLUPP.', 'Gulp. Gulp. GULP.') },
+  ],
+  // From here on he's shown his true, angry face
+  reveal: [
     { ...eggMonster, text: say(
       'HA! It was a yolk all along! There is no party!',
       'ХА! Это был желтковый розыгрыш! Никакой вечеринки нет!',
@@ -568,21 +593,27 @@ export const EggMonsterDialog = {
       'Nu ska jag förvandla DIG till ett ägg! Gör dig redo att bli förlorad!',
       'Ta mel eshvor SHON! Tal eshrova!',
     ) },
+    { ...yolko, text: say(
+      `Oh no, he's gone completely scrambled! Dodge his eggs and survive for 60 seconds until he runs out!`,
+      'Ой-ой, он совсем взболтался! Уворачивайся от его яиц и продержись 60 секунд, пока они у него не кончатся!',
+      'Åh nej, han har blivit helt uppvispad! Undvik hans ägg och överlev i 60 sekunder tills de tar slut!',
+      'Oh nel, tal eshrova-losh! Shavor drel esh vä shalvor 60 talun!',
+    ) },
   ],
   sorry: [
-    { ...eggMonsterSorry, text: say(
+    { ...eggMonsterHappy, text: say(
       `Phew... I'm all out of eggs. I'm eggs-hausted.`,
       'Фух... яйца кончились. Я совсем выяйцался.',
       'Puh... jag har slut på ägg. Jag är helt ägg-sist.',
       'Puh... nel esh. Mel esh-melun.',
     ) },
-    { ...eggMonsterSorry, text: say(
+    { ...eggMonsterHappy, text: say(
       `I'm sorry. That was a really bad yolk. I think I just got a bit too egg-cited.`,
       'Прости. Это был очень плохой желтковый розыгрыш. Кажется, я слишком разъяйцился.',
       'Förlåt. Det var ett riktigt dåligt gul-skämt. Jag blev nog lite för ägg-saltad.',
       'Velor. Losh yolk-lerosh. Mel esh-vorin losh.',
     ) },
-    { ...eggMonsterSorry, text: say(
+    { ...eggMonsterHappy, text: say(
       'Here, have this crystal corgi. No hard-boiled feelings?',
       'Вот, держи этого хрустального корги. Без крутых обид?',
       'Här, ta den här kristallcorgin. Inga hårdkokta känslor?',

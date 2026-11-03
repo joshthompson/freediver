@@ -85,6 +85,13 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
     }),
   )
 
+  // Sprites that switch between separate image files keep them all painted, invisibly, so switching
+  // doesn't flash blank while a big image decodes for the first time
+  const standbyImages = createMemo(() => {
+    const images = [...new Set(frames().map(frame => frame.image))]
+    return images.length > 1 ? images : []
+  })
+
   const frameStyle = createMemo(() => {
     const frame = frames()[currentFrame()]
     return {
@@ -156,6 +163,9 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
         ...(props.inner?.style ?? {}),
         ...frameStyle(),
       }} />
+      <For each={standbyImages()}>
+        {image => <div class={styles.standby} style={{ 'background-image': `url(${image})` }} />}
+      </For>
       <Index each={props.controllers?.() ?? []}>
         {controller => <Sprite
           {...controller().sprite()}
@@ -174,5 +184,13 @@ const styles = {
     position: 'absolute',
     top: 0,
     left: 0,
+  }),
+  standby: css({
+    position: 'absolute',
+    inset: 0,
+    backgroundSize: '100% 100%',
+    opacity: 0,
+    willChange: 'opacity', // Keeps it rasterised, so the browser doesn't skip decoding it
+    pointerEvents: 'none',
   }),
 }

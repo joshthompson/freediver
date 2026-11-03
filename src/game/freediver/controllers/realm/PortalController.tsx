@@ -8,6 +8,7 @@ import { getDiver } from './Hazard'
 
 const spaceDistance = 40 // How far past the vortex's edge SPACE still takes you through
 const pauseGap = 120 // ms between frames that means gameplay was paused in between
+const spinSpeed = 3 // Degrees an open vortex turns each frame
 
 // A stone ring whose vortex spins open while `open` is true. Pressing SPACE on or beside an open portal
 // calls `onEnter`. Swimming into it does nothing on its own
@@ -31,6 +32,7 @@ export function createPortalControllers(id: string, props: {
     frames: [kingdomPortalVortexAsset],
     init() {
       const open = createObjectSignal(isOpen() ? 1 : 0, 'open')
+      const spin = createObjectSignal(0, 'spin')
       const eased = () => 1 - (1 - open.open()) ** 3
       return {
         id: id + '-vortex',
@@ -40,9 +42,10 @@ export function createPortalControllers(id: string, props: {
         width: () => vortexSize,
         height: () => vortexSize,
         ...open,
+        ...spin,
         xScale: eased,
         yScale: eased,
-        rotation: () => (1 - eased()) * 360,
+        rotation: () => spin.spin() + (1 - eased()) * 360,
         style: () => ({ opacity: eased() }),
       }
     },
@@ -50,6 +53,8 @@ export function createPortalControllers(id: string, props: {
       age++
       if (isOpen() && $.open() < 1) $.setOpen(Math.min(1, $.open() + 0.015))
       if (!isOpen() && $.open() > 0) $.setOpen(Math.max(0, $.open() - 0.03))
+      // Keeps turning while open. Frames stop while paused, so it does too
+      if ($.open() > 0) $.setSpin(($.spin() + spinSpeed) % 360)
 
       // A SPACE held over from while gameplay was paused, like the one that closed a dialog, isn't a fresh press
       const now = Date.now()

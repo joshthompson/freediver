@@ -39,9 +39,9 @@ export function createCorgiSurfaceController(id: string, props?: CorgiSurfaceCon
       type: 'crown',
       base: corgi,
       frames: [kingdomCrownAsset],
-      offset: { x: 37, y: 8 }, // Centred between the ears, resting on the goggle strap
+      offset: { x: 37, y: 7 }, // Centred between the ears, resting on the goggle strap
       width: () => 44,
-      height: () => 33,
+      height: () => 34,
     }))
   }
 

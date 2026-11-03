@@ -101,11 +101,16 @@ export function blockBySolidsRectPlayer(data: ControllerBaseType, prevX: number,
     }
   }
 
+  // no collision → accept full move
+  if (tMin === 1) return
+
   const safeT = Math.max(0, tMin - 0.0001)
 
-  // Move up to collision
+  // Move up to collision. Set it straight away, as a head-on hit has nothing left to slide
   player.x = prevX + dx * safeT
   player.y = prevY + dy * safeT
+  data.setX?.(player.x)
+  data.setY?.(player.y)
 
   // Sliding
   let remainX = dx * (1 - safeT)

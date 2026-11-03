@@ -4,7 +4,7 @@ import { Button } from "./Button";
 import { useGameState } from "@/utils/GameStateContext";
 import { LocaleFlags, LocaleNames, Translations } from "@/game/freediver/data/Translations";
 
-export const Options: Component<{ mode: 'pause' | 'menu' }> = props => {
+export const Options: Component<{ mode: 'pause' | 'menu', achievements?: boolean }> = props => {
   const size = () => props.mode === 'menu' ? 'medium' : 'small'
   const { gameState, gameStateActions } = useGameState()!
   const t = () => Translations[gameState.options.locale]
@@ -18,7 +18,7 @@ export const Options: Component<{ mode: 'pause' | 'menu' }> = props => {
     {props.mode === 'menu' && <Button onClick={gameStateActions.clearGameData} size={size()}>
       {t().options.clearGameData}
     </Button>}
-    <Button onClick={gameStateActions.toggleLanguage} size={size()}>
+    <Button onClick={() => gameStateActions.toggleLanguage({ achievement: props.achievements !== false })} size={size()}>
       <div class={styles.localePicker}>
         {LocaleNames[gameState.options.locale]}
         <img src={LocaleFlags[gameState.options.locale]} class={styles.flag} />

@@ -28,10 +28,11 @@ const bounds = { x: 0, y: 0, width: 2100, height: 1400 }
 const eggsNeeded = 100
 const collectTime = seconds(60)
 const rageTime = seconds(60)
-const bulletSpeed = 4.5
+const bulletSpeed = 5.5
 const feedingTime = seconds(2.5)
+const deliverDistance = 350 // How close you swim to him before he starts eating
 
-type Phase = 'intro' | 'collect' | 'feeding' | 'full' | 'rage' | 'calming' | 'sorry'
+type Phase = 'intro' | 'collect' | 'deliver' | 'feeding' | 'full' | 'rage' | 'calming' | 'sorry'
 
 export function FriedEggLevel(props: RealmLevelProps): RealmLevel {
   const realm = createRealm('friedEgg', props)
@@ -41,7 +42,7 @@ export function FriedEggLevel(props: RealmLevelProps): RealmLevel {
   const [timer, setTimer] = createSignal(collectTime)
   const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value))
   let phaseFrames = 0
-  let feedingFrames: number | undefined // Counts up once he's reached you and starts eating
+  let feedingFrames = 0 // Counts up once he starts eating
   let bullets = 0
   let endSaid = false
 
@@ -91,7 +92,10 @@ export function FriedEggLevel(props: RealmLevelProps): RealmLevel {
             if (phase() !== 'collect') return
             setEggs(eggs() + 1)
             $scene.playSound('starfish', { unique: true, volume: 0.4 })
-            if (eggs() >= eggsNeeded) setPhase('feeding')
+            if (eggs() >= eggsNeeded) {
+              setPhase('deliver')
+              $scene.startDialog({ messages: [...EggMonsterDialog.bring], pauseGameplay: true })
+            }
           },
         }))
       })
@@ -109,10 +113,10 @@ export function FriedEggLevel(props: RealmLevelProps): RealmLevel {
       const monster = createScrambledEggMonsterController('egg-monster', { x: bounds.width - 220, y: 220 })
       $scene.addController(monster)
 
-      const fire = (from: Vector, angle: number) => {
+      const fire = (from: Vector, angle: number, speed = bulletSpeed) => {
         $scene.addController(createEggBulletController('egg-bullet-' + bullets++, {
           ...from,
-          velocity: { x: Math.cos(angle) * bulletSpeed, y: Math.sin(angle) * bulletSpeed },
+          velocity: { x: Math.cos(angle) * speed, y: Math.sin(angle) * speed },
           bounds,
         }))
       }
@@ -122,65 +126,103 @@ export function FriedEggLevel(props: RealmLevelProps): RealmLevel {
         if (!diver || realm.ending()) return
         const diverCenter = diver.data.center()
         const monsterCenter = { x: monster.data.centerX(), y: monster.data.centerY() }
+        const canvas = $scene.canvas.get()
+        // Where he's headed, kept far enough in from the screen's edges that all of him stays in view
+        const onScreen = (spot: Vector) => {
+          const marginX = monster.data.width() / 2 + 20
+          const marginY = monster.data.height() / 2 + 20
+          return {
+            x: clamp(spot.x, canvas.x() + marginX, canvas.x() + canvas.width - marginX),
+            y: clamp(spot.y, canvas.y() + marginY, canvas.y() + canvas.height - marginY),
+          }
+        }
         phaseFrames++
 
         if (phase() === 'collect') {
           setTimer(timer() - 1)
           if (timer() <= 0) realm.fail($scene)
-        } else if (phase() === 'feeding') {
-          // He swims over, and every egg you collected flies into his mouth
-          monster.data.setTarget({ x: diverCenter.x + 260, y: diverCenter.y - 60 })
-          monster.data.setSpeed(8)
-          const arrived = Math.hypot(monster.data.target().x - monsterCenter.x, monster.data.target().y - monsterCenter.y) < 20
-          if (arrived && feedingFrames === undefined) {
-            feedingFrames = 0
+        } else if (phase() === 'deliver') {
+          // He waits in his corner for you to bring the eggs over, and starts eating the moment you're close
+          if (Math.hypot(diverCenter.x - monsterCenter.x, diverCenter.y - monsterCenter.y) < deliverDistance) {
+            setPhase('feeding')
             Array(24).fill(null).forEach((_, n) => {
               $scene.addController(createFlyingEggController('flying-egg-' + n, {
-                from: { x: diverCenter.x, y: diverCenter.y },
+                from: () => diver.data.center(),
                 to: () => ({ x: monster.data.centerX(), y: monster.data.centerY() }),
                 delay: n * 2,
               }))
             })
           }
-          if (feedingFrames !== undefined) {
-            feedingFrames++
-            monster.data.setSize(1 + Math.min(1, feedingFrames / feedingTime))
-            if (feedingFrames >= feedingTime) {
-              setPhase('full')
-              $scene.startDialog({
-                messages: [...EggMonsterDialog.full],
-                pauseGameplay: true,
-                onComplete: () => {
-                  setPhase('rage')
-                  setTimer(rageTime)
-                  phaseFrames = 0
-                },
-              })
-            }
+        } else if (phase() === 'feeding') {
+          // Every egg you collected flies into his mouth. He stays put, only shuffling into view as he grows
+          monster.data.setSpeed(8)
+          monster.data.setTarget(onScreen(monsterCenter))
+          feedingFrames++
+          monster.data.setSize(1 + Math.min(1, feedingFrames / feedingTime))
+          if (feedingFrames >= feedingTime) {
+            setPhase('full')
+            $scene.startDialog({
+              messages: [
+                ...EggMonsterDialog.full,
+                // Off with the party face as he lets slip it was all a yolk
+                { ...EggMonsterDialog.gulp[0], after: () => monster.data.setHappy(false) },
+                ...EggMonsterDialog.reveal,
+              ],
+              pauseGameplay: true,
+              onComplete: () => {
+                setPhase('rage')
+                setTimer(rageTime)
+                phaseFrames = 0
+              },
+            })
           }
         } else if (phase() === 'rage') {
           setTimer(timer() - 1)
           // Circle the diver, staying on screen
           const orbit = phaseFrames / 120
           monster.data.setSpeed(3)
-          monster.data.setTarget({
+          monster.data.setTarget(onScreen({
             x: diverCenter.x + Math.cos(orbit) * 300,
             y: diverCenter.y + Math.sin(orbit) * 220,
-          })
+          }))
           // Every egg he fires shrinks him back down
           monster.data.setSize(1 + timer() / rageTime)
 
+          // A new pattern every 10 seconds, each harder than the last
           const elapsed = rageTime - timer()
+          const pattern = Math.floor(elapsed / seconds(10))
           const aim = Math.atan2(diverCenter.y - monsterCenter.y, diverCenter.x - monsterCenter.x)
-          if (elapsed < seconds(20)) {
-            if (phaseFrames % 20 === 0) fire(monsterCenter, aim + (Math.random() - 0.5) * 0.3)
-          } else if (elapsed < seconds(40)) {
-            if (phaseFrames % 40 === 0) {
-              Array(12).fill(null).forEach((_, n) => fire(monsterCenter, n * Math.PI / 6 + phaseFrames / 30))
+          if (pattern === 0) {
+            // Aimed triple shots
+            if (phaseFrames % 12 === 0) [-0.25, 0, 0.25].forEach(spread => fire(monsterCenter, aim + spread, 6))
+          } else if (pattern === 1) {
+            // Rotating rings
+            if (phaseFrames % 28 === 0) {
+              Array(16).fill(null).forEach((_, n) => fire(monsterCenter, n * Math.PI / 8 + phaseFrames / 30))
             }
+          } else if (pattern === 2) {
+            // A sprinkler sweeping back and forth across you
+            if (phaseFrames % 3 === 0) fire(monsterCenter, aim + Math.sin(phaseFrames / 12) * 0.9, 6.5)
+          } else if (pattern === 3) {
+            // Rings with a gap off to one side, so you have to swim round to find it
+            if (phaseFrames % 36 === 0) {
+              const gap = aim + (Math.random() > 0.5 ? 1 : -1) * (0.5 + Math.random() * 0.6)
+              Array(28).fill(null).forEach((_, n) => {
+                const angle = n * Math.PI * 2 / 28
+                const fromGap = Math.abs(Math.atan2(Math.sin(angle - gap), Math.cos(angle - gap)))
+                if (fromGap > 0.35) fire(monsterCenter, angle, 4.5)
+              })
+            }
+          } else if (pattern === 4) {
+            // Egg rain from the top of the screen, while he keeps taking aim
+            if (phaseFrames % 4 === 0) {
+              fire({ x: canvas.x() + Math.random() * canvas.width, y: canvas.y() - 20 }, Math.PI / 2 + (Math.random() - 0.5) * 0.3, 4 + Math.random() * 2)
+            }
+            if (phaseFrames % 30 === 0) fire(monsterCenter, aim, 6.5)
           } else {
-            if (phaseFrames % 4 === 0) fire(monsterCenter, phaseFrames * 0.25)
-            if (phaseFrames % 8 === 0) fire(monsterCenter, -phaseFrames * 0.18)
+            // Double spiral finale
+            if (phaseFrames % 3 === 0) fire(monsterCenter, phaseFrames * 0.25)
+            if (phaseFrames % 5 === 0) fire(monsterCenter, -phaseFrames * 0.18)
           }
 
           if (timer() <= 0) {

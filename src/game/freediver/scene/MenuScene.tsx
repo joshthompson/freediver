@@ -40,7 +40,7 @@ export const MenuScene: SceneComponent = props => {
       <img
         src={LocaleFlags[scene.gameState.options.locale]}
         class={styles.flag}
-        onClick={scene.gameStateActions.toggleLanguage}
+        onClick={() => scene.gameStateActions.toggleLanguage()}
       />
       <Button onClick={() => scene.gameState.diver.level === 'kingdom'
         ? props.setScene('kingdom', 'portal') // Left partway through a Crystal Realm

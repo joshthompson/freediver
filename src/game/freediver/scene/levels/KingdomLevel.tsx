@@ -19,6 +19,7 @@ import {
   createKingdomThroneController,
   createKingdomWallController,
   createPlinthController,
+  floorY,
   plinthTop,
   throneSize,
 } from "../../controllers/scenary/KingdomController"
@@ -46,7 +47,7 @@ export function KingdomLevel(props: {
   const holeCenter = hole.x + hole.width / 2
   const throneX = 1650
   const throneCenter = throneX + throneSize.width / 2
-  const portal = { x: throneCenter - 140, y: 270, size: 280 }
+  const portal = { x: throneCenter - 140, y: 205, size: 280 }
   const portalCenter = { x: portal.x + portal.size / 2, y: portal.y + portal.size / 2 }
   const { gameState, gameStateActions, setGameState } = props.state
   const throughPortal = props.mode === 'portal'
@@ -76,7 +77,7 @@ export function KingdomLevel(props: {
         x: hole.x, y: -1000, width: hole.width, height: 955,
       }))
       $scene.addController(createBoxController('floor', {
-        x: KINGDOM.minX - 1000, y: 680, width: KINGDOM.maxX - KINGDOM.minX + 2000, height: 100,
+        x: KINGDOM.minX - 1000, y: floorY - 10, width: KINGDOM.maxX - KINGDOM.minX + 2000, height: 100,
       }))
       $scene.addController(createKingdomWallController('wall-left', { edge: KINGDOM.minX, side: 'left' }))
       $scene.addController(createKingdomWallController('wall-right', { edge: KINGDOM.maxX, side: 'right' }))
@@ -132,7 +133,7 @@ export function KingdomLevel(props: {
       $scene.addController(createKingdomThroneController('throne', { x: throneX }))
       $scene.addController(createCorgiKingController('corgi-king', {
         x: throneX + 40,
-        y: 690 - throneSize.height + throneSize.seatY - 65,
+        y: floorY - throneSize.height + throneSize.seatY - 65,
         crowned: gameState.questState.king.state === 'crowned',
       }))
       RealmNames.forEach(realm => {
@@ -264,7 +265,7 @@ export function KingdomLevel(props: {
           rgba(150, 230, 180, 0) 100%
         ),
         radial-gradient(
-          320px 260px at ${throneCenter - x}px 560px,
+          320px 260px at ${throneCenter - x}px ${floorY - 130}px,
           rgba(255, 200, 90, 0.22),
           rgba(255, 200, 90, 0) 100%
         ),
@@ -286,7 +287,7 @@ export function KingdomLevel(props: {
         0 0
       `,
       'background-repeat': 'repeat-x',
-      'background-size': '700px 200px, 700px 120px, 1000px 700px, 1400px 700px, cover, cover, cover',
+      'background-size': '700px 200px, 658px 104px, 1000px 700px, 1400px 700px, cover, cover, cover',
     } satisfies JSX.CSSProperties
   }
 

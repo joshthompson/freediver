@@ -230,7 +230,8 @@ export const useGameState = () => {
         if (!import.meta.env.DEV) return
         setGameState('options', 'debug', debug => !debug)
       },
-      toggleLanguage: () => {
+      // Multiplayer earns no Achievements, so it changes the language without Bilingual
+      toggleLanguage: (options?: { achievement?: boolean }) => {
         const nextLocale: Record<Locale, Locale> = {
           en: 'ru',
           ru: 'sv',
@@ -238,7 +239,7 @@ export const useGameState = () => {
           fl: 'en',
         }
         setGameState('options', 'locale', nextLocale[gameState.options.locale])
-        achievement('bilingual')
+        if (options?.achievement !== false) achievement('bilingual')
       },
       damage: (amount: number) => {
         setGameState('diver', 'oxygen', oxygen => Math.max(0, oxygen - amount))

@@ -26,7 +26,7 @@ Terms (Room, Lobby, Host, Player, Display Name, Puppet, Chat Message, Pointer, E
 
 - A new "Multiplayer" button sits below Start/Continue on the main menu.
 - Flow: Menu → enter username → Lobby → Room. "Leave room" returns to the Lobby, and "Back" in the Lobby returns to the menu.
-- Usernames are 1–12 characters, trimmed and required. The username is remembered on this device and pre-filled next time. This is the only thing multiplayer saves.
+- Usernames are 1–12 characters, trimmed and required. The username is remembered on this device and pre-filled next time. This is the only thing multiplayer saves, apart from the volume and language settings.
 - Room names are 1–20 characters, trimmed and required. The default is "<username>'s room". Room names don't need to be unique.
 - Each Lobby row shows the Room name, the Host's Display Name and "n/4", newest first. Full Rooms are greyed out and can't be joined.
 - With no Rooms, the list says "No rooms yet: create one".
@@ -50,7 +50,8 @@ Terms (Room, Lobby, Host, Player, Display Name, Puppet, Chat Message, Pointer, E
 - Multiplayer never writes to the single-player save: no score, no dives recorded, no Achievements.
 - Players appear at the ocean's usual start point. Late joiners see the others where they currently are.
 - Players don't interact at all. Puppets pass through you and the world.
-- Escape opens the pause menu as an overlay ("Resume", "Leave room"). The world keeps running and Puppets keep moving.
+- Escape opens the pause menu as an overlay ("Resume", Volume, Language, "Leave room"). The world keeps running and Puppets keep moving.
+- Volume and Language are the same settings as single-player, so changes carry over. Changing language here doesn't unlock the Bilingual Achievement.
 - Your own Diver and corgi are drawn in front of Puppets. Name tags and Pointers are always on top.
 - "<name> joined" and "<name> left" show briefly at the top of the screen in the Player's colour.
 
