@@ -1,11 +1,7 @@
-import { createResource, createSignal, For, onCleanup, Show } from 'solid-js'
+import { Component, createResource, createSignal, For, Show } from 'solid-js'
 import { css, cva } from '@style/css'
-import { Canvas } from '@/engine/components/Canvas'
-import { Scene, SceneComponent } from '@/engine'
-import { useGameState } from '@/utils/GameStateContext'
-import { menu2Asset } from '@/assets'
-import { PlaceholderArt } from '../data/PlaceholderArt'
-import { Button } from '../ui/Button'
+import { PlaceholderArt } from './data/PlaceholderArt'
+import { Button } from './ui/Button'
 
 // Every image a placeholder could live in, by its path under src/assets
 const assetUrls = Object.fromEntries(
@@ -34,15 +30,9 @@ async function loadArt(): Promise<ArtFile[]> {
 
 const folderOf = (path: string) => path.split('/').slice(0, -1).join('/')
 
-// Dev only: the generated art still waiting for hand-drawn replacements. Not translated
-export const ArtChecklistScene: SceneComponent = props => {
-  const scene = new Scene('artChecklist', {
-    ...useGameState()!,
-    width: 700,
-    height: 700,
-  })
-  onCleanup(() => scene.destroy())
-
+// A page of its own at /art-checklist, in dev only: the generated art still waiting for hand-drawn replacements.
+// Not translated
+export const ArtChecklistPage: Component = () => {
   const [art] = createResource(loadArt)
   const [hideReplaced, setHideReplaced] = createSignal(false)
   const replacedCount = () => art()?.filter(file => file.replaced).length ?? 0
@@ -52,34 +42,29 @@ export const ArtChecklistScene: SceneComponent = props => {
       .map(folder => ({ folder, files: files.filter(file => folderOf(file.path) === folder) }))
   }
 
-  return <Canvas
-    scene={scene}
-    style={{ background: `url(${menu2Asset})`, 'background-size': 'cover' }}
-    overlay={<div class={styles.overlay}>
+  return <div class={styles.page}>
+    <div class={styles.header}>
       <div class={styles.title}>Art Checklist</div>
       <div class={styles.summary}>
         <Show when={art()} fallback="Checking files...">
           {replacedCount()} of {art()!.length} replaced
         </Show>
       </div>
-      <div class={styles.list}>
-        <For each={folders()}>
-          {group => <>
-            <div class={styles.folder}>src/assets/{group.folder}</div>
-            <For each={group.files}>
-              {file => <ArtRow file={file} />}
-            </For>
-          </>}
-        </For>
-      </div>
-      <div class={styles.buttons}>
-        <Button onClick={() => setHideReplaced(!hideReplaced())} size="small">
-          {hideReplaced() ? 'Show All' : 'Hide Replaced'}
-        </Button>
-        <Button onClick={() => props.setScene('menu')} size="small">Back</Button>
-      </div>
-    </div>}
-  />
+      <Button onClick={() => setHideReplaced(!hideReplaced())} size="small">
+        {hideReplaced() ? 'Show All' : 'Hide Replaced'}
+      </Button>
+    </div>
+    <For each={folders()}>
+      {group => <section>
+        <div class={styles.folder}>src/assets/{group.folder}</div>
+        <div class={styles.grid}>
+          <For each={group.files}>
+            {file => <ArtRow file={file} />}
+          </For>
+        </div>
+      </section>}
+    </For>
+  </div>
 }
 
 const ArtRow = (props: { file: ArtFile }) => {
@@ -104,40 +89,42 @@ const ArtRow = (props: { file: ArtFile }) => {
 }
 
 const styles = {
-  overlay: css({
-    width: '100%',
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '8px',
-    p: '16px',
+  page: css({
+    minHeight: '100vh',
+    maxWidth: '1200px',
+    mx: 'auto',
+    p: '24px 16px 48px',
     color: 'white',
+    background: '#0E262C',
+  }),
+  header: css({
+    position: 'sticky',
+    top: 0,
+    zIndex: 1,
+    display: 'flex',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: '16px',
+    py: '12px',
+    background: '#0E262C',
   }),
   title: css({
     fontSize: '2rem',
-    textShadow: '2px 2px 4px #000',
   }),
   summary: css({
-    fontSize: '1.2rem',
-    textShadow: '1px 1px 3px #000',
-  }),
-  list: css({
     flex: '1',
-    minHeight: 0,
-    width: '100%',
-    overflowY: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '6px',
-    p: '8px',
-    borderRadius: '12px',
-    background: '#000000aa',
+    fontSize: '1.2rem',
   }),
   folder: css({
-    mt: '8px',
-    fontSize: '1.1rem',
+    mt: '24px',
+    mb: '8px',
+    fontSize: '1.2rem',
     color: '#FDD000',
+  }),
+  grid: css({
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
+    gap: '8px',
   }),
   row: cva({
     base: {
@@ -155,8 +142,8 @@ const styles = {
     },
   }),
   preview: css({
-    flex: '0 0 84px',
-    height: '64px',
+    flex: '0 0 120px',
+    height: '96px',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
@@ -174,10 +161,10 @@ const styles = {
     minWidth: 0,
     fontSize: '0.95rem',
     lineHeight: '1.25',
-    wordBreak: 'break-all',
   }),
   name: css({
     fontSize: '1.05rem',
+    overflowWrap: 'anywhere', // Long file names can break anywhere, nothing else should
   }),
   origin: css({
     color: '#bbbbbb',
@@ -196,9 +183,5 @@ const styles = {
         true: { background: '#2fbf4a' },
       },
     },
-  }),
-  buttons: css({
-    display: 'flex',
-    gap: '10px',
   }),
 }

@@ -82,8 +82,9 @@ const styles = {
   }),
   crystal: cva({
     base: {
-      width: '56px',
-      height: '40px',
+      maxWidth: '56px',
+      height: '48px',
+      objectFit: 'contain',
       transition: 'filter 0.3s ease-in-out',
     },
     variants: {

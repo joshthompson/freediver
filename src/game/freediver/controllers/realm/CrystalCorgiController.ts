@@ -7,8 +7,8 @@ import { CorgiController } from '../main/CorgiController'
 export type CrystalCorgiController = ReturnType<typeof createCrystalCorgiController>
 export type CrystalCorgiStage = 'waiting' | 'carried' | 'delivering' | 'placed'
 
-const width = 85
-const height = 60
+const height = 72 // Each statue is drawn at this height, as wide as its art's proportions make it
+const fallbackAspect = 0.8 // Width over height until the art has loaded
 const carriedScale = 0.6
 const callDistance = 350 // Linkosha notices a Crystal Corgi this close and swims over to it
 const pickUpDistance = 45
@@ -28,14 +28,24 @@ export function createCrystalCorgiController(id: string, props: {
   onPlaced?: () => void
 }) {
   const visible = props.visible ?? (() => true)
+  const art = Realms[props.realm].crystal
+
+  // The art's own proportions, so redrawn statues never stretch
+  const aspect = createObjectSignal(fallbackAspect, 'aspect')
+  const image = new Image()
+  image.onload = () => aspect.setAspect(image.naturalWidth / image.naturalHeight)
+  image.src = art
+  const width = () => height * aspect.aspect()
+
+  // Standing on its Plinth, with the bottom of its crystal base on the Plinth's top
   const placedPosition = () => props.plinth
-    ? { x: props.plinth.x - width / 2, y: props.plinth.y - height }
+    ? { x: props.plinth.x - width() / 2, y: props.plinth.y - height }
     : { x: props.x, y: props.y }
 
   const start = props.stage === 'placed' ? placedPosition() : { x: props.x, y: props.y }
 
   return createController({
-    frames: [Realms[props.realm].crystal],
+    frames: [art],
     init() {
       const stage = createObjectSignal(props.stage ?? 'waiting' as CrystalCorgiStage, 'stage')
       const scale = () => stage.stage() === 'carried' || stage.stage() === 'delivering' ? carriedScale : 1
@@ -46,7 +56,7 @@ export function createCrystalCorgiController(id: string, props: {
         ...createObjectSignal(start.y, 'y'),
         ...createObjectSignal(false, 'found'),
         ...stage,
-        width: () => width * scale(),
+        width: () => width() * scale(),
         height: () => height * scale(),
         style: () => ({
           opacity: !visible() ? 0 : props.ghost ? 0.35 : 1,
@@ -99,7 +109,10 @@ export function createCrystalCorgiController(id: string, props: {
           }
         }
       } else if ($.stage() === 'placed') {
-        $.setY(placedPosition().y + Math.sin($age / 20) * 2 - 2)
+        // Stands still on its Plinth, kept centred in case its art loaded after it was placed
+        const placed = placedPosition()
+        $.setX(placed.x)
+        $.setY(placed.y)
       }
     },
   })

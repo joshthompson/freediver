@@ -40,8 +40,6 @@ export const MenuScene: SceneComponent = props => {
       <Button onClick={() => props.setScene('instructions')} size="small">{t().menu.instructions}</Button>
       <Button onClick={() => props.setScene('achievements')} size="small">{t().achievements.title}</Button>
       <Button onClick={() => props.setScene('options')} size="small">{t().menu.options}</Button>
-      {/* Only for development, so it isn't translated */}
-      {import.meta.env.DEV && <Button onClick={() => props.setScene('artChecklist')} size="small">Art Checklist</Button>}
       <div class={styles.credits}>{t().menu.credits}</div>
     </div>}
   />

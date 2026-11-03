@@ -16,7 +16,6 @@ import { AchievementPopups } from './ui/AchievementPopups'
 import { CaveScene } from './scene/CaveScene'
 import { KingdomScene } from './scene/KingdomScene'
 import { CreditsScene } from './scene/CreditsScene'
-import { ArtChecklistScene } from './scene/ArtChecklistScene'
 import { Dynamic } from 'solid-js/web'
 import { SceneComponent } from '@/engine'
 import { isRealm, RealmName, RealmNames } from './data/Realms'
@@ -101,7 +100,6 @@ export const FreediverGame: Component = () => {
         {scene() === 'kingdom' && <KingdomScene setScene={setScene} mode={sceneMode()} />}
         {isRealm(scene()) && <Dynamic component={RealmScenes[scene() as RealmName]} setScene={setScene} mode={sceneMode()} />}
         {scene() === 'credits' && <CreditsScene setScene={setScene} mode={sceneMode()} />}
-        {import.meta.env.DEV && scene() === 'artChecklist' && <ArtChecklistScene setScene={setScene} mode={sceneMode()} />}
         {scene() === 'blackout' && <BlackoutScene setScene={setScene} mode={sceneMode()} />}
         {/* Levels draw these inside their canvas so they sit beneath dialog */}
         {!levelScenes.includes(scene()) && <AchievementPopups />}
