@@ -14,6 +14,9 @@ export function createFriedEggFishController(
   id: string,
   props: {
     x: number
+    y?: number
+    wrap?: { minX: number, maxX: number } // Swim back round to minX after passing maxX
+    kissCooldown?: number // Frames until it can kiss again. Without one, each fish only kisses once
   },
 ) {
   const friedEggFishController = createController({
@@ -24,7 +27,8 @@ export function createFriedEggFishController(
         id,
         type: 'friedeggfish',
         ...createObjectSignal(props.x, 'x'),
-        ...createObjectSignal(Math.random() * 500 + 100, 'y'),
+        ...createObjectSignal(props.y ?? Math.random() * 500 + 100, 'y'),
+        ...createObjectSignal(0, 'kissCooldown'),
         ...createObjectSignal(1, 'xScale'),
         ...createObjectSignal(maxSpeed, 'speed'),
         ...createObjectSignal(0, 'rotation'),
@@ -63,6 +67,15 @@ export function createFriedEggFishController(
         x: Math.random() * $.speed() - $.speed() / 2,
         y: Math.random() * $.speed() - $.speed() / 2,
       })
+
+      if (props.wrap && $.x() > props.wrap.maxX) $.setX(props.wrap.minX)
+      if (props.kissCooldown && !$.canGiveHealth()) {
+        $.setKissCooldown($.kissCooldown() + 1)
+        if ($.kissCooldown() > props.kissCooldown) {
+          $.setKissCooldown(0)
+          $.setCanGiveHealth(true)
+        }
+      }
 
       if (distance < 10 && $.canGiveHealth()) {
         $scene.gameStateActions.heal(50)

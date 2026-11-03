@@ -117,7 +117,7 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
 
   const top = createMemo(() => {
     if (props.fixed) return props.y + 'px'
-    return (props.y - 0 * (props.parallax ?? 1)) + 'px'
+    return (props.y - scene.canvas.get().y() * (props.parallax ?? 1)) + 'px'
   })
 
   const left = createMemo(() => {

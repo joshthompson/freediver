@@ -25,6 +25,9 @@ export function createPlantController(
   return base
 }
 
+// Plants are hidden where they'd cover these, so they can be seen properly
+const coveredIds = ['statue', 'statue-sign', 'wall-left']
+
 function createPlantBase(id: string, x: number) {
   const yRand = Math.random()
   const initY = 550 + yRand * 50
@@ -53,7 +56,7 @@ function createPlantBase(id: string, x: number) {
         })
       }
     },
-    onEnterFrame({ $, $scene, $controller }) {
+    onEnterFrame({ $, $scene }) {
       $.setRotation(Math.cos($.animationPosition() * 30))
       $.setAnimationPosition($.animationPosition() + Math.random() / 200)
       
@@ -62,14 +65,25 @@ function createPlantBase(id: string, x: number) {
       if (offset < -repeatMargin) $.setX($.x() + canvasWidth + repeatMargin * 2)
       if (offset > canvasWidth + repeatMargin) $.setX($.x() - canvasWidth - repeatMargin * 2)
 
-      const touchingStuff = false
-        || $scene.getControllerById('statue')?.hitTest($controller)
-        || $scene.getControllerById('statue-sign')?.hitTest($controller)
-        || $scene.getControllerById('wall-left')?.hitTest($controller)
+      // Judged from where the plant's base stands rather than its swaying sprite, so it doesn't pop in and out
+      const plant = { x: $.x(), y: initY, width: 38, height: 100 }
+      const touchingStuff = coveredIds.some(coveredId => {
+        const other = $scene.getControllerById(coveredId)
+        return other && overlaps(plant, {
+          x: other.data.x(),
+          y: other.data.y(),
+          width: other.data.width(),
+          height: other.data.height(),
+        })
+      })
 
       $.setVisibility(touchingStuff ? 'hidden' : 'visible')
     },
   })
+}
+
+function overlaps(a: Rect, b: Rect) {
+  return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y
 }
 
 function createPlantSegment(base: PlantBaseController): PlantBaseController {

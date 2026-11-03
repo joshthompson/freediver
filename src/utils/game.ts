@@ -1,5 +1,9 @@
 import { Scene } from '@/engine'
 import { Accessor } from 'solid-js'
+import type { Locale } from '@/game/freediver/data/Translations'
+
+// Text written out in every language the game supports
+export type Localised = Record<Locale, string>
 
 export function isOverlapping(
   object1: HTMLElement | DOMRect | undefined,
@@ -53,17 +57,17 @@ export interface Dialog {
 
 export interface BackgroundDialog {
   controllerId: string
-  text: string
+  text: Localised
   framesLeft: number
 }
 
 export interface DialogMessage {
-  text: string
-  speaker?: string
+  text: Localised
+  speaker?: Localised
   image?: string
   after?: () => void,
   options?: {
-    text: string;
+    text: Localised;
     value: string,
     next?: number,
     end?: boolean

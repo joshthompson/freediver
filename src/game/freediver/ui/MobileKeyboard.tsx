@@ -23,6 +23,7 @@ export const MobileKeyboard: Component<{ scene: string}> = props => {
     <button class={styles.button({ key: 'up' })} onClick={() => emulate('ArrowUp')}>↑</button>
     <button class={styles.button({ key: 'down' })} onClick={() => emulate('ArrowDown')}>↓</button>
     <button class={styles.button({ key: 'space' })} onClick={() => emulate(' ')}>{t().instructions.spacebar}</button>
+    {props.scene === 'triggerFishLair' && <button class={styles.button({ key: 'bait' })} onClick={() => emulate('e')}>{t().realms.bait}</button>}
     <button class={styles.button({ key: 'pause' })} onClick={() => pause()}>{t().instructions.pause}</button>
   </div>
 }
@@ -55,6 +56,7 @@ const styles = {
         left: { gridColumn: '1', gridRow: '2' },
         right: { gridColumn: '3', gridRow: '2' },
         space: { gridColumn: '1 / span 3', gridRow: '3' },
+        bait: { gridColumn: '3', gridRow: '1' },
         pause: { mt: '20px', gridColumn: '1 / span 3', gridRow: '4' },
       },
     },

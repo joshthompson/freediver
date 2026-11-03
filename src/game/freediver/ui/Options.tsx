@@ -24,6 +24,10 @@ export const Options: Component<{ mode: 'pause' | 'menu' }> = props => {
         <img src={LocaleFlags[gameState.options.locale]} class={styles.flag} />
       </div>
     </Button>
+    {/* Only for development, so it isn't translated */}
+    {import.meta.env.DEV && <Button onClick={gameStateActions.toggleDebug} size={size()}>
+      {gameState.options.debug ? 'Debug: On' : 'Debug: Off'}
+    </Button>}
   </>
 }
 

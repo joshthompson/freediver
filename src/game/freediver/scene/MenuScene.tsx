@@ -32,12 +32,16 @@ export const MenuScene: SceneComponent = props => {
         class={styles.flag}
         onClick={scene.gameStateActions.toggleLanguage}
       />
-      <Button onClick={() => props.setScene('surface')}>
+      <Button onClick={() => scene.gameState.diver.level === 'kingdom'
+        ? props.setScene('kingdom', 'portal') // Left partway through a Crystal Realm
+        : props.setScene('surface')}>
         {scene.gameState.score.total > 0 ? t().menu.continue : t().menu.start}
       </Button>
       <Button onClick={() => props.setScene('instructions')} size="small">{t().menu.instructions}</Button>
       <Button onClick={() => props.setScene('achievements')} size="small">{t().achievements.title}</Button>
       <Button onClick={() => props.setScene('options')} size="small">{t().menu.options}</Button>
+      {/* Only for development, so it isn't translated */}
+      {import.meta.env.DEV && <Button onClick={() => props.setScene('artChecklist')} size="small">Art Checklist</Button>}
       <div class={styles.credits}>{t().menu.credits}</div>
     </div>}
   />

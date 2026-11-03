@@ -1,10 +1,12 @@
-import { createController } from '@/engine'
+import { createConnectedController, createController } from '@/engine'
 import { DiverController } from './DiverController'
 import { createBubbleController } from '../scenary/BubbleController'
 import { BoneController } from '../scenary/BoneController'
-import { linkAsset } from '@/assets'
+import { kingdomCrownAsset, linkAsset } from '@/assets'
 import { createObjectSignal } from '@/engine/utils'
 import { generateFrames } from '@/utils'
+import { useGameState } from '@/utils/GameStateContext'
+import { CrystalCorgiController } from '../realm/CrystalCorgiController'
 
 const bubbleFrequency = 20
 const maxSpeed = 10
@@ -23,7 +25,7 @@ export function createCorgiController(
   const followDistance = 50
   const boostDistance = 200 // If the corgi is further than this from the diver, he goes faster
 
-  return createController({
+  const corgi = createController({
     frames: generateFrames(linkAsset, 634, 394, 70, 3, true),
     init() {
       return {
@@ -60,6 +62,15 @@ export function createCorgiController(
             targetY = bone.data.y()
             return
           }
+        }
+      })
+
+      // A Crystal Corgi can call Linkosha over to fetch it, or to carry it to its Plinth
+      $scene.getControllersByType<CrystalCorgiController>('crystal-corgi').forEach(crystal => {
+        const target = crystal.data.corgiTarget()
+        if (target) {
+          targetX = target.x
+          targetY = target.y
         }
       })
 
@@ -114,4 +125,18 @@ export function createCorgiController(
       }
     },
   })
+
+  // Linkosha wears the Corgi King's crown once he hands it over
+  if (useGameState()?.gameState.questState.king.state === 'crowned') {
+    corgi.attach(createConnectedController({
+      type: 'crown',
+      base: corgi,
+      frames: [kingdomCrownAsset],
+      offset: { x: 44, y: -11 },
+      width: () => 20,
+      height: () => 15,
+    }))
+  }
+
+  return corgi
 }

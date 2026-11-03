@@ -15,10 +15,29 @@ import { musicSound } from '@/assets'
 import { AchievementPopups } from './ui/AchievementPopups'
 import { CaveScene } from './scene/CaveScene'
 import { KingdomScene } from './scene/KingdomScene'
+import { CreditsScene } from './scene/CreditsScene'
+import { ArtChecklistScene } from './scene/ArtChecklistScene'
+import { Dynamic } from 'solid-js/web'
+import { SceneComponent } from '@/engine'
+import { isRealm, RealmName, RealmNames } from './data/Realms'
+import { RealmScene } from './scene/levels/realm'
+import { CorgosphereLevel } from './scene/levels/CorgosphereLevel'
+import { TriggerFishLairLevel } from './scene/levels/TriggerFishLairLevel'
+import { FriedEggLevel } from './scene/levels/FriedEggLevel'
+import { DepthsLevel } from './scene/levels/DepthsLevel'
+import { HellLevel } from './scene/levels/HellLevel'
+
+const RealmScenes: Record<RealmName, SceneComponent> = {
+  corgosphere: RealmScene(CorgosphereLevel),
+  triggerFishLair: RealmScene(TriggerFishLairLevel),
+  friedEgg: RealmScene(FriedEggLevel),
+  depths: RealmScene(DepthsLevel),
+  hell: RealmScene(HellLevel),
+}
 
 const testScene = 'menu'
-const fadeScenes = ['ocean', 'surface', 'cave', 'kingdom']
-const levelScenes = ['ocean', 'cave', 'kingdom']
+const fadeScenes = ['ocean', 'surface', 'cave', 'kingdom', 'credits', ...RealmNames]
+const levelScenes = ['ocean', 'cave', 'kingdom', ...RealmNames]
 const fadeDuration = 300
 
 export const FreediverGame: Component = () => {
@@ -39,7 +58,7 @@ export const FreediverGame: Component = () => {
     const fadeOut = fadeScenes.includes(newScene) ? fadeDuration : 0
     const fadeIn = fadeScenes.includes(scene()) ? fadeDuration : 0
     
-    if (['ocean', 'surface'].includes(newScene) && !music()) {
+    if (['surface', ...levelScenes].includes(newScene) && !music()) {
       startMusic()
     }
     if (newScene === 'menu' && music()) {
@@ -80,6 +99,9 @@ export const FreediverGame: Component = () => {
         {scene() === 'ocean' && <OceanScene setScene={setScene} mode={sceneMode()} />}
         {scene() === 'cave' && <CaveScene setScene={setScene} mode={sceneMode()} />}
         {scene() === 'kingdom' && <KingdomScene setScene={setScene} mode={sceneMode()} />}
+        {isRealm(scene()) && <Dynamic component={RealmScenes[scene() as RealmName]} setScene={setScene} mode={sceneMode()} />}
+        {scene() === 'credits' && <CreditsScene setScene={setScene} mode={sceneMode()} />}
+        {import.meta.env.DEV && scene() === 'artChecklist' && <ArtChecklistScene setScene={setScene} mode={sceneMode()} />}
         {scene() === 'blackout' && <BlackoutScene setScene={setScene} mode={sceneMode()} />}
         {/* Levels draw these inside their canvas so they sit beneath dialog */}
         {!levelScenes.includes(scene()) && <AchievementPopups />}

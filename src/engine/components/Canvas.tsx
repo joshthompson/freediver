@@ -60,10 +60,10 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
     const rect = (event.currentTarget as HTMLDivElement).getBoundingClientRect()
     const x = (event instanceof MouseEvent
       ? event.clientX - rect.left
-      : event.touches[0].clientX - rect.left) + props.scene.canvas.get().x()
+      : event.changedTouches[0].clientX - rect.left) + props.scene.canvas.get().x()
     const y = (event instanceof MouseEvent
       ? event.clientY - rect.top
-      : event.touches[0].clientY - rect.top) + props.scene.canvas.get().y()
+      : event.changedTouches[0].clientY - rect.top) + props.scene.canvas.get().y()
     return { x, y }
   }
 

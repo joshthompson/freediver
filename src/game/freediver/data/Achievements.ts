@@ -25,6 +25,12 @@ export const AllAchievements = [
 
   // Quests
   'cow', // Reunite the cow with her cousin
+  'rubyCorgi', // Bring back the Ruby Crystal Corgi
+  'yellowCorgi', // Bring back the Yellow Crystal Corgi
+  'whiteCorgi', // Bring back the White Crystal Corgi
+  'blackCorgi', // Bring back the Black Crystal Corgi
+  'fireCorgi', // Bring back the Fire Crystal Corgi
+  'corgiKing', // Complete the Corgi King's quest
 ] as const
 
 export type Achievement = typeof AllAchievements[number]
@@ -50,6 +56,12 @@ export const AchievementEmojis: Record<Achievement, string> = {
   whaleShark: '🌊',
   wreck: '⚓️',
   cow: '🐄',
+  rubyCorgi: '❤️',
+  yellowCorgi: '💛',
+  whiteCorgi: '🤍',
+  blackCorgi: '🖤',
+  fireCorgi: '🔥',
+  corgiKing: '👑',
 }
 
 export const AchievementDisplayDuration = 5000

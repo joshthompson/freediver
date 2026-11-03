@@ -7,6 +7,7 @@ import {
 } from '@/game/freediver/data/Achievements'
 import { Locale } from "@/game/freediver/data/Translations"
 import { LevelName, OCEAN } from "@/game/freediver/scene/levels/data"
+import { RealmName, RealmNames, RealmPoints, Realms } from "@/game/freediver/data/Realms"
 
 export interface GameState {
   score: {
@@ -40,8 +41,10 @@ export interface GameState {
       open: boolean
     }
     king: {
-      state: 'new' | 'accepted',
+      state: 'new' | 'accepted' | 'crowned', // Crowned once Linkosha takes the crown
     }
+    // A Crystal Corgi is carried from its realm's Exit Portal until Linkosha puts it on its Plinth
+    crystals: Partial<Record<RealmName, 'carried' | 'delivered'>>
   }
   achievements: AchievementsRecord
 }
@@ -89,6 +92,7 @@ const baseState: GameState = {
     king: {
       state: 'new',
     },
+    crystals: {},
   },
 }
 
@@ -110,7 +114,8 @@ export function initialState(): GameState {
     options: {
       ...baseState.options,
       ...loadedState.options,
-      debug: import.meta.env.DEV,
+      // Dev tools can be switched off while developing, and are never on in production
+      debug: import.meta.env.DEV && (loadedState.options?.debug ?? true),
     },
     questState: {
       ...baseState.questState,
@@ -221,6 +226,10 @@ export const useGameState = () => {
           options: prev.options
         }))
       },
+      toggleDebug: () => {
+        if (!import.meta.env.DEV) return
+        setGameState('options', 'debug', debug => !debug)
+      },
       toggleLanguage: () => {
         const nextLocale: Record<Locale, Locale> = {
           en: 'ru',
@@ -261,6 +270,24 @@ export const useGameState = () => {
           achievement('statue')
           setGameState('questState', 'corgi', 'open', true)
         }
+      },
+      // Leaving through a realm's Exit Portal. The first time brings its Crystal Corgi back
+      completeRealm: (realm: RealmName) => {
+        const firstTime = !gameState.questState.crystals[realm]
+        score(firstTime ? RealmPoints.first : RealmPoints.replay)
+        if (firstTime) {
+          setGameState('questState', 'crystals', realm, 'carried')
+          achievement(Realms[realm].achievement)
+        }
+      },
+      deliverCrystal: (realm: RealmName) => {
+        setGameState('questState', 'crystals', realm, 'delivered')
+        saveState(gameState, true)
+        return RealmNames.filter(name => gameState.questState.crystals[name] !== 'delivered').length
+      },
+      crown: () => {
+        setGameState('questState', 'king', 'state', 'crowned')
+        achievement('corgiKing')
       },
       blackout: () => {
         setGameState('score', 'currentDive', 0)

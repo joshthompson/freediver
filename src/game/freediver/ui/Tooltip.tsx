@@ -11,23 +11,27 @@ export const Tooltip: Component<{
   let tooltip: HTMLDivElement | undefined
 
   createEffect(() => {
-    if (show()) {
-      if (anchor && tooltip) {
-        const anchorRect = anchor.getBoundingClientRect()
-        const tooltipRect = tooltip.getBoundingClientRect()
-        const canvasRect = document.querySelector('[data-game-scene]')!.getBoundingClientRect()
+    if (!show() || props.disabled || !anchor || !tooltip) return
 
-        const pageMargin = 10
-        const margin = pageMargin + (canvasRect.left ?? 0)
-        const tooltipLeft = anchorRect.left + anchorRect.width / 2 - tooltipRect.width / 2 - margin
+    // The game page is scaled with a transform (and some menus use backdrop-filter), which makes
+    // that ancestor the containing block for this fixed tooltip. Measure where left/top 0 lands
+    // and the current scale, then work in screen coordinates and convert back.
+    tooltip.style.left = '0px'
+    tooltip.style.top = '0px'
+    const origin = tooltip.getBoundingClientRect()
+    const scale = origin.width / tooltip.offsetWidth || 1
+    const anchorRect = anchor.getBoundingClientRect()
+    const bounds = (anchor.closest('[data-game-scene]') ?? document.body).getBoundingClientRect()
 
-        tooltip.style.left = `${Math.max(
-          -margin + 30,
-          Math.min(window.innerWidth - tooltipRect.width - margin * 2, tooltipLeft)
-        )}px`
-        tooltip.style.top = `${anchorRect.top - tooltipRect.height - 23}px`
-      }
-    }
+    const margin = 10 * scale
+    const gap = 5 * scale
+    const centred = anchorRect.left + anchorRect.width / 2 - origin.width / 2
+    const left = Math.max(bounds.left + margin, Math.min(bounds.right - origin.width - margin, centred))
+    const above = anchorRect.top - origin.height - gap
+    const top = above < bounds.top ? anchorRect.bottom + gap : above
+
+    tooltip.style.left = `${(left - origin.left) / scale}px`
+    tooltip.style.top = `${(top - origin.top) / scale}px`
   })
 
   return <div class={styles.tooltipContainer}>

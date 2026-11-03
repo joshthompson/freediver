@@ -23,6 +23,8 @@ interface DiverControllerProps {
   style?: Sprite['style']
   depthOffset?: number
   canBreathe?: boolean // Oxygen doesn't run down and there's no need to equalise
+  equalise?: boolean // Whether pressure builds up with depth. Defaults to !canBreathe
+  oxygenUse?: (depth: number) => number // Multiplies how fast oxygen runs down. 0 for none
   goToSurface?: (x: number) => void
   blackout?: () => void
 }
@@ -35,6 +37,7 @@ const minSpeed = -2.5
 const equalisationSpeedPenaly = 0.75
 const maxShowDamageLevel = 60
 const maxShowHealLevel = 60
+const invulnerableFrames = 25 // About a second after a hazard hits
 
 const left = () => Key.isDown('ArrowLeft') || Key.isDown('a')
 const right = () => Key.isDown('ArrowRight') || Key.isDown('d')
@@ -54,6 +57,8 @@ export function createDiverController(id: string, props: DiverControllerProps) {
 function createDiver(id: string, props: DiverControllerProps) {
   const goToSurface = props.goToSurface ?? (() => {})
   const blackout = props.blackout ?? (() => {})
+  const equalise = props.equalise ?? !props.canBreathe
+  let blackedOut = false
 
   return createController(
     {
@@ -68,6 +73,7 @@ function createDiver(id: string, props: DiverControllerProps) {
         const [speed, setSpeed] = createSignal<number>(props.speed ?? maxSpeed / 2)
         const [showDamageLevel, setShowDamageLevel] = createSignal(0)
         const [showHealLevel, setShowHealLevel] = createSignal(0)
+        const [invulnerable, setInvulnerable] = createSignal(0)
 
         const makeBubble = (xShift: number, yShift: number, xSpeed?: number, speed?: number) => {
           return createBubbleController('diver-bubble-' + bubbleN++, {
@@ -77,6 +83,22 @@ function createDiver(id: string, props: DiverControllerProps) {
             speed,
           })
         }
+
+        const diverFilter = () => (showDamageLevel() ? {
+          filter: `
+            sepia(${showDamageLevel() / maxShowDamageLevel})
+            saturate(${1 + 4 * showDamageLevel() / maxShowDamageLevel})
+            hue-rotate(${-50 * showDamageLevel() / maxShowDamageLevel}deg)
+            brightness(${1 + 0.3 * showDamageLevel() / maxShowDamageLevel})
+          `,
+        } : showHealLevel() ? {
+          filter: `
+            sepia(${showHealLevel() / maxShowHealLevel})
+            saturate(${1 + 4 * showHealLevel() / maxShowHealLevel})
+            hue-rotate(${+50 * showHealLevel() / maxShowHealLevel}deg)
+            brightness(${1 + 0.3 * showHealLevel() / maxShowHealLevel})
+          `,
+        } : {})
 
         return {
           id,
@@ -106,22 +128,14 @@ function createDiver(id: string, props: DiverControllerProps) {
           blackout,
           showDamageLevel, setShowDamageLevel,
           showHealLevel, setShowHealLevel,
+          invulnerable, setInvulnerable,
+          invulnerableFrames,
+          center: () => ({ x: x() + 34, y: y() + 78 }),
           depth: () => Math.max(0, Math.floor((y() + (props.depthOffset ?? 0)) / pxInMeter - 0.5)),
-          style: () => (showDamageLevel() ? {
-            filter: `
-              sepia(${showDamageLevel() / maxShowDamageLevel})
-              saturate(${1 + 4 * showDamageLevel() / maxShowDamageLevel})
-              hue-rotate(${-50 * showDamageLevel() / maxShowDamageLevel}deg)
-              brightness(${1 + 0.3 * showDamageLevel() / maxShowDamageLevel})
-            `,
-          } : showHealLevel() ? {
-            filter: `
-              sepia(${showHealLevel() / maxShowHealLevel})
-              saturate(${1 + 4 * showHealLevel() / maxShowHealLevel})
-              hue-rotate(${+50 * showHealLevel() / maxShowHealLevel}deg)
-              brightness(${1 + 0.3 * showHealLevel() / maxShowHealLevel})
-            `,
-          } : {}),
+          style: () => ({
+            ...diverFilter(),
+            ...(invulnerable() % 6 > 2 ? { opacity: 0.4 } : {}),
+          }),
         }
       },
       onEnterFrame({ $, $scene, $age }) {
@@ -141,16 +155,21 @@ function createDiver(id: string, props: DiverControllerProps) {
           $.setShowHealLevel($.showHealLevel() - 1)
         }
 
+        if ($.invulnerable() > 0) $.setInvulnerable($.invulnerable() - 1)
+
         if ($age % 20 === 0 && !props.canBreathe) {
           const oxygen = $scene.gameState.diver.oxygen
           let consumption = 0.5 + 0.5 * Math.abs($.speed()) / currentMaxSpeed
           if ($.eqLevel() > $.eqTolerance) consumption *= 1.5
+          consumption *= props.oxygenUse?.($.depth()) ?? 1
 
           $scene.setGameState('diver', 'oxygen', Math.max(0, oxygen - consumption))
+        }
 
-          if ($scene.gameState.diver.oxygen <= 0) {
-            $.blackout()
-          }
+        // Hazards can take the last of your oxygen at any moment, not just when breathing out
+        if (!props.canBreathe && !blackedOut && $scene.gameState.diver.oxygen <= 0) {
+          blackedOut = true
+          $.blackout()
         }
 
         const initY = $.y()
@@ -209,7 +228,7 @@ function createDiver(id: string, props: DiverControllerProps) {
 
         // Equalisation
         const yDiff = $.y() - initY
-        $.setEqLevel(props.canBreathe ? 0 : Math.max(0, $.eqLevel() + yDiff / pxInMeter))
+        $.setEqLevel(equalise ? Math.max(0, $.eqLevel() + yDiff / pxInMeter) : 0)
         if (space()) {
           if ($.eqLevel() > $.eqTolerance) {
             $scene.playSound('equalisation', { volume: 0.4 })

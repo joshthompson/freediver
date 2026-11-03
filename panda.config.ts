@@ -67,6 +67,11 @@ export default defineConfig({
         '0%, 100%': { transform: 'translateY(0) scale(1)' },
         '50%': { transform: 'translateY(-20%) scale(1.1)' },
       },
+      // Scrolls something starting just below the screen until it's gone off the top
+      creditsRoll: {
+        from: { transform: 'translateY(0)' },
+        to: { transform: 'translateY(calc(-100% - 700px))' },
+      },
     },
   },
 

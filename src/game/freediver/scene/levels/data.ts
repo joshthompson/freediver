@@ -16,4 +16,5 @@ export const KINGDOM = {
   depthOffset: 720,
 } as const
 
-export type LevelName = 'ocean' | 'cave'
+// Where Continue on the menu takes you back to. Leaving mid-realm resumes in the kingdom
+export type LevelName = 'ocean' | 'cave' | 'kingdom'

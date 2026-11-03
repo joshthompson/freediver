@@ -21,6 +21,7 @@ export const Level: SceneComponent<{
   scene: Scene<Controller<any>>,
   levelStyle: Accessor<JSX.CSSProperties>
   surface: boolean
+  hud?: () => JSX.Element // A realm's own readouts, such as a timer
 }> = props => {
   onCleanup(() => props.scene.destroy())
 
@@ -40,7 +41,7 @@ export const Level: SceneComponent<{
       <BackgroundDialog scene={props.scene} />
       <AchievementPopups />
     </>}
-    overlay={<GameOverlay scene={props.scene} exitToMenu={exitToMenu} />}
+    overlay={<GameOverlay scene={props.scene} exitToMenu={exitToMenu} hud={props.hud} />}
     underlay={props.surface && <GameUnderlay scene={props.scene} />}
     class={styles.level}
     style={props.levelStyle()}
@@ -52,7 +53,7 @@ export const Level: SceneComponent<{
   />
 }
 
-const GameOverlay: Component<{ scene: Scene, exitToMenu: () => void }> = props => {
+const GameOverlay: Component<{ scene: Scene, exitToMenu: () => void, hud?: () => JSX.Element }> = props => {
   const t = () => Translations[props.scene.gameState.options.locale]
   const depth = () => {
     const diver = props.scene.getControllerById<DiverController>('diver')
@@ -96,6 +97,7 @@ const GameOverlay: Component<{ scene: Scene, exitToMenu: () => void }> = props =
       {t().ocean.warningLowOxygen}
     </div>
     <DivingWatch depth={depth()} />
+    {props.hud?.()}
     {props.scene.paused.get() && <PauseMenu scene={props.scene} exitToMenu={props.exitToMenu} />}
   </>
 }
@@ -113,10 +115,12 @@ const styles = {
     color: 'white',
     maxWidth: '100%',
   }),
+  // The warnings cover the whole screen, so they let clicks and taps through to anything beneath
   equalisation: cva({
     base: {
       position: 'absolute',
       inset: '0',
+      pointerEvents: 'none',
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'center',
@@ -177,6 +181,7 @@ const styles = {
     base: {
       position: 'absolute',
       inset: '0',
+      pointerEvents: 'none',
       display: 'flex',
       flexDirection: 'column',
       pt: '100px',

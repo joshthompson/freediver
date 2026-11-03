@@ -87,3 +87,69 @@ When you defeat it it stops looking angry and smiles and apologies and says actu
 # Art
 
 Can all art be PNGs for these as it retains the style of the existing levels
+
+### Decisions
+
+Terms follow [GLOSSARY.md](../GLOSSARY.md): Corgi Kingdom, Crystal Realm, King's Portal, Entry Portal, Exit Portal, Crystal Corgi, Plinth, Realm Failure, Realm Guide, Air Pocket, Air Bubble, Hazard, Bait, Fried Egg, Egg Fish, Egg-o-meter, Scrambled Egg Monster, Egg Bullet.
+
+#### Corgi Kingdom
+
+- **Order:** the five Crystal Realms can be done in any order. Each is ticked off once done and can be replayed.
+- **King's Portal:** swimming onto it opens a modal that pauses gameplay. It lists the five realms in the order above, ticks the done ones, and has a "Stay" button that closes it and moves you just off the portal so it doesn't reopen straight away.
+- **Winning a Crystal Corgi:** Linkosha picks it up at the end of the realm, but it only counts once Linkosha carries it through the Exit Portal. Blacking out before then loses it.
+- **Delivery:** on arrival back through the King's Portal, Linkosha swims it to its Plinth automatically, like bones to the statue. The king then has one short line for that crystal and a line about how many are left. He doesn't point you to a next realm.
+- **Points:** finishing a realm adds 10 points to the current dive the first time and 5 on each replay. They're banked on surfacing, like starfish. Collectibles inside a realm, such as Fried Eggs, give no points.
+- **Replays:** a realm plays exactly the same, but the Crystal Corgi appears as a see-through ghost that Linkosha doesn't pick up.
+- **Realm Failure:** blacking out, or failing a realm's own goal, plays a short "Realm failed" fade and puts you back at the King's Portal. That realm's progress is lost, but your dive points are kept and the `blackout` achievement isn't earned.
+- **Quitting mid-realm:** quitting to the menu or reloading during a realm resumes in the Corgi Kingdom in front of the King's Portal. Realm progress isn't saved.
+- **Ending:** after the fifth delivery the king steps down and gives his crown to Linkosha. The credits play in their own view, then you're taken back to the Corgi Kingdom. From then on Linkosha wears the crown everywhere, and the old king stays bare-headed with new background dialog.
+
+#### Every Crystal Realm
+
+- **Controls:** unchanged (rotate and thrust). "Up, down, left, right" means free movement with a camera that tracks vertically as well as horizontally. Bait is dropped with E, with a matching mobile button.
+- **Realm Guides** (placeholder names): Cosmo the Space Corgi, Captain Chum, Yolko the Eggy Corgi, Judge Fathom and Ember. Each greets you at the Entry Portal and congratulates you by the Exit Portal.
+- **Hazards:** each hit takes 15 oxygen, then gives about 1s of invulnerability with a flash.
+- **Achievements:** one for each Crystal Corgi and one for completing the king's quest.
+- **Text:** new UI text (portal modal, timer, Egg-o-meter, bait count, "Realm failed", boss health bar, credits headings) is translated into all four locales, and so is all dialog, including speaker names and background dialog.
+- **Art and sound:** placeholder PNGs and sound effects at final sizes and file names, with a checklist of every asset to replace with hand-drawn art. No new music yet, see [music.md](./music.md).
+
+#### Corgosphere
+
+- About 6 screens wide and 3 tall, and roughly 2 minutes through the maze.
+- In an Air Pocket, oxygen goes from 0 to 100 in about 2s. Outside one, it runs out in about 10s.
+- No equalising.
+- Asteroids (moving), space urchins (stationary) and space jellyfish are Hazards. Space fish and space crabs are harmless scenery.
+
+#### Lair of Trigger Fish
+
+- About 8 screens wide and 4 screens deep, with rock formations forcing big up-and-down curves. You equalise a lot.
+- Swimming to the top refills oxygen at a surface that doesn't lead to the surface scene.
+- The Realm Guide hands over 10 bait, shown as "x10" in the UI. There's no way to get more, and leftover bait is gone when you leave.
+- Trigger fish keep their bite of 5, repeated while they're on you. They aren't Hazards.
+- Bait draws trigger fish from about half the screen width and lasts about 5s of being attacked. Mini trigger fish are drawn to it too: they leave their circle to chase it and swim back to their centre when it's gone.
+
+#### Fried Egg Dimension
+
+- About 3 screens wide and 2 tall.
+- No oxygen use and no equalising, so only hits drain oxygen. Egg Fish swim about and heal you as usual.
+- Collect 100 Fried Eggs in 60s to fill the Egg-o-meter. If time runs out first, it's a Realm Failure.
+- During the rage, the Scrambled Egg Monster fires three harder patterns, about 20s each: aimed shots, rings, then spirals. His shrinking is only for show: the rage ends after 60s whatever his size. During the rage you can only fail by blacking out.
+
+#### Depths
+
+- A single column about 100m deep. The camera tracks vertically only.
+- No creatures or hazards: just depth, equalising and oxygen use that speeds up the deeper you are. No ribbon, just the Black Crystal Corgi at the bottom of the rope.
+- Tuned so a diver who equalises well reaches the bottom with about 55% oxygen and surfaces with about 10%. Poor equalising should mean a blackout.
+
+#### Hell
+
+- About 10 screens wide and 2 tall for the race, ending in a one-screen boss arena. You equalise.
+- If the demon finishes first, it's a Realm Failure. Current streams, timed vent shortcuts and the demon stopping to mock you (as background dialog) let you catch up.
+- The devil boss cycles three attacks: a glowing charge, a fireball spread of Hazard shots, and an eruption of every arena vent in a pattern. Between attacks he slowly follows you, so you can lead him into Egg Fish.
+- In the boss fight Egg Fish only kiss the devil, each kiss taking 20% of his health. They don't heal you, so Air Bubbles appearing now and then are your only oxygen.
+
+#### Build order
+
+1. The Corgi Kingdom: portal modal, Plinths, delivery, ending and credits.
+2. Corgosphere, which brings in the shared parts: vertical camera, Entry and Exit Portals, Realm Failure and Hazards.
+3. The other realms, one per pass.

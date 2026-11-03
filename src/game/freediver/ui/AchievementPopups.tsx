@@ -55,5 +55,6 @@ const styles = {
     textAlign: 'center',
     fontSize: '26px',
     lineHeight: '0.7em',
+    color: 'black',
   }),
 }

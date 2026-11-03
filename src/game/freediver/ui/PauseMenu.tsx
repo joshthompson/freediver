@@ -21,7 +21,7 @@ export const PauseMenu: Component<{ scene: Scene, exitToMenu: () => void }> = pr
       <Button onClick={() => props.exitToMenu()} size="small">{t().common.exitToMenu}</Button>
     </>}
     {view() === 'achievements' && <>
-      <Achievements />
+      <div class={styles.achievements}><Achievements /></div>
       <Button onClick={() => setView('main')} size="small">{t().common.back}</Button>
     </>}
   </div>
@@ -41,5 +41,10 @@ const styles = {
     color: 'white',
     backdropFilter: 'blur(2px)',
     p: '20px',
+  }),
+  achievements: css({
+    overflowY: 'auto',
+    minHeight: 0, // Let the flex column shrink this so it scrolls instead of overflowing
+    width: '100%',
   }),
 }

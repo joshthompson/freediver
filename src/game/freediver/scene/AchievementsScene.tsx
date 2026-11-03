@@ -49,6 +49,7 @@ const styles = {
   }),
   achievements: css({
     overflowY: 'auto',
+    minHeight: 0, // Let the flex column shrink this so it scrolls instead of overflowing
     p: '20px',
   }),
   spacer: css({

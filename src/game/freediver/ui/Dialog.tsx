@@ -1,6 +1,7 @@
 import { Key, Scene } from '@/engine'
 import { css, cva, cx } from '@style/css'
 import { Component, createEffect, createSignal, For, onCleanup, onMount, Show } from 'solid-js'
+import { Translations } from '@/game/freediver/data/Translations'
 
 export const Dialog: Component<{scene: Scene}> = props => {
   const [text, setText] = createSignal('')
@@ -8,8 +9,10 @@ export const Dialog: Component<{scene: Scene}> = props => {
   const [selectedOption, setSelectedOption] = createSignal<number>(0)
   const [spacePressed, setSpacePressed] = createSignal(Key.isDown(' '))
 
+  const locale = () => props.scene.gameState.options.locale
+
   createEffect(() => {
-    const text = message()?.text ?? undefined
+    const text = message()?.text[locale()] ?? undefined
     if (!text) {
       setText('')
       return
@@ -73,7 +76,7 @@ export const Dialog: Component<{scene: Scene}> = props => {
       </Show>
       <div class={styles.message}>
         <Show when={message()!.speaker}>
-          <div class={styles.speaker}>{message()!.speaker}:</div>
+          <div class={styles.speaker}>{message()!.speaker![locale()]}:</div>
         </Show>
         <div class={styles.text}>{text() || '&nbsp;'}</div>
         <div class={styles.options({ canProceed: canProceed() })}>
@@ -84,12 +87,12 @@ export const Dialog: Component<{scene: Scene}> = props => {
                   {(option, n) =>
                     <div
                       class={styles.option({ selected: n() === selectedOption()})}
-                      children={option.text}
+                      children={option.text[locale()]}
                     />
                   }
                 </For>
             }
-            fallback={<div class={cx(styles.continue, styles.option({ selected: true }))}>Continue</div>}
+            fallback={<div class={cx(styles.continue, styles.option({ selected: true }))}>{Translations[locale()].menu.continue}</div>}
           />
         </div>
       </div>

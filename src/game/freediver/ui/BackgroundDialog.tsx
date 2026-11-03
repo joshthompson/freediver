@@ -27,7 +27,7 @@ const Bubble: Component<{ scene: Scene, dialog: BackgroundDialogData }> = props 
   }
 
   return <Show when={position()}>
-    <div class={styles.bubble} style={position()}>{props.dialog.text}</div>
+    <div class={styles.bubble} style={position()}>{props.dialog.text[props.scene.gameState.options.locale]}</div>
   </Show>
 }
 

@@ -1,7 +1,8 @@
-import { createController } from '@/engine'
+import { createConnectedController, createController } from '@/engine'
 import { Sprite } from '@/engine/components/Sprite'
-import { linkFrontAsset } from '@/assets'
+import { kingdomCrownAsset, linkFrontAsset } from '@/assets'
 import { createObjectSignal } from '@/engine/utils'
+import { useGameState } from '@/utils/GameStateContext'
 
 export type CorgiSurfaceController = ReturnType<typeof createCorgiSurfaceController>
 
@@ -12,7 +13,7 @@ interface CorgiSurfaceControllerProps {
 }
 
 export function createCorgiSurfaceController(id: string, props?: CorgiSurfaceControllerProps) {
-  return createController(
+  const corgi = createController(
     {
       frames: [linkFrontAsset],
       init() {
@@ -31,4 +32,18 @@ export function createCorgiSurfaceController(id: string, props?: CorgiSurfaceCon
       },
     },
   )
+
+  // Linkosha keeps the Corgi King's crown on above water too
+  if (useGameState()?.gameState.questState.king.state === 'crowned') {
+    corgi.attach(createConnectedController({
+      type: 'crown',
+      base: corgi,
+      frames: [kingdomCrownAsset],
+      offset: { x: 37, y: 8 }, // Centred between the ears, resting on the goggle strap
+      width: () => 44,
+      height: () => 33,
+    }))
+  }
+
+  return corgi
 }

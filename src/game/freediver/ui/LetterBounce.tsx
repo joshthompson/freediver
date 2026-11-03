@@ -15,7 +15,7 @@ export const LetterBounce: Component<{ children: string }> = props => {
           'animation': 'bounce 0.6s infinite',
         }}
       >
-        {letter()}
+        {letter() === ' ' ? '\u00A0' : letter()}
       </div>}
     </Index>
   </div>

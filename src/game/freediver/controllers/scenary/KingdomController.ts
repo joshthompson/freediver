@@ -8,8 +8,7 @@ import {
   kingdomGlowCoralAsset,
   kingdomLanternAsset,
   kingdomOpeningAsset,
-  kingdomPortalAsset,
-  kingdomPortalVortexAsset,
+  plinthAsset,
   kingdomThroneAsset,
   kingdomWallAsset,
 } from '@/assets'
@@ -18,8 +17,8 @@ import { createObjectSignal } from '@/engine/utils'
 import { Sprite } from '@/engine/components/Sprite'
 import { generateFrames } from '@/utils'
 import { DiverController } from '../main/DiverController'
-import { KingQuest } from '../../data/Dialogs'
-import { useGameState } from '@/utils/GameStateContext'
+import { CorgiCitizenBackgroundDialogLines, KingQuest, KingReminderBackgroundDialogLines, OldKingBackgroundDialogLines } from '../../data/Dialogs'
+import { createBackgroundDialogTrigger } from '../utils/BackgroundDialogTrigger'
 
 const floorY = 690
 const ceilingY = 92
@@ -152,62 +151,19 @@ export function createKingdomThroneController(id: string, props: { x: number }) 
   })
 }
 
-// Stone ring behind the throne. The vortex inside spins open once the king's quest is accepted
-export function createKingdomPortalControllers(id: string, props: { x: number, y: number }) {
-  const size = 280
-  const vortexSize = 200
-  const { gameState } = useGameState()!
-  const isOpen = () => gameState.questState.king.state === 'accepted'
-
-  const vortex = createController({
-    frames: [kingdomPortalVortexAsset],
-    init() {
-      const open = createObjectSignal(isOpen() ? 1 : 0, 'open')
-      const eased = () => 1 - (1 - open.open()) ** 3
-      return {
-        id: id + '-vortex',
-        type: 'kingdom-portal-vortex',
-        x: () => props.x + (size - vortexSize) / 2,
-        y: () => props.y + (size - vortexSize) / 2,
-        width: () => vortexSize,
-        height: () => vortexSize,
-        ...open,
-        xScale: eased,
-        yScale: eased,
-        rotation: () => (1 - eased()) * 360,
-        style: () => ({ opacity: eased() }),
-      }
-    },
-    onEnterFrame({ $ }) {
-      if (isOpen() && $.open() < 1) $.setOpen(Math.min(1, $.open() + 0.015))
-    },
-  })
-
-  const ring = createController({
-    frames: [kingdomPortalAsset],
-    init() {
-      return {
-        id,
-        type: 'kingdom-portal',
-        x: () => props.x,
-        y: () => props.y,
-        width: () => size,
-        height: () => size,
-        style: () => vortex.data.open() > 0
-          ? { filter: `drop-shadow(0 0 14px rgba(150, 240, 255, ${0.8 * vortex.data.open()}))` }
-          : {},
-      }
-    },
-  })
-
-  return [ring, vortex]
-}
-
-// The corgi king, sitting on his throne. He paddles happily when the diver visits,
-// gives them his quest, and reminds them about it on later visits
-export function createCorgiKingController(id: string, props: { x: number, y: number }) {
+// The corgi king, sitting on his throne. He paddles happily when the diver visits and gives them his quest.
+// After that he only reminds them about it in passing, and once he's given Linkosha his crown he makes small talk
+export function createCorgiKingController(id: string, props: {
+  x: number
+  y: number
+  crowned: boolean
+}) {
   const talkDistance = 220
   const leaveDistance = 400
+  const backgroundDialog = createBackgroundDialogTrigger(
+    props.crowned ? OldKingBackgroundDialogLines : KingReminderBackgroundDialogLines,
+  )
+  let quietFrames = 0 // So he doesn't ask about the quest the moment he's handed it out
 
   const width = 120
   const height = 75
@@ -228,19 +184,27 @@ export function createCorgiKingController(id: string, props: { x: number, y: num
         frameInterval: () => 150,
       }
     },
-    onEnterFrame({ $, $scene, $age }) {
+    onEnterFrame({ $, $scene, $age, $controller }) {
       $.setY(props.y + Math.sin($age / 12) * 2)
       const diver = $scene.getControllerById<DiverController>('diver')
       if (!diver) return
       const distance = diver.distanceTo(props.x + width / 2, props.y)
       $.setState(distance < 300 ? 'play' : 'pause')
 
-      if (distance < talkDistance && !$.talkedThisVisit()) {
+      if ($scene.gameState.questState.king.state !== 'new') {
+        if (quietFrames > 0) quietFrames--
+        else backgroundDialog($scene, $controller)
+        return
+      }
+
+      if (distance < talkDistance && !$.talkedThisVisit() && !$scene.dialog.data()) {
         $.setTalkedThisVisit(true)
-        const questState = $scene.gameState.questState.king.state
         $scene.startDialog({
-          messages: questState === 'new' ? KingQuest.intro : KingQuest.reminder,
-          onComplete: () => $scene.setGameState('questState', 'king', 'state', 'accepted'),
+          messages: KingQuest.intro,
+          onComplete: () => {
+            $scene.setGameState('questState', 'king', 'state', 'accepted')
+            quietFrames = 500 // About 20 seconds
+          },
           pauseGameplay: true,
         })
       } else if (distance > leaveDistance) {
@@ -249,19 +213,44 @@ export function createCorgiKingController(id: string, props: { x: number, y: num
     },
   })
 
-  king.attach(createConnectedController({
-    type: 'crown',
-    base: king,
-    frames: [kingdomCrownAsset],
-    offset: { x: 78, y: -20 },
-    width: () => 34,
-    height: () => 26,
-  }))
+  if (!props.crowned) {
+    king.attach(createConnectedController({
+      type: 'crown',
+      base: king,
+      frames: [kingdomCrownAsset],
+      offset: { x: 78, y: -20 },
+      width: () => 34,
+      height: () => 26,
+    }))
+  }
 
   return king
 }
 
-// Corgis going about their day, paddling back and forth between `from` and `to`
+export const plinthSize = { width: 90, height: 70 }
+
+// A stand behind the throne for one Crystal Corgi
+export function createPlinthController(id: string, props: { x: number }) {
+  return createController({
+    frames: [plinthAsset],
+    init() {
+      return {
+        id,
+        type: 'plinth',
+        x: () => props.x - plinthSize.width / 2,
+        y: () => floorY - 10 - plinthSize.height,
+        width: () => plinthSize.width,
+        height: () => plinthSize.height,
+      }
+    },
+  })
+}
+
+// Where a Crystal Corgi stands on top of the plinth centred on x
+export const plinthTop = (x: number): Vector => ({ x, y: floorY - 10 - plinthSize.height + 6 })
+
+// Corgis going about their day, paddling back and forth between `from` and `to`.
+// Now and then they say something to Linkosha, and hail their new king once crowned
 export function createCorgiCitizenController(id: string, props: {
   from: number,
   to: number,
@@ -269,7 +258,11 @@ export function createCorgiCitizenController(id: string, props: {
   scale?: number,
   speed?: number,
   breed?: 'pembroke' | 'cardigan',
+  crowned: boolean,
 }) {
+  const backgroundDialog = createBackgroundDialogTrigger(
+    props.crowned ? CorgiCitizenBackgroundDialogLines.king : CorgiCitizenBackgroundDialogLines.visitor,
+  )
   const scale = props.scale ?? 1
   const speed = props.speed ?? 1.2
   const asset = props.breed === 'cardigan' ? kingdomCorgiCardiganAsset : kingdomCorgiAsset
@@ -290,7 +283,8 @@ export function createCorgiCitizenController(id: string, props: {
         frameInterval: () => 220,
       }
     },
-    onEnterFrame({ $, $age }) {
+    onEnterFrame({ $, $scene, $age, $controller }) {
+      backgroundDialog($scene, $controller)
       $.setX($.x() + $.xScale() * speed)
       if ($.x() > props.to) $.setXScale(-1)
       if ($.x() < props.from) $.setXScale(1)
