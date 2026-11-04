@@ -97,14 +97,20 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
         onMouseUp={handleMouseUp}
       >
         {props.underlay}
-        <For each={sprites()}>
-          {controller => <Sprite
-            {...controller.sprite()}
-            id={controller.id}
-            type={controller.type}
-            active={props.scene.isActive()}
-          />}
-        </For>
+        {/* The camera moves this one layer, so sprites only restyle when they move themselves */}
+        <div
+          class={styles.world}
+          style={{ transform: `translate(${-props.scene.canvas.get().x()}px, ${-props.scene.canvas.get().y()}px)` }}
+        >
+          <For each={sprites()}>
+            {controller => <Sprite
+              {...controller.sprite()}
+              id={controller.id}
+              type={controller.type}
+              active={props.scene.isActive()}
+            />}
+          </For>
+        </div>
         {props.underDialog}
         {props.dialog && <props.dialog scene={props.scene} />}
         {props.scene.modal.get() && <Modal>{props.scene.modal.get()}</Modal>}
@@ -121,5 +127,11 @@ const styles = {
     position: 'relative',
     overflow: 'hidden',
     background: 'white',
+  }),
+  world: css({
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    pointerEvents: 'none',
   }),
 }

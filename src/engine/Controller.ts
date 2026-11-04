@@ -42,6 +42,7 @@ export interface Controller<
   setGame: (scene: Scene) => void
   data: CP
   sprite: Accessor<Sprite>
+  element: () => HTMLElement | undefined
   age: Accessor<number>
   childControllers: Accessor<Controller<any>[]>
 }
@@ -87,11 +88,13 @@ export function createController<
   const data: CP = options.init()
   const destroy = () => {}
   const setGame = (scene: Scene) => (data.scene = scene)
+  // Set when the sprite mounts, so hitTest doesn't have to search the document every frame
+  let element: HTMLElement | undefined
+  const getElement = () => element?.isConnected
+    ? element
+    : document.querySelector<HTMLElement>(`[data-controller-id="${data.id}"]`) ?? undefined
   const hitTest = (other: Controller<any>) => {
-    const ref1 = document.querySelector(`[data-controller-id="${data.id}"]`) as HTMLElement
-    const ref2 = document.querySelector(`[data-controller-id="${other.id}"]`) as HTMLElement
-
-    return isOverlapping(ref1, ref2)
+    return isOverlapping(getElement(), other.element())
   }
   const distanceTo = (x: number, y: number) => {
     return Math.hypot(data.x() - x, data.y() - y)
@@ -136,40 +139,46 @@ export function createController<
     age,
     data,
     childControllers,
-    sprite: (): Sprite => ({
-      frames: data?.frames?.() ?? options.frames ?? [],
-      frame: data?.frame?.(),
-      randomStartFrame: options.randomStartFrame ?? false,
-      class: cx(options.class, data.class?.()),
-      style: { ...options.style, ...data.style?.() },
-      x: data.x(),
-      y: data.y(),
-      origin: data.origin?.(),
-      xScale: data.xScale?.() ?? 1,
-      yScale: data.yScale?.() ?? 1,
-      width: data.width(),
-      height: data.height?.() ?? console.log(data.type) ?? 0,
-      parallax: data.parallax?.() ?? 1,
-      rotation: data.rotation?.() ?? 0,
-      state: data.state?.(),
-      frameInterval: data.frameInterval?.(),
-      children: data.children?.(),
-      inner: {
-        rotation: data.inner?.rotation?.(),
-        origin: data.inner?.origin?.(),
-      },
-      onChangeFrame: frame => setCurrentFrame(frame),
-      onMount: ({ $ref }) => {
-        options.onMount && options.onMount({
-          $: data,
-          $scene: data.scene!,
-          $controller: controller,
-          $currentFrame: currentFrame(),
-          $ref: $ref,
-        })
-      },
-      controllers: childControllers,
-    }),
+    element: getElement,
+    sprite: () => sprite,
+  }
+
+  // Getters, so each Sprite prop only tracks the signals it reads. A plain object would make every
+  // prop depend on every signal, re-rendering the whole Sprite whenever any one of them changed
+  const sprite: Sprite = {
+    get frames() { return data?.frames?.() ?? options.frames ?? [] },
+    get frame() { return data?.frame?.() },
+    randomStartFrame: options.randomStartFrame ?? false,
+    get class() { return cx(options.class, data.class?.()) },
+    get style() { return { ...options.style, ...data.style?.() } },
+    get x() { return data.x() },
+    get y() { return data.y() },
+    get origin() { return data.origin?.() },
+    get xScale() { return data.xScale?.() ?? 1 },
+    get yScale() { return data.yScale?.() ?? 1 },
+    get width() { return data.width() },
+    get height() { return data.height?.() ?? console.log(data.type) ?? 0 },
+    get parallax() { return data.parallax?.() ?? 1 },
+    get rotation() { return data.rotation?.() ?? 0 },
+    get state() { return data.state?.() },
+    get frameInterval() { return data.frameInterval?.() },
+    get children() { return data.children?.() },
+    inner: {
+      get rotation() { return data.inner?.rotation?.() },
+      get origin() { return data.inner?.origin?.() },
+    },
+    onChangeFrame: frame => setCurrentFrame(frame),
+    onMount: ({ $ref }) => {
+      element = $ref
+      options.onMount && options.onMount({
+        $: data,
+        $scene: data.scene!,
+        $controller: controller,
+        $currentFrame: currentFrame(),
+        $ref: $ref,
+      })
+    },
+    controllers: childControllers,
   }
 
   return controller

@@ -1,5 +1,6 @@
 import {
   Accessor,
+  batch,
   Component,
   createEffect,
   createMemo,
@@ -43,6 +44,22 @@ export interface Sprite {
   onChangeFrame?: (frameIndex: number) => void
   onMount?: (data: { $ref: HTMLDivElement | undefined }) => void
   controllers?: Accessor<Controller<any>[]>
+}
+
+// One animation clock for every sprite, rather than a timer each, so frame changes are written together
+// just before the browser paints
+const animations = new Set<(now: number) => void>()
+let animationFrame: number | undefined
+
+function tickAnimations(now: number) {
+  batch(() => animations.forEach(animate => animate(now)))
+  animationFrame = animations.size ? requestAnimationFrame(tickAnimations) : undefined
+}
+
+function addAnimation(animate: (now: number) => void) {
+  animations.add(animate)
+  animationFrame ??= requestAnimationFrame(tickAnimations)
+  return () => animations.delete(animate)
 }
 
 interface SpriteExtendedProps {
@@ -104,32 +121,36 @@ export const Sprite: Component<Sprite & SpriteExtendedProps> = props => {
     }
   })
 
-  let enterFrameTimeout: ReturnType<typeof setTimeout> | undefined
-
+  const frameInterval = () => typeof props.frameInterval === 'function'
+    ? props.frameInterval()
+    : (props.frameInterval ?? 100)
   const runAnimation = () => {
     if (props.active !== false && props.state === 'play' && props.frames.length) {
       setCurrentFrame(prev => (prev + 1) % props.frames.length)
     }
-    enterFrameTimeout = setTimeout(
-      runAnimation,
-      typeof props.frameInterval === 'function'
-        ? props.frameInterval()
-        : (props.frameInterval ?? 100),
-    )
   }
   runAnimation()
+  let nextFrameAt = performance.now() + frameInterval()
+  onCleanup(addAnimation(now => {
+    if (now < nextFrameAt) return
+    runAnimation()
+    // Step from when the frame was due, so intervals don't round up to the display's frame rate
+    nextFrameAt = Math.max(nextFrameAt + frameInterval(), now)
+  }))
 
   onMount(() => props.onMount?.({ $ref: ref }))
-  onCleanup(() => clearTimeout(enterFrameTimeout))
 
+  // The Canvas's world layer already moves by the camera, so only parallax sprites need to offset it here
   const top = createMemo(() => {
-    if (props.fixed) return props.y + 'px'
-    return (props.y - scene.canvas.get().y() * (props.parallax ?? 1)) + 'px'
+    const parallax = props.parallax ?? 1
+    if (props.fixed || parallax === 1) return props.y + 'px'
+    return (props.y - scene.canvas.get().y() * (parallax - 1)) + 'px'
   })
 
   const left = createMemo(() => {
-    if (props.fixed) return props.x + 'px'
-    return (props.x - scene.canvas.get().x() * (props.parallax ?? 1)) + 'px'
+    const parallax = props.parallax ?? 1
+    if (props.fixed || parallax === 1) return props.x + 'px'
+    return (props.x - scene.canvas.get().x() * (parallax - 1)) + 'px'
   })
 
   return (

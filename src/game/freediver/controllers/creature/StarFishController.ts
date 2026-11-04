@@ -49,7 +49,7 @@ export function createStarfishController(
         if (distance > 1000) {
           $.setHidden(false)
         }
-      } else {
+      } else if ($scene.isOnCanvas($controller, 100)) { // Off screen it can't be seen bobbing, or be caught
         $.setAge($age)
         $.setY($.baseY() + Math.sin($age / 3) * 5)
         $.setRotation(0 + Math.sin($age / 12) * 10)

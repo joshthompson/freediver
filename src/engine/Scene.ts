@@ -1,7 +1,7 @@
 import { SetStoreFunction } from "solid-js/store"
 import { GameState, GameStateActions } from "../utils/GameStateContext"
 import { BackgroundDialog, Dialog } from "../utils/game"
-import { Accessor, Component, createMemo, createSignal, JSX, Setter } from "solid-js"
+import { Accessor, batch, Component, createMemo, createSignal, JSX, Setter } from "solid-js"
 import { Canvas, CanvasControllers } from "@/engine/components/Canvas"
 import { createObjectSignal, isTyping, ObjectSignal } from "./utils"
 import { Controller } from "./Controller"
@@ -98,14 +98,15 @@ export class Scene<C extends Controller<any> = Controller<any>> {
       setMessageIndex: setCurrentMessageIndex,
     }
 
-    // Setup onEnterFrame functions for controllers
-    this.interval = window.setInterval(() => {
+    // Setup onEnterFrame functions for controllers. Batched so the DOM is written once per frame,
+    // rather than after every signal write, which also keeps hitTest's layout reads from forcing a reflow
+    this.interval = window.setInterval(() => batch(() => {
       if (this.isActive()) {
         this.controllers.get().forEach(({ controller }) => controller.onEnterFrame(this))
         this.#tickBackgroundDialogs()
       }
       this.options.afterEnterFrames?.({ $scene: this })
-    }, this.options.frameRate ?? 40)
+    }), this.options.frameRate ?? 40)
 
     // Set window event listeners
     window.addEventListener('keydown', this.#onKeydown)
@@ -220,17 +221,23 @@ export class Scene<C extends Controller<any> = Controller<any>> {
   #tickBackgroundDialogs() {
     const dialogs = this.backgroundDialogs.get()
     if (!dialogs.length) return
-    const canvas = this.canvas.get()
     const remaining = dialogs.filter(dialog => {
       dialog.framesLeft--
       const speaker = this.getControllerById(dialog.controllerId)
       if (!speaker || dialog.framesLeft <= 0) return false
-      const x = speaker.data.x() - canvas.x()
-      const y = speaker.data.y() - canvas.y()
-      return x + speaker.data.width() > 0 && x < canvas.width
-        && y + speaker.data.height() > 0 && y < canvas.height
+      return this.isOnCanvas(speaker)
     })
     if (remaining.length !== dialogs.length) this.backgroundDialogs.set(remaining)
+  }
+
+  // Whether any of a controller is within the canvas, or within margin px of it. Lets controllers skip
+  // purely visual work, like idle animation, while nobody can see them
+  isOnCanvas(controller: Controller<any>, margin = 0) {
+    const canvas = this.canvas.get()
+    const x = controller.data.x() - canvas.x()
+    const y = controller.data.y() - canvas.y()
+    return x + controller.data.width() > -margin && x < canvas.width + margin
+      && y + controller.data.height() > -margin && y < canvas.height + margin
   }
 
   diaglogAction(optionIndex: number) {
