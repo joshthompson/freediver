@@ -22,6 +22,7 @@ export const Level: SceneComponent<{
   levelStyle: Accessor<JSX.CSSProperties>
   surface: boolean
   hud?: () => JSX.Element // A realm's own readouts, such as a timer
+  returnToKingdom?: () => void // Offered in the pause menu
 }> = props => {
   onCleanup(() => props.scene.destroy())
 
@@ -41,7 +42,7 @@ export const Level: SceneComponent<{
       <BackgroundDialog scene={props.scene} />
       <AchievementPopups />
     </>}
-    overlay={<GameOverlay scene={props.scene} exitToMenu={exitToMenu} hud={props.hud} />}
+    overlay={<GameOverlay scene={props.scene} exitToMenu={exitToMenu} hud={props.hud} returnToKingdom={props.returnToKingdom} />}
     underlay={props.surface && <GameUnderlay scene={props.scene} />}
     class={styles.level}
     style={props.levelStyle()}
@@ -53,7 +54,12 @@ export const Level: SceneComponent<{
   />
 }
 
-const GameOverlay: Component<{ scene: Scene, exitToMenu: () => void, hud?: () => JSX.Element }> = props => {
+const GameOverlay: Component<{
+  scene: Scene,
+  exitToMenu: () => void,
+  hud?: () => JSX.Element,
+  returnToKingdom?: () => void,
+}> = props => {
   const t = () => Translations[props.scene.gameState.options.locale]
   const depth = () => {
     const diver = props.scene.getControllerById<DiverController>('diver')
@@ -98,7 +104,7 @@ const GameOverlay: Component<{ scene: Scene, exitToMenu: () => void, hud?: () =>
     </div>
     <DivingWatch depth={depth()} />
     {props.hud?.()}
-    {props.scene.paused.get() && <PauseMenu scene={props.scene} exitToMenu={props.exitToMenu} />}
+    {props.scene.paused.get() && <PauseMenu scene={props.scene} exitToMenu={props.exitToMenu} returnToKingdom={props.returnToKingdom} />}
   </>
 }
 

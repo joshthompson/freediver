@@ -9,7 +9,7 @@ export function createOctopusController(
   props: Vector,
 ) {
   return createController({
-    frames: generateFrames(octopusAsset, 271, 309 , 30, 10),
+    frames: generateFrames(octopusAsset, 300, 340, 33, 10),
     randomStartFrame: true,
     init() {
       const size = createObjectSignal(Math.random() * 1.5 + 0.5, 'size')
@@ -24,8 +24,8 @@ export function createOctopusController(
         ...direction,
         ...size,
         ...hue,
-        width: () => 30,
-        height: () => 34,
+        width: () => 33, // The sheet's 300×340 frames, with the octopus the same size as before
+        height: () => 37.4,
         xScale: () => size.size() * direction.direction(),
         yScale: size.size,
         style: () => ({

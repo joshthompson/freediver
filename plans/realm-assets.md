@@ -4,7 +4,7 @@ Every asset below is a placeholder, at its final file name in `src/assets/realms
 
 Tinted placeholders are recoloured copies of existing art. Drawn placeholders are simple shapes.
 
-In dev builds, the page at `/freediver/art-checklist` shows every placeholder with its path, pixel size and file size, and marks each one replaced once its file changes. It also lists the Corgi Kingdom art and the statue sign, which were SVGs and are now PNGs rendered from them. The list lives in `src/game/freediver/data/PlaceholderArt.ts`.
+In dev builds, the page at `/freediver/art-checklist` shows every placeholder with its path, pixel size and file size, and marks each one replaced once its file changes, or once numbered versions sit beside it (`asteroid1.png`, `asteroid2.png`… replace `asteroid.png`). It also lists the Corgi Kingdom art and the statue sign, which were SVGs and are now PNGs rendered from them. The list lives in `src/game/freediver/data/PlaceholderArt.ts`.
 
 ### Common
 

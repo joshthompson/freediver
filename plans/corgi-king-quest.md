@@ -102,6 +102,7 @@ Terms follow [GLOSSARY.md](../GLOSSARY.md): Corgi Kingdom, Crystal Realm, King's
 - **Replays:** a realm plays exactly the same, but the Crystal Corgi appears as a see-through ghost that Linkosha doesn't pick up.
 - **Realm Failure:** blacking out, or failing a realm's own goal, plays a short "Realm failed" fade and puts you back at the King's Portal. That realm's progress is lost, but your dive points are kept and the `blackout` achievement isn't earned.
 - **Quitting mid-realm:** quitting to the menu or reloading during a realm resumes in the Corgi Kingdom in front of the King's Portal. Realm progress isn't saved.
+- **Returning mid-realm:** the pause menu in a realm has "Return to the Corgi Kingdom", which arrives back through the King's Portal straight away. Like quitting, the realm's progress is lost, but nothing counts as a Realm Failure.
 - **Ending:** after the fifth delivery the king steps down and gives his crown to Linkosha. The credits play in their own view, then you're taken back to the Corgi Kingdom. From then on Linkosha wears the crown everywhere, and the old king stays bare-headed with new background dialog.
 
 #### Every Crystal Realm

@@ -1,4 +1,8 @@
-import { eggBulletAsset, friedEggAsset, scrambledEggMonsterAsset, scrambledEggMonsterHappyAsset } from '@/assets'
+import {
+  eggBulletAsset,
+  friedEgg1Asset, friedEgg2Asset, friedEgg3Asset, friedEgg4Asset,
+  scrambledEggMonsterAsset, scrambledEggMonsterHappyAsset,
+} from '@/assets'
 import { createController } from '@/engine'
 import { createObjectSignal } from '@/engine/utils'
 import { getDiver, hitDiverIfTouching, touchesDiver } from './Hazard'
@@ -7,14 +11,26 @@ import { getDiver, hitDiverIfTouching, touchesDiver } from './Hazard'
 const grabRadius = 50
 const corgiGrabRadius = 45
 
+// Each image with its height for a width of 1, as they aren't all square
+const friedEggLooks = [
+  { asset: friedEgg1Asset, aspect: 99 / 100 },
+  { asset: friedEgg2Asset, aspect: 102 / 100 },
+  { asset: friedEgg3Asset, aspect: 103 / 100 },
+  { asset: friedEgg4Asset, aspect: 108 / 100 },
+]
+let friedEggN = 0
+// Takes turns between the images so every one shows up
+const nextFriedEggLook = () => friedEggLooks[friedEggN++ % friedEggLooks.length]
+
 // A Fried Egg floating about, collected by the diver or Linkosha swimming into it
 export function createFriedEggController(id: string, props: Vector & { onCollect: () => void }) {
+  const look = nextFriedEggLook()
   const width = 52
-  const height = 44
+  const height = width * look.aspect
   const phase = Math.random() * Math.PI * 2
 
   return createController({
-    frames: [friedEggAsset],
+    frames: [look.asset],
     init() {
       return {
         id,
@@ -44,8 +60,9 @@ export function createFriedEggController(id: string, props: Vector & { onCollect
 // It stays hidden until `delay` is up, then sets off from wherever the diver is by then
 export function createFlyingEggController(id: string, props: { from: () => Vector, to: () => Vector, delay: number }) {
   const size = 40
+  const look = nextFriedEggLook()
   return createController({
-    frames: [friedEggAsset],
+    frames: [look.asset],
     init() {
       const launched = createObjectSignal(false, 'launched')
       return {
@@ -56,7 +73,7 @@ export function createFlyingEggController(id: string, props: { from: () => Vecto
         ...createObjectSignal(0, 'rotation'),
         ...launched,
         width: () => size,
-        height: () => size * 0.85,
+        height: () => size * look.aspect,
         style: () => launched.launched() ? {} : { opacity: 0 },
       }
     },

@@ -74,6 +74,7 @@ export function addRealmArrival($scene: Scene, realm: Realm, options: {
   entry: Vector // The Entry Portal's centre
   diver?: Partial<Parameters<typeof createDiverController>[1]>
   walls?: boolean
+  bubbles?: boolean // False where there's no water, so neither the diver nor Linkosha make bubbles
 }) {
   const { bounds, entry } = options
   if (options.walls ?? true) {
@@ -98,11 +99,12 @@ export function addRealmArrival($scene: Scene, realm: Realm, options: {
     y: entry.y - 78,
     rotation: 90,
     speed: 0,
+    bubbles: options.bubbles,
     ...options.diver,
     blackout: () => realm.fail($scene),
   })
   $scene.addController(diver)
-  const corgi = createCorgiController('corgi', { x: entry.x - 20, y: entry.y })
+  const corgi = createCorgiController('corgi', { x: entry.x - 20, y: entry.y, bubbles: options.bubbles })
   $scene.addController(corgi)
   return { diver, corgi }
 }
@@ -216,6 +218,8 @@ export function RealmScene(level: (props: RealmLevelProps) => RealmLevel): Scene
       surface={false}
       setScene={props.setScene}
       hud={realm.hud}
+      // Gives up on the realm for now, arriving back through the King's Portal
+      returnToKingdom={() => props.setScene('kingdom', 'portal')}
     />
   }
 }

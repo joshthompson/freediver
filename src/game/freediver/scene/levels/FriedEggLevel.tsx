@@ -55,6 +55,7 @@ export function FriedEggLevel(props: RealmLevelProps): RealmLevel {
         bounds,
         entry: { x: 300, y: 700 },
         diver: { equalise: false, oxygenUse: () => 0 },
+        bubbles: false,
       })
 
       const guide = addRealmGuide($scene, {

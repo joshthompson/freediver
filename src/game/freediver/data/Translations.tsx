@@ -85,6 +85,7 @@ const baseTranslations = {
   pause: {
     title: 'PAUSED',
     resume: 'Resume',
+    returnToKingdom: 'Return to the Corgi Kingdom',
   },
   multiplayer: {
     title: 'Multiplayer',
@@ -247,6 +248,7 @@ export const Translations = {
     pause: {
       title: 'ПАУЗА',
       resume: 'Продолжить',
+      returnToKingdom: 'Вернуться в Королевство Корги',
     },
     multiplayer: {
       title: 'Мультиплеер',
@@ -406,6 +408,7 @@ export const Translations = {
     pause: {
       title: 'PAUSAD',
       resume: 'Återuppta',
+      returnToKingdom: 'Tillbaka till Corgiriket',
     },
     multiplayer: {
       title: 'Flerspelare',
@@ -565,6 +568,7 @@ export const Translations = {
     pause: {
       title: 'NERA-TAL',
       resume: 'Telvorä',
+      returnToKingdom: 'Renvor a Korli Kalunra',
     },
     multiplayer: {
       title: 'Vensha-Kalyra',

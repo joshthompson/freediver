@@ -56,6 +56,7 @@ interface DiverControllerProps {
   oxygenUse?: (depth: number) => number // Multiplies how fast oxygen runs down. 0 for none
   spaceEqualises?: boolean // Whether holding Space equalises and blows bubbles. Defaults to true
   canSurface?: boolean // When false there's a ceiling instead of the surface. Defaults to true
+  bubbles?: boolean // Whether breathing out makes bubbles. False where there's no water. Defaults to true
   goToSurface?: (x: number) => void
   blackout?: () => void
 }
@@ -104,6 +105,7 @@ function createDiver(id: string, props: DiverControllerProps) {
   const goToSurface = props.goToSurface ?? (() => {})
   const blackout = props.blackout ?? (() => {})
   const equalise = props.equalise ?? !props.canBreathe
+  const bubbles = props.bubbles ?? true
   let blackedOut = false
 
   return createController(
@@ -196,7 +198,7 @@ function createDiver(id: string, props: DiverControllerProps) {
           $.setFrameInterval(250 - 150 * ($.speed() / maxSpeed))
           $.setXScale($.rotation() > 0 ? 1 : -1)
           $.setBubbleLevel($.bubbleLevel() + Math.abs($.speed()) / 3 + 0.5)
-          if ($.bubbleLevel() > bubbleFrequency) {
+          if (bubbles && $.bubbleLevel() > bubbleFrequency) {
             $.setBubbleLevel(0)
             $scene.addController($.makeBubble(0, 0))
           }
@@ -287,7 +289,7 @@ function createDiver(id: string, props: DiverControllerProps) {
         }
 
         $.setBubbleLevel($.bubbleLevel() + Math.abs($.speed()) / 3 + 0.5)
-        if ($.bubbleLevel() > bubbleFrequency) {
+        if (bubbles && $.bubbleLevel() > bubbleFrequency) {
           $.setBubbleLevel(0)
           $scene.addController($.makeBubble(0, 0))
         }
@@ -304,7 +306,7 @@ function createDiver(id: string, props: DiverControllerProps) {
           if ($.holdSpace() === $.holdSpaceMax) {
             if ($.depth() < 2) $scene.gameStateActions.achievement('prequalisation')
             $.setEqLevel(0)
-            Array(10).fill(null).forEach(() => {
+            if (bubbles) Array(10).fill(null).forEach(() => {
               $scene.addController($.makeBubble(0, 0, Math.random() * 2 - 1, Math.random() * 2 - 1))
             })
           }
@@ -330,14 +332,21 @@ function createDiverHead(diver: DiverController, skin: DiverSkin) {
   })
 }
 
+// The body sheet's 136×315 frames have 10px of empty space around them (scripts/pad-sprite-sheet.mjs),
+// so the sprite is drawn that much bigger on every side, keeping the body the diver's height
+const bodyFrame = { width: 136, height: 315, padding: 10 }
+const bodyScale = 157 / bodyFrame.height
+const bodyPadding = bodyFrame.padding * bodyScale
+const bodyCell = { width: bodyFrame.width + bodyFrame.padding * 2, height: bodyFrame.height + bodyFrame.padding * 2 }
+
 function createDiverBody(diver: DiverController, skin: DiverSkin) {
   return createConnectedController({
     type: 'body',
     base: diver,
-    frames: generateFrames(skin.body, 952 / 7, 315, 68, 7),
-    width: diver.data.width,
-    height: diver.data.height,
-    offset: { x: 0, y: 0 },
+    frames: generateFrames(skin.body, bodyCell.width, bodyCell.height, bodyCell.width * bodyScale, 7),
+    width: () => bodyCell.width * bodyScale,
+    height: () => bodyCell.height * bodyScale,
+    offset: { x: -bodyPadding, y: -bodyPadding },
     init: () => ({
       state: diver.data.state,
       frameInterval: diver.data.frameInterval,

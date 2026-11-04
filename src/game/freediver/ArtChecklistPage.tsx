@@ -13,18 +13,35 @@ const assetUrls = Object.fromEntries(
 
 interface ArtFile {
   path: string
-  url: string
   origin: string
+  images: { name: string, url: string }[] // The placeholder, or the versions that replaced it
+  versions: boolean
   bytes: number
   replaced: boolean
 }
 
+// Numbered versions beside a placeholder replace it, e.g. asteroid1.png, asteroid2.png for asteroid.png
+const versionsOf = (path: string) => {
+  const base = path.replace(/\.png$/, '')
+  return Object.keys(assetUrls).filter(other => other.startsWith(base) && /^\d+\.png$/.test(other.slice(base.length))).sort()
+}
+
+const sizeOf = async (url: string) => (await (await fetch(url, { cache: 'no-store' })).blob()).size
+
 // Reads each file's current size, which differs from the generated one once it's been replaced
 async function loadArt(): Promise<ArtFile[]> {
   return Promise.all(PlaceholderArt.map(async art => {
-    const url = assetUrls[art.path]
-    const bytes = url ? (await (await fetch(url, { cache: 'no-store' })).blob()).size : 0
-    return { ...art, url, bytes, replaced: bytes !== art.bytes }
+    const versions = versionsOf(art.path)
+    const paths = versions.length ? versions : [art.path].filter(path => assetUrls[path])
+    const images = paths.map(path => ({ name: path.split('/').at(-1)!, url: assetUrls[path] }))
+    const bytes = (await Promise.all(images.map(image => sizeOf(image.url)))).reduce((a, b) => a + b, 0)
+    return {
+      ...art,
+      images,
+      versions: versions.length > 0,
+      bytes,
+      replaced: versions.length > 0 || bytes !== art.bytes,
+    }
   }))
 }
 
@@ -68,18 +85,29 @@ export const ArtChecklistPage: Component = () => {
 }
 
 const ArtRow = (props: { file: ArtFile }) => {
-  const [dimensions, setDimensions] = createSignal('')
+  const [dimensions, setDimensions] = createSignal<Record<string, string>>({})
   return <div class={styles.row({ replaced: props.file.replaced })}>
     <div class={styles.preview}>
-      <img
-        src={props.file.url}
-        class={styles.image}
-        onLoad={event => setDimensions(`${event.currentTarget.naturalWidth} × ${event.currentTarget.naturalHeight} px`)}
-      />
+      <For each={props.file.images}>
+        {image => <img
+          src={image.url}
+          class={styles.image}
+          onLoad={event => {
+            const { naturalWidth, naturalHeight } = event.currentTarget
+            setDimensions(all => ({ ...all, [image.name]: `${naturalWidth} × ${naturalHeight}` }))
+          }}
+        />}
+      </For>
     </div>
     <div class={styles.details}>
       <div class={styles.name}>{props.file.path.split('/').at(-1)}</div>
-      <div>{dimensions()} · {(props.file.bytes / 1024).toFixed(1)} KB</div>
+      <Show when={props.file.versions}>
+        <div class={styles.name}>Now {props.file.images.map(image => image.name).join(', ')}</div>
+      </Show>
+      <div>
+        {props.file.images.map(image => dimensions()[image.name]).filter(Boolean).join(', ')} px
+        · {(props.file.bytes / 1024).toFixed(1)} KB
+      </div>
       <div class={styles.origin}>{props.file.origin}</div>
     </div>
     <div class={styles.status({ replaced: props.file.replaced })}>
@@ -147,11 +175,13 @@ const styles = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
+    gap: '2px',
     borderRadius: '6px',
     // A checkerboard so transparent parts show
     background: 'repeating-conic-gradient(#9a9a9a 0 25%, #d0d0d0 0 50%) 0 0 / 12px 12px',
   }),
   image: css({
+    minWidth: 0, // Lets several versions share the preview
     maxWidth: '100%',
     maxHeight: '100%',
     objectFit: 'contain',

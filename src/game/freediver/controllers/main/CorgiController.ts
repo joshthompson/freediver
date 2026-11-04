@@ -38,6 +38,7 @@ export function createCorgiController(
     diverId?: string // The diver to follow. Defaults to 'diver'
     skin?: string // The sprite sheet, so multiplayer can give each Player's corgi their suit colour
     crown?: boolean // Whether to wear the crown once the Corgi King hands it over. Defaults to true
+    bubbles?: boolean // Whether swimming makes bubbles. False where there's no water. Defaults to true
     puppet?: () => CorgiPose | undefined // Copies these poses instead of following a diver
   },
 ) {
@@ -58,6 +59,7 @@ export function createCorgiController(
         ...createObjectSignal(250, 'frameInterval'),
         ...createObjectSignal(bubbleFrequency / 2, 'bubbleLevel'),
         acceleration: 0.15,
+        bubbles: props.bubbles ?? true,
         width: () => 70,
         height: () => 44,
         state: () => 'play',
@@ -166,6 +168,7 @@ export function createCorgiController(
 }
 
 function makeBubbles($: CorgiController['data'], $scene: Scene) {
+  if (!$.bubbles) return
   $.setBubbleLevel($.bubbleLevel() + $.speed() / 4 + 0.5)
   if ($.bubbleLevel() > bubbleFrequency) {
     $.setBubbleLevel(0)

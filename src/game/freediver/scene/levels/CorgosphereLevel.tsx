@@ -8,6 +8,7 @@ import {
   createAsteroidController,
   createDrifterController,
   createSpaceJellyfishController,
+  createSpaceOctopusController,
   createSpaceUrchinController,
 } from '../../controllers/realm/SpaceControllers'
 import {
@@ -24,9 +25,11 @@ import {
 
 const bounds = { x: 0, y: 0, width: 4200, height: 2100 }
 
-// Oxygen in an Air Pocket fills from empty in about 2s, and outside one it runs out in about 10s
+// Oxygen in an Air Pocket fills from empty in about 2s, and outside one it runs out in about 3s.
+// At full speed that's about 750px, enough for the widest gap between pockets (about 280px)
+// with time to dodge, but not to wander far from the path
 const refillPerFrame = 100 / seconds(2)
-const drainPerFrame = 100 / seconds(10)
+const drainPerFrame = 100 / seconds(3)
 
 // The maze of Air Pockets, as [x, y, radius], snaking right, back left and right again
 const pockets: [number, number, number][] = [
@@ -85,6 +88,7 @@ export function CorgosphereLevel(props: RealmLevelProps): RealmLevel {
         bounds,
         entry: { x: pockets[0][0], y: pockets[0][1] },
         diver: { equalise: false, oxygenUse: () => 0 },
+        bubbles: false, // It's space
       })
 
       const guide = addRealmGuide($scene, {
@@ -108,6 +112,12 @@ export function CorgosphereLevel(props: RealmLevelProps): RealmLevel {
       urchins.forEach((point, n) => $scene.addController(createSpaceUrchinController('space-urchin-' + n, point)))
       asteroids.forEach((asteroid, n) => $scene.addController(createAsteroidController('asteroid-' + n, asteroid)))
       jellyfish.forEach((point, n) => $scene.addController(createSpaceJellyfishController('space-jellyfish-' + n, point)))
+
+      Array(10).fill(null).forEach((_, n) => $scene.addController(createSpaceOctopusController('space-octopus-' + n, {
+        x: bounds.x + 200 + Math.random() * (bounds.width - 400),
+        y: bounds.y + 200 + Math.random() * (bounds.height - 400),
+        bounds,
+      })))
 
       Array(14).fill(null).forEach((_, n) => {
         const fish = n % 2 === 0
@@ -139,7 +149,7 @@ export function CorgosphereLevel(props: RealmLevelProps): RealmLevel {
       ['crystal-corgi'],
       ['corgi', 'diver'],
       ['realm-guide'],
-      ['drifter'],
+      ['drifter', 'space-octopus'],
       ['air-pocket'],
       ['portal-vortex', 'portal'],
     ],
