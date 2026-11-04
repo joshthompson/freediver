@@ -15,7 +15,7 @@ const pickUpDistance = 45
 const corgiSize = { width: 70, height: 44 }
 
 // A glass corgi statue. Linkosha fetches it at the end of a realm, carries it home and sets it on its Plinth.
-// On a replay it's a see-through ghost that Linkosha only noses at
+// On a replay it's a see-through ghost, still carried so you can see it's been found
 export function createCrystalCorgiController(id: string, props: {
   realm: RealmName
   x: number
@@ -89,7 +89,7 @@ export function createCrystalCorgiController(id: string, props: {
         if (corgiDistance < callDistance) $.setCorgiTarget(towards(center))
         if (corgiDistance < pickUpDistance) {
           $.setFound(true)
-          if (!props.ghost) $.setStage('carried')
+          $.setStage('carried')
           props.onFound?.()
         }
       } else if ($.stage() === 'carried' || $.stage() === 'delivering') {

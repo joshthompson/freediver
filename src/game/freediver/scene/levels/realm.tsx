@@ -141,7 +141,7 @@ export function addRealmGuide($scene: Scene, options: {
 }
 
 // The Crystal Corgi and the Exit Portal beside it, which opens once Linkosha has found it.
-// On a first visit it only counts once Linkosha carries it through
+// It only counts once Linkosha carries it through, and only on a first visit
 export function addRealmFinish($scene: Scene, realm: Realm, options: {
   crystal: Vector // Top left of the Crystal Corgi
   exit: Vector // The Exit Portal's centre

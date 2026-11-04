@@ -287,7 +287,8 @@ export function KingdomLevel(props: {
         0 0
       `,
       'background-repeat': 'repeat-x',
-      'background-size': '700px 200px, 658px 104px, 1000px 700px, 1400px 700px, cover, cover, cover',
+      // The back and mid layers keep their art's own proportions
+      'background-size': '700px 200px, 658px 104px, auto 700px, auto 700px, cover, cover, cover',
     } satisfies JSX.CSSProperties
   }
 
