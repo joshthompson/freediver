@@ -1,6 +1,7 @@
 import { createSignal } from 'solid-js'
 import { RoomSession } from './room'
 import { lobby } from './lobby'
+import { mic } from './mic'
 import { cleanName } from './roster'
 import { MAX_ROOM_NAME_LENGTH, MAX_USERNAME_LENGTH, RoomAnnouncement } from './protocol'
 
@@ -62,4 +63,5 @@ export function leaveRoom() {
 export function leaveMultiplayer() {
   leaveRoom()
   lobby.disconnect()
+  mic.release()
 }

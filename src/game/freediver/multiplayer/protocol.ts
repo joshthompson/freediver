@@ -2,7 +2,7 @@ import type { DiverPose } from '../controllers/main/DiverController'
 import type { CorgiPose } from '../controllers/main/CorgiController'
 
 // Bump whenever messages change shape. Players only see Rooms on their own version
-export const PROTOCOL_VERSION = 1
+export const PROTOCOL_VERSION = 2
 export const APP_ID = 'freediver-multiplayer'
 export const LOBBY_ROOM_ID = `lobby-v${PROTOCOL_VERSION}`
 
@@ -15,6 +15,12 @@ export const ANNOUNCE_INTERVAL = 2000 // How often a Host announces its Room in 
 export const ANNOUNCE_EXPIRY = 7000 // A Room leaves the Lobby list once its announcements stop for this long
 export const PLAYER_TIMEOUT = 5000 // The Host drops a Player who sends nothing for this long
 export const JOIN_TIMEOUT = 15000 // Give up joining a Room whose Host never answers
+
+// Voice Chat distances, from one Diver to another. The game is 700px wide
+export const FULL_VOLUME_DISTANCE = 350
+export const EARSHOT = 900 // Silent from here
+export const LISTEN_DISTANCE = 1100 // Ask for a Player's audio a little before they're audible
+export const STOP_LISTENING_DISTANCE = 1300 // Further than LISTEN_DISTANCE, so it doesn't flick on and off
 
 // Teal is the original art, so the Host looks like the single-player diver
 export const SlotColours = ['teal', 'red', 'yellow', 'pink'] as const

@@ -10,6 +10,10 @@ import { isMobileBrowser } from '@/utils/game'
 import { bubbleStyle } from './BackgroundDialog'
 import { Button } from './Button'
 import { Options } from './Options'
+import { Tooltip } from './Tooltip'
+import { MicCheck } from './MicCheck'
+import { MicIcon, SpeakerIcon } from './VoiceIcons'
+import { mic } from '../multiplayer/mic'
 
 // Keeps bubbles (max 200px wide) and their tails inside the screen, as Background Dialog does
 const edgeX = 110
@@ -73,12 +77,18 @@ export const RoomOverlay: Component<{ scene: Scene, session: RoomSession, leave:
             <div
               class={styles.tag}
               style={{ left: `${place().x}px`, top: `${Math.max(place().y - tagAbove, minTagTop)}px`, color: colourOf(player) }}
-            >{displayName(player)}</div>
+            >
+              {displayName(player)}
+              <Show when={props.session.voice.speaking(player.id)}><SpeakerIcon /></Show>
+            </div>
           </Show>
           <Show when={!place().onScreen}>
             <div class={styles.pointer} style={{ left: `${place().x}px`, top: `${place().y}px`, color: colourOf(player) }}>
               <div class={styles.arrow} style={{ rotate: `${place().angle}deg` }} />
-              <div class={styles.pointerName}>{displayName(player)}</div>
+              <div class={styles.pointerName}>
+                {displayName(player)}
+                <Show when={props.session.voice.speaking(player.id)}><SpeakerIcon /></Show>
+              </div>
             </div>
           </Show>
         </>}
@@ -101,8 +111,9 @@ export const RoomOverlay: Component<{ scene: Scene, session: RoomSession, leave:
     <Show when={!isMobileBrowser()}>
       <ChatField session={props.session} placeholder={t().chatPlaceholder} hint={t().chatHint} />
     </Show>
+    <MicButton scene={props.scene} />
     <Show when={props.scene.paused.get()}>
-      <RoomPauseMenu scene={props.scene} leave={props.leave} />
+      <RoomPauseMenu scene={props.scene} session={props.session} leave={props.leave} />
     </Show>
   </>
 }
@@ -150,12 +161,51 @@ const ChatField: Component<{ session: RoomSession, placeholder: string, hint: st
   </Show>
 }
 
-const RoomPauseMenu: Component<{ scene: Scene, leave: () => void }> = props => {
+// Turns your microphone on and off for Voice Chat. M does the same on a keyboard
+const MicButton: Component<{ scene: Scene }> = props => {
+  const t = () => Translations[props.scene.gameState.options.locale].multiplayer
+  const unusable = () => mic.status() === 'blocked' || mic.status() === 'unavailable'
+
+  const onWindowKeydown = (event: KeyboardEvent) => {
+    if (event.key.toLowerCase() !== 'm' || event.repeat || event.target instanceof HTMLInputElement) return
+    mic.toggle()
+  }
+  onMount(() => window.addEventListener('keydown', onWindowKeydown))
+  onCleanup(() => window.removeEventListener('keydown', onWindowKeydown))
+
+  return <div class={styles.micButton}>
+    <Tooltip
+      content={mic.status() === 'blocked' ? t().micBlocked : t().micUnavailable}
+      disabled={!unusable()}
+    >
+      <button
+        class={styles.micButtonInner}
+        data-off={mic.status() !== 'on' || undefined}
+        aria-label={mic.status() === 'on' ? t().micOn : t().micOff}
+        onClick={event => {
+          event.stopPropagation()
+          mic.toggle()
+        }}
+      >
+        <MicIcon crossed={mic.status() !== 'on' && mic.status() !== 'asking'} />
+      </button>
+    </Tooltip>
+  </div>
+}
+
+const RoomPauseMenu: Component<{ scene: Scene, session: RoomSession, leave: () => void }> = props => {
   const t = () => Translations[props.scene.gameState.options.locale]
+  const others = () => props.session.roster().filter(p => p.id !== props.session.selfId)
   return <div class={styles.paused}>
     <div>{t().pause.title}</div>
     <Button onClick={() => props.scene.togglePause()} size="small">{t().pause.resume}</Button>
     <Options mode="pause" achievements={false} />
+    <MicCheck />
+    <For each={others()}>
+      {player => <Button onClick={() => props.session.voice.toggleMute(player.id)} size="small">
+        {props.session.voice.muted(player.id) ? t().multiplayer.unmute(displayName(player)) : t().multiplayer.mute(displayName(player))}
+      </Button>}
+    </For>
     <Button onClick={() => props.leave()} size="small">{t().multiplayer.leaveRoom}</Button>
   </div>
 }
@@ -218,7 +268,7 @@ const styles = {
     position: 'absolute',
     bottom: '10px',
     left: '10px',
-    right: '10px',
+    right: '64px', // Clear of the Mic Button
     p: '6px 10px',
     fontSize: '18px',
     fontFamily: 'inherit',
@@ -227,6 +277,27 @@ const styles = {
     border: '2px solid black',
     borderRadius: '10px',
     outline: 'none',
+  }),
+  micButton: css({
+    position: 'absolute',
+    bottom: '8px',
+    right: '10px',
+  }),
+  micButtonInner: css({
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '44px',
+    height: '44px',
+    color: 'white',
+    background: 'rgba(0, 0, 0, 0.5)',
+    border: '2px solid black',
+    borderRadius: '50%',
+    cursor: 'pointer',
+    filter: 'drop-shadow(0 0 2px black)',
+    '&[data-off]': {
+      color: '#FF8A8A',
+    },
   }),
   paused: css({
     position: 'absolute',

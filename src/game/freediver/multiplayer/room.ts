@@ -4,6 +4,7 @@ import { Action, createAction, joinTrysteroRoom, selfId } from './net'
 import { lobby } from './lobby'
 import { PoseBuffer } from './interpolate'
 import { cleanName, seatPlayer } from './roster'
+import { VoiceChat } from './voice'
 import {
   displayName,
   JOIN_TIMEOUT,
@@ -42,6 +43,7 @@ export class RoomSession {
   readonly isHost: boolean
   readonly roomId: string
   readonly hostId: string
+  readonly voice: VoiceChat
 
   #room: Room
   #status = createSignal<RoomStatus>('joining')
@@ -77,6 +79,7 @@ export class RoomSession {
 
     const room = joinTrysteroRoom(this.roomId)
     this.#room = room
+    this.voice = new VoiceChat(room, id => id !== selfId && this.roster().some(p => p.id === id))
 
     this.#hello = createAction<{ username: string }>(room, 'hello', (data, peerId) => this.#onHello(data, peerId))
     this.#rosterAction = createAction<PlayerInfo[]>(room, 'roster', (data, peerId) => this.#onRoster(data, peerId))
@@ -242,10 +245,12 @@ export class RoomSession {
     }
     before.filter(b => !roster.some(p => p.id === b.id)).forEach(p => {
       this.#poses.delete(p.id)
+      this.voice.forget(p.id)
       const { [p.id]: _, ...rest } = this.chat()
       this.#chat[1](rest)
     })
     this.#roster[1](roster)
+    this.voice.refreshSending()
     if (this.isHost) this.#rosterAction.send(roster, this.#others())
   }
 
@@ -264,6 +269,7 @@ export class RoomSession {
     this.#timers.forEach(timer => window.clearTimeout(timer))
     this.#chatTimers.forEach(timer => window.clearTimeout(timer))
     if (this.isHost) lobby.stopHosting()
+    this.voice.end()
     // Give the Host's goodbye a moment to reach everyone
     window.setTimeout(() => this.#room.leave(), this.isHost ? 500 : 0)
   }

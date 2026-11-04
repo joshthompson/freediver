@@ -11,12 +11,18 @@ import { OCEAN } from "./data"
 import { RoomSession } from "../../multiplayer/room"
 import { skinFor } from "../../multiplayer/skins"
 import { SlotColours } from "../../multiplayer/protocol"
+import type { Point } from "../../multiplayer/voice"
 
 const start = { x: 0, y: 15, rotation: 180 }
 const sendEvery = 2 // Frames between pose updates, about 12 a second
 
 export const puppetDiverId = (playerId: string) => `puppet-${playerId}`
 export const puppetCorgiId = (playerId: string) => `puppet-${playerId}-corgi`
+
+const centreOf = (diver: DiverController): Point => ({
+  x: diver.data.x() + diver.data.width() / 2,
+  y: diver.data.y() + diver.data.height() / 2,
+})
 
 // The ocean of the first dive with every Character, creature and item taken out. Rooms take place here.
 // It never touches the single-player save: no oxygen, no equalising, no surfacing and no score
@@ -61,6 +67,13 @@ export function EmptyOceanLevel(props: { session: RoomSession }) {
       if (frame++ % sendEvery === 0) {
         props.session.sendPose({ diver: readDiverPose(diver), corgi: readCorgiPose(corgi) })
       }
+
+      const others = new Map<string, Point>()
+      props.session.roster().forEach(player => {
+        const puppet = $scene.getControllerById<DiverController>(puppetDiverId(player.id))
+        if (puppet) others.set(player.id, centreOf(puppet))
+      })
+      props.session.voice.update(centreOf(diver), others, state.gameState.options.volume)
     },
     // Your own diver and corgi are drawn in front of Puppets
     assetOrder: [

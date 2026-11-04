@@ -6,6 +6,8 @@ import { useGameState } from '@/utils/GameStateContext'
 import { Translations } from '@/game/freediver/data/Translations'
 import { menu1Asset } from '@/assets'
 import { Button } from '../ui/Button'
+import { MicCheck } from '../ui/MicCheck'
+import { mic } from '../multiplayer/mic'
 import { lobby } from '../multiplayer/lobby'
 import { createRoom, currentRoom, joinRoom, leaveMultiplayer, setUsername, username, validUsername } from '../multiplayer/session'
 import { EndReason } from '../multiplayer/room'
@@ -24,6 +26,8 @@ export const LobbyScene: SceneComponent = props => {
   const t = () => Translations[scene.gameState.options.locale]
 
   lobby.connect()
+  // The switch below sets whether the mic is on in the Room you create or join
+  mic.restore()
 
   const [roomName, setRoomName] = createSignal('')
   const [joining, setJoining] = createSignal(false)
@@ -83,6 +87,8 @@ export const LobbyScene: SceneComponent = props => {
             onInput={event => setUsername(event.currentTarget.value)}
           />
         </label>
+
+        <MicCheck />
 
         <div class={styles.rooms}>
           <For each={lobby.rooms()} fallback={<div class={styles.empty}>{t().multiplayer.noRooms}</div>}>

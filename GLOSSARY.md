@@ -127,6 +127,22 @@ _Avoid_: Background Dialog (for player-typed lines), whisper
 An arrow at the edge of the screen showing which way an off-screen Puppet is, in that Player's colour and labelled with their Display Name.
 _Avoid_: Indicator, marker, compass
 
+**Voice Chat**:
+Players in a Room hearing each other's microphones, louder the nearer their Divers are.
+_Avoid_: Proximity chat, voice, VoIP
+
+**Earshot**:
+How near another Player's Diver must be to yours for you to hear their Voice Chat.
+_Avoid_: Hearing range, range, proximity
+
+**Mic Button**:
+The button in the corner of the screen that turns your microphone on or off for Voice Chat.
+_Avoid_: Mute button
+
+**Mic Check**:
+The panel where you choose your microphone and see it picking up sound, in the Lobby and the Room pause menu.
+_Avoid_: Mic test, audio settings
+
 **Empty Ocean**:
 The ocean of the first dive with every Character, creature and item taken out, where Rooms take place.
 _Avoid_: First level, multiplayer level
