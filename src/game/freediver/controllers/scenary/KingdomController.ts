@@ -15,7 +15,8 @@ import {
 import { createConnectedController, createController } from '@/engine'
 import { createObjectSignal } from '@/engine/utils'
 import { Sprite } from '@/engine/components/Sprite'
-import { generateFrames } from '@/utils'
+import { generateSheetFrames } from '@/utils'
+import { corgiSheet } from '../main/CorgiController'
 import { DiverController } from '../main/DiverController'
 import { CorgiCitizenBackgroundDialogLines, KingQuest, KingReminderBackgroundDialogLines, OldKingBackgroundDialogLines } from '../../data/Dialogs'
 import { createBackgroundDialogTrigger } from '../utils/BackgroundDialogTrigger'
@@ -97,6 +98,8 @@ export function createKingdomBannerController(id: string, props: { x: number, co
   })
 }
 
+const lanternGlow = 20 // Room either side of the lantern's art for its glow
+
 export function createKingdomLanternController(id: string, props: { x: number }) {
   return createController({
     frames: [kingdomLanternAsset],
@@ -104,14 +107,16 @@ export function createKingdomLanternController(id: string, props: { x: number })
       return {
         id,
         type: 'kingdom-lantern',
-        x: () => props.x,
+        x: () => props.x - lanternGlow,
         y: () => ceilingY,
-        width: () => 60,
+        width: () => 60 + lanternGlow * 2,
         height: () => 150,
       }
     },
   })
 }
+
+const coralGlow = 20 // Room either side of the coral's art for its glow
 
 export function createGlowCoralController(id: string, props: { x: number, scale?: number, hue?: number }) {
   const scale = props.scale ?? 1
@@ -123,10 +128,11 @@ export function createGlowCoralController(id: string, props: { x: number, scale?
       return {
         id,
         type: 'glow-coral',
-        x: () => props.x,
+        x: () => props.x - coralGlow * scale,
         y: () => floorY - 10 - height,
-        width: () => 90 * scale,
-        height: () => height,
+        width: () => (90 + coralGlow * 2) * scale,
+        // A little taller than the art, so the rock it sits on isn't cut off at the bottom
+        height: () => 84 * scale,
         style: () => ({ filter: `hue-rotate(${props.hue ?? 0}deg)` }),
       }
     },
@@ -169,7 +175,7 @@ export function createCorgiKingController(id: string, props: {
   const height = 75
 
   const king = createController({
-    frames: generateFrames(kingdomCorgiKingAsset, 634, 394, width, 3, true),
+    frames: generateSheetFrames(kingdomCorgiKingAsset, corgiSheet, height),
     init() {
       return {
         id,
@@ -268,7 +274,7 @@ export function createCorgiCitizenController(id: string, props: {
   const asset = props.breed === 'cardigan' ? kingdomCorgiCardiganAsset : kingdomCorgiAsset
 
   return createController({
-    frames: generateFrames(asset, 634, 394, 70 * scale, 3, true),
+    frames: generateSheetFrames(asset, corgiSheet, 44 * scale),
     randomStartFrame: true,
     init() {
       return {

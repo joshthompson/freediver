@@ -6,6 +6,7 @@ import {
 import { createController } from '@/engine'
 import { createObjectSignal } from '@/engine/utils'
 import { getDiver, hitDiverIfTouching, touchesDiver } from './Hazard'
+import { effects } from '../../music/effects'
 
 // Generous, since the diver is long and only their middle is checked
 const grabRadius = 50
@@ -121,7 +122,9 @@ export function createEggBulletController(id: string, props: Vector & { velocity
       const y = $.y() + height / 2
       const outside = x < bounds.x - 100 || x > bounds.x + bounds.width + 100
         || y < bounds.y - 100 || y > bounds.y + bounds.height + 100
-      if (hitDiverIfTouching($scene, x, y, 11) || outside || $age > 250) {
+      const hit = hitDiverIfTouching($scene, x, y, 11)
+      if (hit) effects.eggSplat()
+      if (hit || outside || $age > 250) {
         $scene.removeController($.id)
       }
     },

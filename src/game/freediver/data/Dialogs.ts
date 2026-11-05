@@ -15,30 +15,33 @@ import {
   scrambledEggMonsterHappyAsset,
   spaceCorgiDialogAsset,
 } from '@/assets'
-import { DialogMessage, Localised } from '@/utils/game'
+import { DialogMessage, Localised, SpeechSound } from '@/utils/game'
 import { RealmName } from './Realms'
 
 // Every line in English, Russian, Swedish and Fvelyntari
 const say = (en: string, ru: string, sv: string, fl: string): Localised => ({ en, ru, sv, fl })
 
+// How a character sounds as their lines type out: their pitch in Hz, the wave, and how each beep bends
+const speech = (pitch: number, wave: OscillatorType, slide?: number, volume?: number): SpeechSound => ({ pitch, wave, slide, volume })
+
 const woof = say('Woof woof!', 'Гав-гав!', 'Voff voff!', 'Wuf wuf!')
 const woofQuestion = say('Woof?', 'Гав?', 'Voff?', 'Wuf?')
 
-const cow = { speaker: say('Wanda the Cow', 'Корова Ванда', 'Kossan Wanda', 'Wanda Kavur'), image: cowDialogAsset }
-const link = { speaker: say('Linkosha', 'Линкоша', 'Linkosha', 'Linkosha'), image: linkDialogAsset }
-const manateeSad = { speaker: say('Manny the Manatee', 'Ламантин Мэнни', 'Manaten Manny', 'Manny Morvakel'), image: manateeSadDialogAsset }
+const cow = { speaker: say('Wanda the Cow', 'Корова Ванда', 'Kossan Wanda', 'Wanda Kavur'), image: cowDialogAsset, speechSound: speech(150, 'sawtooth', 0.8) }
+const link = { speaker: say('Linkosha', 'Линкоша', 'Linkosha', 'Linkosha'), image: linkDialogAsset, speechSound: speech(640, 'square', 1.2) }
+const manateeSad = { speaker: say('Manny the Manatee', 'Ламантин Мэнни', 'Manaten Manny', 'Manny Morvakel'), image: manateeSadDialogAsset, speechSound: speech(115, 'sine', 0.9) }
 const manateeHappy = { ...manateeSad, image: manateeHappyDialogAsset }
-const king = { speaker: say('The Corgi King', 'Король Корги', 'Corgikungen', 'Korli Kalun'), image: kingDialogAsset }
+const king = { speaker: say('The Corgi King', 'Король Корги', 'Corgikungen', 'Korli Kalun'), image: kingDialogAsset, speechSound: speech(210, 'triangle', 1, 2) }
 // Realm Guide names are placeholders until they're named properly
-const cosmo = { speaker: say('Cosmo the Space Corgi', 'Космо, космический корги', 'Rymdcorgin Cosmo', 'Cosmo Estrel-korli'), image: spaceCorgiDialogAsset }
-const chum = { speaker: say('Captain Chum', 'Капитан Прикорм', 'Kapten Agn', 'Kaptal Chum'), image: captainChumDialogAsset }
-const yolko = { speaker: say('Yolko the Eggy Corgi', 'Желток, яичный корги', 'Äggcorgin Yolko', 'Yolko Esh-korli'), image: eggyCorgiDialogAsset }
-const fathom = { speaker: say('Judge Fathom', 'Судья Глубин', 'Domare Famn', 'Drekun Fathom'), image: judgeCorgiDialogAsset }
-const ember = { speaker: say('Ember', 'Уголёк', 'Glöd', 'Ember'), image: hellCorgiDialogAsset }
-const eggMonster = { speaker: say('The Scrambled Egg Monster', 'Монстр-Омлет', 'Äggröremonstret', 'Eshrova Morgul'), image: scrambledEggMonsterAsset }
+const cosmo = { speaker: say('Cosmo the Space Corgi', 'Космо, космический корги', 'Rymdcorgin Cosmo', 'Cosmo Estrel-korli'), image: spaceCorgiDialogAsset, speechSound: speech(720, 'sine', 1.4) }
+const chum = { speaker: say('Captain Chum', 'Капитан Прикорм', 'Kapten Agn', 'Kaptal Chum'), image: captainChumDialogAsset, speechSound: speech(175, 'sawtooth') }
+const yolko = { speaker: say('Yolko the Eggy Corgi', 'Желток, яичный корги', 'Äggcorgin Yolko', 'Yolko Esh-korli'), image: eggyCorgiDialogAsset, speechSound: speech(900, 'square', 1.25) }
+const fathom = { speaker: say('Judge Fathom', 'Судья Глубин', 'Domare Famn', 'Drekun Fathom'), image: judgeCorgiDialogAsset, speechSound: speech(300, 'sine') }
+const ember = { speaker: say('Ember', 'Уголёк', 'Glöd', 'Ember'), image: hellCorgiDialogAsset, speechSound: speech(430, 'sawtooth', 1.1) }
+const eggMonster = { speaker: say('The Scrambled Egg Monster', 'Монстр-Омлет', 'Äggröremonstret', 'Eshrova Morgul'), image: scrambledEggMonsterAsset, speechSound: speech(95, 'sawtooth', 0.6) }
 const eggMonsterHappy = { ...eggMonster, image: scrambledEggMonsterHappyAsset }
-const demon = { speaker: say('The Demon Corgi Fish', 'Демон корги-рыба', 'Demoncorgifisken', 'Vashkur Korlishol'), image: demonCorgiFishAsset }
-const devil = { speaker: say('The Devil Corgi Fish', 'Дьявольская корги-рыба', 'Djävulscorgifisken', 'Vashkalun Korlishol'), image: devilCorgiFishAsset }
+const demon = { speaker: say('The Demon Corgi Fish', 'Демон корги-рыба', 'Demoncorgifisken', 'Vashkur Korlishol'), image: demonCorgiFishAsset, speechSound: speech(520, 'sawtooth', 0.75) }
+const devil = { speaker: say('The Devil Corgi Fish', 'Дьявольская корги-рыба', 'Djävulscorgifisken', 'Vashkalun Korlishol'), image: devilCorgiFishAsset, speechSound: speech(70, 'sawtooth', 0.7) }
 const devilFriend = { ...devil, image: devilCorgiFishHappyAsset }
 
 export const CowQuest = {

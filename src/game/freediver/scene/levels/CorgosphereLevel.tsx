@@ -190,5 +190,5 @@ export function CorgosphereLevel(props: RealmLevelProps): RealmLevel {
     } satisfies JSX.CSSProperties
   }
 
-  return { scene, style }
+  return { scene, style, music: () => 'corgosphere' }
 }

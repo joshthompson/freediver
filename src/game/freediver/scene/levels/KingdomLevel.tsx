@@ -219,7 +219,9 @@ export function KingdomLevel(props: {
         'bubble',
       ],
       [
+        // Together, so you never swim between a Crystal Corgi and its Plinth
         'crystal-corgi',
+        'plinth',
         'corgi',
         'diver',
       ],
@@ -228,7 +230,6 @@ export function KingdomLevel(props: {
         'corgi-king',
       ],
       [
-        'plinth',
         'kingdom-throne',
         'glow-coral',
         'kingdom-banner',

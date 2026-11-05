@@ -95,23 +95,35 @@ export function createSteamVentController(id: string, props: Vector & {
   return [steam, vent] as const
 }
 
-// Swims back and forth between two points. A Hazard
+const turnRate = 0.12 // How much of the rest of the way round a Hell fish turns each frame
+
+// Swims back and forth between two points, nose first, turning round at each end. A Hazard
 export function createHellFishController(id: string, props: { from: Vector, to: Vector, speed?: number }) {
   const width = 90
   const height = 50
   const speed = props.speed ?? 0.008
   const phase = Math.random() * Math.PI * 2
+  const travel = { x: props.to.x - props.from.x, y: props.to.y - props.from.y }
+  const sideToSide = Math.abs(travel.x) > Math.abs(travel.y)
+  // Which way it's heading, in degrees clockwise from facing right
+  const headingAt = (phase: number) => Math.atan2(travel.y * Math.sin(phase), travel.x * Math.sin(phase)) * 180 / Math.PI
 
   return createController({
     frames: [hellFishAsset],
     init() {
+      const heading = createObjectSignal(headingAt(phase), 'heading')
+      // The trigger fish art it's tinted from faces right. Heading left, it's mirrored rather than
+      // turned upside down
+      const facingLeft = () => Math.abs(heading.heading()) > 90
       return {
         id,
         type: 'hell-fish',
         ...createObjectSignal(props.from.x, 'x'),
         ...createObjectSignal(props.from.y, 'y'),
-        ...createObjectSignal(1, 'xScale'),
         ...createObjectSignal(phase, 'phase'),
+        ...heading,
+        xScale: () => facingLeft() ? -1 : 1,
+        rotation: () => facingLeft() ? heading.heading() - 180 * Math.sign(heading.heading()) : heading.heading(),
         width: () => width,
         height: () => height,
       }
@@ -119,10 +131,12 @@ export function createHellFishController(id: string, props: { from: Vector, to: 
     onEnterFrame({ $, $scene }) {
       $.setPhase($.phase() + speed * Math.PI * 2)
       const t = (1 - Math.cos($.phase())) / 2
-      const x = props.from.x + (props.to.x - props.from.x) * t
-      const y = props.from.y + (props.to.y - props.from.y) * t
-      // The trigger fish art it's tinted from faces right
-      $.setXScale(Math.sin($.phase()) * (props.to.x - props.from.x) >= 0 ? 1 : -1)
+      const x = props.from.x + travel.x * t
+      const y = props.from.y + travel.y * t
+      // Swimming side to side, it just flips round. Otherwise it swings its nose round, the short way
+      const target = headingAt($.phase())
+      const turn = ((target - $.heading() + 540) % 360) - 180
+      $.setHeading(sideToSide ? target : ((($.heading() + turn * turnRate) + 540) % 360) - 180)
       $.setX(x - width / 2)
       $.setY(y - height / 2)
       hitDiverIfTouching($scene, x, y, 26)
@@ -171,7 +185,7 @@ export type DemonController = ReturnType<typeof createDemonController>
 // Races you through Hell along its waypoints, stopping now and then to mock you
 export function createDemonController(id: string, props: { path: Vector[], speed: number }) {
   const width = 128
-  const height = 80
+  const height = width * 519 / 500 // The art's own proportions
 
   return createController({
     frames: [demonCorgiFishAsset],

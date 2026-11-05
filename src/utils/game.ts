@@ -61,10 +61,18 @@ export interface BackgroundDialog {
   framesLeft: number
 }
 
+export interface SpeechSound {
+  pitch: number // Hz
+  wave?: OscillatorType
+  slide?: number // How far each beep bends, as a multiple of its pitch: below 1 droops, above 1 rises
+  volume?: number // A multiple of the usual loudness, for a voice that sounds quieter than the rest
+}
+
 export interface DialogMessage {
   text: Localised
   speaker?: Localised
   image?: string
+  speechSound?: SpeechSound // The beeps a speaker makes as their line types out
   after?: () => void,
   options?: {
     text: Localised;

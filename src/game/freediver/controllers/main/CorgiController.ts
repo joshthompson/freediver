@@ -4,7 +4,7 @@ import { createBubbleController } from '../scenary/BubbleController'
 import { BoneController } from '../scenary/BoneController'
 import { kingdomCrownAsset, linkAsset } from '@/assets'
 import { createObjectSignal } from '@/engine/utils'
-import { generateFrames } from '@/utils'
+import { generateSheetFrames } from '@/utils'
 import { useGameState } from '@/utils/GameStateContext'
 import { CrystalCorgiController } from '../realm/CrystalCorgiController'
 
@@ -12,6 +12,10 @@ const bubbleFrequency = 20
 const maxSpeed = 10
 const minSpeed = 0
 let bubbleN = 0
+
+// How every swimming corgi's sprite sheet is laid out: Linkosha, the citizens, the King and the
+// realm guides. Built by scripts/build-corgi-sheets.mjs
+export const corgiSheet = { cell: { width: 634, height: 398 }, gutter: 36, frameCount: 3 }
 
 export type CorgiController = ReturnType<typeof createCorgiController>
 
@@ -46,7 +50,7 @@ export function createCorgiController(
   const boostDistance = 200 // If the corgi is further than this from the diver, he goes faster
 
   const corgi = createController({
-    frames: generateFrames(props.skin ?? linkAsset, 634, 394, 70, 3, true),
+    frames: generateSheetFrames(props.skin ?? linkAsset, corgiSheet, 44),
     init() {
       return {
         id,

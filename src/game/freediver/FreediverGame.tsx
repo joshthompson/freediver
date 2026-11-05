@@ -1,4 +1,4 @@
-import { Component, createMemo, createSignal } from 'solid-js'
+import { Component, createEffect, createMemo, createSignal } from 'solid-js'
 import { cva } from '@style/css'
 import { OceanScene } from './scene/OceanScene'
 import { SurfaceScene } from './scene/SurfaceScene'
@@ -19,6 +19,8 @@ import { CreditsScene } from './scene/CreditsScene'
 import { Dynamic } from 'solid-js/web'
 import { SceneComponent } from '@/engine'
 import { isRealm, RealmName, RealmNames } from './data/Realms'
+import { music as sceneMusic } from './music/music'
+import { effects } from './music/effects'
 import { RealmScene } from './scene/levels/realm'
 import { CorgosphereLevel } from './scene/levels/CorgosphereLevel'
 import { TriggerFishLairLevel } from './scene/levels/TriggerFishLairLevel'
@@ -40,6 +42,8 @@ const testScene = 'menu'
 const fadeScenes = ['ocean', 'surface', 'cave', 'kingdom', 'credits', 'multiplayer', ...RealmNames]
 const levelScenes = ['ocean', 'cave', 'kingdom', 'multiplayer', ...RealmNames]
 const fadeDuration = 300
+const hasOwnMusic = (scene: string) => ['cave', 'kingdom', 'credits'].includes(scene) || isRealm(scene)
+const silentScenes = ['multiplayer'] // No music, so Players can hear each other
 
 export const FreediverGame: Component = () => {
   const [windowWidth, setWindowWidth] = createSignal(window.innerWidth)
@@ -59,7 +63,13 @@ export const FreediverGame: Component = () => {
     const fadeOut = fadeScenes.includes(newScene) ? fadeDuration : 0
     const fadeIn = fadeScenes.includes(scene()) ? fadeDuration : 0
     
-    if (['surface', ...levelScenes].includes(newScene) && !music()) {
+    // The cave, the kingdom, the credits and each realm play their own music, so the ocean music waits until you're back
+    if (hasOwnMusic(newScene) || silentScenes.includes(newScene)) {
+      music()?.pause()
+    } else if (music()?.paused && newScene !== 'menu') {
+      music()!.play()
+    }
+    if (['surface', ...levelScenes].includes(newScene) && !hasOwnMusic(newScene) && !silentScenes.includes(newScene) && !music()) {
       startMusic()
     }
     if (newScene === 'menu' && music()) {
@@ -81,6 +91,10 @@ export const FreediverGame: Component = () => {
   const startMusic = () => {
     setMusic(playSound(musicSound, { loop: true, mute: gameState.options.volume === 0 }))
   }
+  createEffect(() => {
+    sceneMusic.setVolume(gameState.options.volume)
+    effects.setVolume(gameState.options.volume)
+  })
 
   window.addEventListener('resize', () => {
     setWindowWidth(window.innerWidth)

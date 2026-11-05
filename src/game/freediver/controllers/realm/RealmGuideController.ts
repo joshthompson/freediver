@@ -1,7 +1,8 @@
 import { createController } from '@/engine'
 import { createObjectSignal } from '@/engine/utils'
 import { Sprite } from '@/engine/components/Sprite'
-import { generateFrames } from '@/utils'
+import { generateSheetFrames } from '@/utils'
+import { corgiSheet } from '../main/CorgiController'
 import { Dialog } from '@/utils/game'
 import { getDiver } from './Hazard'
 
@@ -25,7 +26,7 @@ export function createRealmGuideController(id: string, props: {
   const height = 44 * scale
 
   return createController({
-    frames: generateFrames(props.asset, 634, 394, width, 3, true),
+    frames: generateSheetFrames(props.asset, corgiSheet, height),
     randomStartFrame: true,
     init() {
       const x = createObjectSignal(props.x, 'x')

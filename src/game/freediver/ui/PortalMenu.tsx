@@ -44,7 +44,7 @@ export const PortalMenu: Component<{
           {option !== 'stay' && <img src={Realms[option].crystal} class={styles.crystal({ done: done(option) })} />}
         </div>
         <div class={styles.option({ selected: selected() === i() })}>
-          <Button size="small" onClick={() => choose(option)}>
+          <Button size="small" volume={props.gameState.options.volume} onClick={() => choose(option)}>
             {option === 'stay' ? t().realms.stay : t().realms[option]}
           </Button>
           {done(option) && <div class={styles.tick}>✓</div>}

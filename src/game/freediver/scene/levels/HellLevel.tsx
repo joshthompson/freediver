@@ -370,5 +370,5 @@ export function HellLevel(props: RealmLevelProps): RealmLevel {
     </Show>
   </>
 
-  return { scene, style, hud }
+  return { scene, style, hud, music: () => phase() === 'boss' ? 'hellBoss' : 'hell' }
 }

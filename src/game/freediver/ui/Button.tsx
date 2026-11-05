@@ -7,14 +7,16 @@ import { clickSound } from "@/assets"
 export const Button: Component<{
   size?: 'medium' | 'small'
   disabled?: boolean
+  volume?: number // For buttons outside the game state context, which can't look it up
   onClick?: (event: MouseEvent) => void
   children?: JSX.Element
 }> = props => {
 
-  const volume = useGameState()?.gameState.options.volume ?? 1
+  const gameState = useGameState()?.gameState
+  // Click first, so toggling the volume on clicks and toggling it off doesn't
   const onClick = (event: MouseEvent) => {
-    playSound(clickSound, { volume })
     props.onClick?.(event)
+    playSound(clickSound, { mute: (props.volume ?? gameState?.options.volume ?? 1) === 0 })
   }
   return <button
     class={styles.button({ size: props.size ?? 'medium' })}

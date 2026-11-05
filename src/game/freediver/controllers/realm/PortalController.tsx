@@ -5,10 +5,14 @@ import { createController } from '@/engine'
 import { createObjectSignal, Key } from '@/engine/utils'
 import { Locale, Translations } from '../../data/Translations'
 import { getDiver } from './Hazard'
+import { effects } from '../../music/effects'
 
 const spaceDistance = 40 // How far past the vortex's edge SPACE still takes you through
 const pauseGap = 120 // ms between frames that means gameplay was paused in between
 const spinSpeed = 3 // Degrees an open vortex turns each frame
+const hearingDistance = 900 // A Portal opening further from the Diver than this is silent
+const openSpeed = 0.015 // How much further open the vortex gets each frame
+const openTime = 1 / openSpeed / 25 // Seconds, at 25 frames a second
 
 // A stone ring whose vortex spins open while `open` is true. Pressing SPACE on or beside an open portal
 // calls `onEnter`. Swimming into it does nothing on its own
@@ -26,6 +30,7 @@ export function createPortalControllers(id: string, props: {
   let age = 0
   let spaceWasDown = true // Only a fresh press counts, not one already held when the portal appears
   let lastFrame = 0
+  let wasNear = false
   const isOpen = () => props.closeAfter !== undefined ? age < props.closeAfter : props.open?.() ?? false
 
   const vortex = createController({
@@ -51,7 +56,12 @@ export function createPortalControllers(id: string, props: {
     },
     onEnterFrame({ $, $scene }) {
       age++
-      if (isOpen() && $.open() < 1) $.setOpen(Math.min(1, $.open() + 0.015))
+      // Starting to open, rather than already open when it appeared
+      if (isOpen() && $.open() === 0) {
+        const diver = getDiver($scene)?.data.center()
+        if (diver && Math.hypot(diver.x - center.x, diver.y - center.y) < hearingDistance) effects.portalOpen(openTime)
+      }
+      if (isOpen() && $.open() < 1) $.setOpen(Math.min(1, $.open() + openSpeed))
       if (!isOpen() && $.open() > 0) $.setOpen(Math.max(0, $.open() - 0.03))
       // Keeps turning while open. Frames stop while paused, so it does too
       if ($.open() > 0) $.setSpin(($.spin() + spinSpeed) % 360)
@@ -70,6 +80,8 @@ export function createPortalControllers(id: string, props: {
       const ready = isOpen() && $.open() >= 1
       const near = ready && distance < vortexSize / 2 + spaceDistance
       prompt.data.setShownIn(near ? $scene.gameState.options.locale : undefined)
+      if (near && !wasNear) effects.portalNear()
+      wasNear = near
 
       if (near && spacePressed) props.onEnter()
     },
