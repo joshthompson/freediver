@@ -20,6 +20,7 @@ const sheets = [
   'kingdom/corgi-citizen-cardigan.png',
   'kingdom/corgi-king.png',
   'realms/corgosphere/space-corgi.png',
+  'realms/trigger-fish-lair/captain-chum.png',
   'realms/fried-egg/eggy-corgi.png',
   'realms/depths/judge-corgi.png',
   'realms/hell/hell-corgi.png',
