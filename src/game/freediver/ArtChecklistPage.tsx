@@ -6,7 +6,7 @@ import { Button } from './ui/Button'
 // Every image a placeholder could live in, by its path under src/assets
 const assetUrls = Object.fromEntries(
   Object.entries(import.meta.glob<string>(
-    ['/src/assets/realms/**/*.png', '/src/assets/kingdom/*.png', '/src/assets/sprites/statue/*.png'],
+    ['/src/assets/realms/**/*.png', '/src/assets/kingdom/*.png', '/src/assets/kingdom/kingdom-shop-*.svg', '/src/assets/sprites/statue/*.png'],
     { eager: true, query: '?url', import: 'default' },
   )).map(([path, url]) => [path.replace('/src/assets/', ''), url]),
 )

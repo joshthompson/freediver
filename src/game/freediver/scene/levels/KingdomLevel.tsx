@@ -11,16 +11,19 @@ import { createCorgiController } from "../../controllers/main/CorgiController"
 import {
   createCorgiCitizenController,
   createCorgiKingController,
+  createCorgiShopkeeperController,
   createGlowCoralController,
   createKingdomBannerController,
   createKingdomColumnController,
   createKingdomLanternController,
   createKingdomOpeningController,
+  createKingdomShopControllers,
   createKingdomThroneController,
   createKingdomWallController,
   createPlinthController,
   floorY,
   plinthTop,
+  shopSize,
   throneSize,
 } from "../../controllers/scenary/KingdomController"
 import { createPortalControllers } from "../../controllers/realm/PortalController"
@@ -100,12 +103,20 @@ export function KingdomLevel(props: {
       })
 
       const corals: [number, number, number][] = [
-        [140, 0.7, 0], [520, 0.6, 60], [860, 0.8, 0], [1290, 0.5, -40],
+        [285, 0.7, 0], [520, 0.6, 60], [860, 0.8, 0], [1290, 0.5, -40],
         [1560, 0.7, 60], [1900, 0.8, -40], [2280, 0.6, 0],
       ]
       corals.forEach(([x, scale, hue], n) => {
         $scene.addController(createGlowCoralController('glow-coral-' + n, { x, scale, hue }))
       })
+
+      // The shop at the far end, against the wall
+      const shopX = KINGDOM.minX + 60
+      $scene.addController(...createKingdomShopControllers('shop', { x: shopX }))
+      $scene.addController(createCorgiShopkeeperController('shopkeeper', {
+        x: shopX + shopSize.width / 2 - 45,
+        y: floorY - 10 - shopSize.height + 72,
+      }))
 
       // The royal court
       $scene.addController(...createPortalControllers('portal', {
@@ -230,6 +241,10 @@ export function KingdomLevel(props: {
         'corgi-king',
       ],
       [
+        // The shopkeeper stands behind his counter, under his awning
+        'kingdom-shop-counter',
+        'corgi-shopkeeper',
+        'kingdom-shop-back',
         'kingdom-throne',
         'glow-coral',
         'kingdom-banner',

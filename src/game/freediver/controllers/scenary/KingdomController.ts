@@ -8,6 +8,9 @@ import {
   kingdomGlowCoralAsset,
   kingdomLanternAsset,
   kingdomOpeningAsset,
+  kingdomShopBackAsset,
+  kingdomShopCounterAsset,
+  kingdomShopkeeperAsset,
   plinthAsset,
   kingdomThroneAsset,
   kingdomWallAsset,
@@ -18,7 +21,7 @@ import { Sprite } from '@/engine/components/Sprite'
 import { generateSheetFrames } from '@/utils'
 import { corgiSheet } from '../main/CorgiController'
 import { DiverController } from '../main/DiverController'
-import { CorgiCitizenBackgroundDialogLines, KingQuest, KingReminderBackgroundDialogLines, OldKingBackgroundDialogLines } from '../../data/Dialogs'
+import { CorgiCitizenBackgroundDialogLines, KingQuest, KingReminderBackgroundDialogLines, OldKingBackgroundDialogLines, ShopkeeperDialog } from '../../data/Dialogs'
 import { createBackgroundDialogTrigger } from '../utils/BackgroundDialogTrigger'
 
 export const floorY = 625
@@ -254,6 +257,74 @@ export function createPlinthController(id: string, props: { x: number }) {
 
 // Where a Crystal Corgi stands on top of the plinth centred on x
 export const plinthTop = (x: number): Vector => ({ x, y: floorY - 10 - plinthSize.height + 6 })
+
+export const shopSize = { width: 200, height: 190 }
+
+// The shop at the far end of the Kingdom: an awning and empty shelf behind the shopkeeper, and a
+// counter in front that he peeks over
+export function createKingdomShopControllers(id: string, props: { x: number }) {
+  const part = (partId: string, type: string, asset: string) => createController({
+    frames: [asset],
+    init() {
+      return {
+        id: partId,
+        type,
+        x: () => props.x,
+        y: () => floorY - 10 - shopSize.height,
+        width: () => shopSize.width,
+        height: () => shopSize.height,
+      }
+    },
+  })
+  return [
+    part(id + '-back', 'kingdom-shop-back', kingdomShopBackAsset),
+    part(id + '-counter', 'kingdom-shop-counter', kingdomShopCounterAsset),
+  ] as const
+}
+
+// The shopkeeper, behind his counter. He has nothing to sell yet, and says so when the diver swims up
+export function createCorgiShopkeeperController(id: string, props: { x: number, y: number }) {
+  const talkDistance = 200
+  const leaveDistance = 400
+  const scale = 1.3
+  const width = 70 * scale
+  const height = 44 * scale
+  let talks = 0 // He only introduces his shop the first time
+
+  return createController({
+    frames: generateSheetFrames(kingdomShopkeeperAsset, corgiSheet, height),
+    init() {
+      return {
+        id,
+        type: 'corgi-shopkeeper',
+        x: () => props.x,
+        ...createObjectSignal(props.y, 'y'),
+        ...createObjectSignal('pause' as Sprite['state'], 'state'),
+        ...createObjectSignal(false, 'talkedThisVisit'),
+        width: () => width,
+        height: () => height,
+        frameInterval: () => 200,
+      }
+    },
+    onEnterFrame({ $, $scene, $age }) {
+      $.setY(props.y + Math.sin($age / 14) * 2)
+      const diver = $scene.getControllerById<DiverController>('diver')
+      if (!diver) return
+      const distance = diver.distanceTo(props.x + width / 2, props.y + height / 2)
+      $.setState(distance < 300 ? 'play' : 'pause')
+
+      if (distance < talkDistance && !$.talkedThisVisit() && !$scene.dialog.data()) {
+        $.setTalkedThisVisit(true)
+        $scene.startDialog({
+          messages: talks++ === 0 ? ShopkeeperDialog.intro : ShopkeeperDialog.again,
+          pauseGameplay: true,
+        })
+      } else if (distance > leaveDistance) {
+        $.setTalkedThisVisit(false)
+      }
+    },
+  })
+}
 
 // Corgis going about their day, paddling back and forth between `from` and `to`.
 // Now and then they say something to Linkosha, and hail their new king once crowned

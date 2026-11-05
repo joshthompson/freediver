@@ -8,6 +8,7 @@ import {
   hellCorgiDialogAsset,
   judgeCorgiDialogAsset,
   kingDialogAsset,
+  kingdomShopkeeperDialogAsset,
   linkDialogAsset,
   manateeHappyDialogAsset,
   manateeSadDialogAsset,
@@ -32,6 +33,7 @@ const link = { speaker: say('Linkosha', 'Линкоша', 'Linkosha', 'Linkosha'
 const manateeSad = { speaker: say('Manny the Manatee', 'Ламантин Мэнни', 'Manaten Manny', 'Manny Morvakel'), image: manateeSadDialogAsset, speechSound: speech(115, 'sine', 0.9) }
 const manateeHappy = { ...manateeSad, image: manateeHappyDialogAsset }
 const king = { speaker: say('The Corgi King', 'Король Корги', 'Corgikungen', 'Korli Kalun'), image: kingDialogAsset, speechSound: speech(210, 'triangle', 1, 2) }
+const shopkeeper = { speaker: say('The Shopkeeper', 'Лавочник', 'Butiksägaren', 'Merkal Korli'), image: kingdomShopkeeperDialogAsset, speechSound: speech(370, 'square', 1.1) }
 // Realm Guide names are placeholders until they're named properly
 const cosmo = { speaker: say('Cosmo the Space Corgi', 'Космо, космический корги', 'Rymdcorgin Cosmo', 'Cosmo Estrel-korli'), image: spaceCorgiDialogAsset, speechSound: speech(720, 'sine', 1.4) }
 const chum = { speaker: say('Captain Chum', 'Капитан Прикорм', 'Kapten Agn', 'Kaptal Chum'), image: captainChumDialogAsset, speechSound: speech(175, 'sawtooth') }
@@ -138,6 +140,34 @@ export const BackgroundDialogLines = {
 } as const satisfies Record<string, readonly Localised[]>
 
 // TODO: Placeholder quest text until the king's quest is written
+// The shopkeeper at the far end of the Kingdom. There's nothing to buy yet
+export const ShopkeeperDialog = {
+  intro: [
+    { ...shopkeeper, text: say(
+      'Welcome, welcome! Step right up to the finest shop in the Corgi Kingdom!',
+      'Добро пожаловать, добро пожаловать! Заходи в лучшую лавку Королевства Корги!',
+      'Välkommen, välkommen! Stig fram till Corgirikets finaste butik!',
+      'Hela, hela! Shavor tal lerosh merkal Korli Kalunra!',
+    ) },
+    { ...link, text: woof },
+    { ...shopkeeper, text: say(
+      `Ah. Well. I haven't actually got anything to sell yet.`,
+      'Ах. Ну. Вообще-то мне пока нечего продавать.',
+      'Åh. Tja. Jag har faktiskt inget att sälja än.',
+      'Oh. Vä... shon nel merkra talun.',
+    ) },
+    { ...shopkeeper, text: say('Come back later!', 'Приходи попозже!', 'Kom tillbaka senare!', 'Revol tal nerun!') },
+  ],
+  again: [
+    { ...shopkeeper, text: say(
+      `Still nothing to sell, I'm afraid. Come back later!`,
+      'Продавать всё ещё нечего. Приходи попозже!',
+      'Fortfarande inget att sälja, tyvärr. Kom tillbaka senare!',
+      'Nel merkra talun. Revol tal nerun!',
+    ) },
+  ],
+}
+
 export const KingQuest = {
   intro: [
     { ...king, text: say(
