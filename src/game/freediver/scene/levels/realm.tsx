@@ -16,6 +16,7 @@ import { LetterBounce } from '../../ui/LetterBounce'
 import { Level } from '../Level'
 import { music } from '../../music/music'
 import type { SongName } from '../../music/songs'
+import { wornSuit } from '../../multiplayer/skins'
 
 export interface RealmLevelProps {
   setScene: (scene: string, mode?: string) => void
@@ -98,6 +99,7 @@ export function addRealmArrival($scene: Scene, realm: Realm, options: {
   }))
 
   const diver = createDiverController('diver', {
+    skin: wornSuit($scene.gameState).diver,
     x: entry.x - 34,
     y: entry.y - 78,
     rotation: 90,
@@ -107,7 +109,7 @@ export function addRealmArrival($scene: Scene, realm: Realm, options: {
     blackout: () => realm.fail($scene),
   })
   $scene.addController(diver)
-  const corgi = createCorgiController('corgi', { x: entry.x - 20, y: entry.y, bubbles: options.bubbles })
+  const corgi = createCorgiController('corgi', { skin: wornSuit($scene.gameState).corgi, x: entry.x - 20, y: entry.y, bubbles: options.bubbles })
   $scene.addController(corgi)
   return { diver, corgi }
 }

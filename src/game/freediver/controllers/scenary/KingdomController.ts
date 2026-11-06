@@ -8,9 +8,7 @@ import {
   kingdomGlowCoralAsset,
   kingdomLanternAsset,
   kingdomOpeningAsset,
-  kingdomShopBackAsset,
   kingdomShopCounterAsset,
-  kingdomShopkeeperAsset,
   plinthAsset,
   kingdomThroneAsset,
   kingdomWallAsset,
@@ -21,8 +19,14 @@ import { Sprite } from '@/engine/components/Sprite'
 import { generateSheetFrames } from '@/utils'
 import { corgiSheet } from '../main/CorgiController'
 import { DiverController } from '../main/DiverController'
-import { CorgiCitizenBackgroundDialogLines, KingQuest, KingReminderBackgroundDialogLines, OldKingBackgroundDialogLines, ShopkeeperDialog } from '../../data/Dialogs'
+import { CorgiCitizenBackgroundDialogLines, KingQuest, KingReminderBackgroundDialogLines, OldKingBackgroundDialogLines } from '../../data/Dialogs'
 import { createBackgroundDialogTrigger } from '../utils/BackgroundDialogTrigger'
+import { createSpacePrompt } from '../utils/SpacePrompt'
+import { createShopSignController } from './ShopSign'
+import { Locale, Translations } from '../../data/Translations'
+import { Localised } from '@/utils/game'
+
+type Translation = typeof Translations[Locale]
 
 export const floorY = 625
 const ceilingY = 92
@@ -68,6 +72,10 @@ export function createKingdomWallController(id: string, props: { edge: number, s
   })
 }
 
+const columnHeight = floorY - 90
+const columnWidth = columnHeight * 150 / 994 // The art's own proportions
+
+// A column holding up the roof. `x` is the left of a 90px wide space it stands in the middle of
 export function createKingdomColumnController(id: string, props: { x: number }) {
   return createController({
     frames: [kingdomColumnAsset],
@@ -75,10 +83,10 @@ export function createKingdomColumnController(id: string, props: { x: number }) 
       return {
         id,
         type: 'kingdom-column',
-        x: () => props.x,
+        x: () => props.x + (90 - columnWidth) / 2,
         y: () => 100,
-        width: () => 90,
-        height: () => floorY - 90,
+        width: () => columnWidth,
+        height: () => columnHeight,
       }
     },
   })
@@ -260,68 +268,89 @@ export const plinthTop = (x: number): Vector => ({ x, y: floorY - 10 - plinthSiz
 
 export const shopSize = { width: 200, height: 190 }
 
-// The shop at the far end of the Kingdom: an awning and empty shelf behind the shopkeeper, and a
-// counter in front that he peeks over
-export function createKingdomShopControllers(id: string, props: { x: number }) {
-  const part = (partId: string, type: string, asset: string) => createController({
+// A shop: an awning and shelf behind the shopkeeper, a counter in front that he peeks over, and its
+// name on the awning. SPACE in front of it calls `onOpen`
+export function createKingdomShopControllers(id: string, props: {
+  x: number
+  back: string // The awning and shelf
+  name: (t: Translation) => string
+  onOpen: () => void
+}) {
+  const y = floorY - 10 - shopSize.height
+  const reach = 40 // How far either side of the shop SPACE still opens it
+
+  const part = (partId: string, type: string, asset: string, onEnterFrame?: Parameters<typeof createController>[0]['onEnterFrame']) => createController({
     frames: [asset],
     init() {
       return {
         id: partId,
         type,
         x: () => props.x,
-        y: () => floorY - 10 - shopSize.height,
+        y: () => y,
         width: () => shopSize.width,
         height: () => shopSize.height,
       }
     },
+    onEnterFrame,
   })
-  return [
-    part(id + '-back', 'kingdom-shop-back', kingdomShopBackAsset),
-    part(id + '-counter', 'kingdom-shop-counter', kingdomShopCounterAsset),
-  ] as const
+
+  const prompt = createSpacePrompt(id + '-prompt', {
+    type: 'shop-prompt',
+    x: props.x,
+    y: y - 75, // Above the shopkeeper's speech bubbles
+    width: shopSize.width,
+    action: t => t.shop.browse,
+  })
+
+  const counter = part(id + '-counter', 'kingdom-shop-counter', kingdomShopCounterAsset, ({ $scene }) => {
+    const spacePressed = prompt.freshPress()
+    const diver = $scene.getControllerById<DiverController>('diver')
+    if (!diver) return
+    const center = diver.data.center()
+    const near = center.x > props.x - reach && center.x < props.x + shopSize.width + reach && center.y > y - reach
+    prompt.show(near ? $scene.gameState.options.locale : undefined)
+    if (near && spacePressed) props.onOpen()
+  })
+
+  const sign = createShopSignController(id + '-sign', {
+    x: props.x,
+    y: y + 19, // Across the front of the awning
+    width: shopSize.width,
+    name: props.name,
+  })
+
+  return [part(id + '-back', 'kingdom-shop-back', props.back), counter, sign, prompt.controller] as const
 }
 
-// The shopkeeper, behind his counter. He has nothing to sell yet, and says so when the diver swims up
-export function createCorgiShopkeeperController(id: string, props: { x: number, y: number }) {
-  const talkDistance = 200
-  const leaveDistance = 400
+// A shopkeeper behind the counter of the shop at `shopX`, calling out to Linkosha now and then
+export function createCorgiShopkeeperController(id: string, props: { shopX: number, asset: string, lines: readonly Localised[] }) {
+  const backgroundDialog = createBackgroundDialogTrigger(props.lines)
   const scale = 1.3
   const width = 70 * scale
   const height = 44 * scale
-  let talks = 0 // He only introduces his shop the first time
+  const x = props.shopX + (shopSize.width - width) / 2
+  const y = floorY - 10 - shopSize.height + 72 // Head and shoulders over the counter
 
   return createController({
-    frames: generateSheetFrames(kingdomShopkeeperAsset, corgiSheet, height),
+    frames: generateSheetFrames(props.asset, corgiSheet, height),
     init() {
       return {
         id,
         type: 'corgi-shopkeeper',
-        x: () => props.x,
-        ...createObjectSignal(props.y, 'y'),
+        x: () => x,
+        ...createObjectSignal(y, 'y'),
         ...createObjectSignal('pause' as Sprite['state'], 'state'),
-        ...createObjectSignal(false, 'talkedThisVisit'),
         width: () => width,
         height: () => height,
         frameInterval: () => 200,
       }
     },
-    onEnterFrame({ $, $scene, $age }) {
-      $.setY(props.y + Math.sin($age / 14) * 2)
+    onEnterFrame({ $, $scene, $age, $controller }) {
+      $.setY(y + Math.sin($age / 14) * 2)
       const diver = $scene.getControllerById<DiverController>('diver')
       if (!diver) return
-      const distance = diver.distanceTo(props.x + width / 2, props.y + height / 2)
-      $.setState(distance < 300 ? 'play' : 'pause')
-
-      if (distance < talkDistance && !$.talkedThisVisit() && !$scene.dialog.data()) {
-        $.setTalkedThisVisit(true)
-        $scene.startDialog({
-          messages: talks++ === 0 ? ShopkeeperDialog.intro : ShopkeeperDialog.again,
-          pauseGameplay: true,
-        })
-      } else if (distance > leaveDistance) {
-        $.setTalkedThisVisit(false)
-      }
+      $.setState(diver.distanceTo(x + width / 2, y + height / 2) < 300 ? 'play' : 'pause')
+      backgroundDialog($scene, $controller)
     },
   })
 }

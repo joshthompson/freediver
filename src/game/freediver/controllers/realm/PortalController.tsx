@@ -1,18 +1,20 @@
 import { Accessor } from 'solid-js'
-import { css } from '@style/css'
-import { emptyAsset, kingdomPortalAsset, kingdomPortalVortexAsset } from '@/assets'
+import { kingdomPortalAsset, kingdomPortalVortexAsset } from '@/assets'
 import { createController } from '@/engine'
-import { createObjectSignal, Key } from '@/engine/utils'
-import { Locale, Translations } from '../../data/Translations'
+import { createObjectSignal } from '@/engine/utils'
 import { getDiver } from './Hazard'
 import { effects } from '../../music/effects'
+import { createSpacePrompt } from '../utils/SpacePrompt'
 
 const spaceDistance = 40 // How far past the vortex's edge SPACE still takes you through
-const pauseGap = 120 // ms between frames that means gameplay was paused in between
 const spinSpeed = 3 // Degrees an open vortex turns each frame
 const hearingDistance = 900 // A Portal opening further from the Diver than this is silent
 const openSpeed = 0.015 // How much further open the vortex gets each frame
 const openTime = 1 / openSpeed / 25 // Seconds, at 25 frames a second
+const pausedAfter = 200 // ms without a frame that means gameplay has been paused
+
+// The sound of a Portal opening, from start to finish, for the Portal menu opening too
+export const playPortalSound = () => effects.portalOpen(openTime)
 
 // A stone ring whose vortex spins open while `open` is true. Pressing SPACE on or beside an open portal
 // calls `onEnter`. Swimming into it does nothing on its own
@@ -28,9 +30,9 @@ export function createPortalControllers(id: string, props: {
   const vortexSize = size * 200 / 280
   const center = { x: props.x + size / 2, y: props.y + size / 2 }
   let age = 0
-  let spaceWasDown = true // Only a fresh press counts, not one already held when the portal appears
-  let lastFrame = 0
-  let wasNear = false
+  let heard = false // Whether the Diver was close enough to hear it start opening
+  let openingSound: ReturnType<typeof effects.portalOpen> | undefined
+  let pausedTimer: ReturnType<typeof setTimeout> | undefined
   const isOpen = () => props.closeAfter !== undefined ? age < props.closeAfter : props.open?.() ?? false
 
   const vortex = createController({
@@ -56,22 +58,37 @@ export function createPortalControllers(id: string, props: {
     },
     onEnterFrame({ $, $scene }) {
       age++
-      // Starting to open, rather than already open when it appeared
-      if (isOpen() && $.open() === 0) {
-        const diver = getDiver($scene)?.data.center()
-        if (diver && Math.hypot(diver.x - center.x, diver.y - center.y) < hearingDistance) effects.portalOpen(openTime)
+      if (isOpen() && $.open() < 1) {
+        // Starting to open, rather than already open when it appeared
+        if ($.open() === 0) {
+          const diver = getDiver($scene)?.data.center()
+          heard = !!diver && Math.hypot(diver.x - center.x, diver.y - center.y) < hearingDistance
+        }
+        // The sound follows the vortex: frames stop while gameplay is paused, like for a dialog, so it
+        // stops too, and starts again from however far open it is when they carry on
+        if (heard && !openingSound) openingSound = effects.portalOpen(openTime, $.open())
+        clearTimeout(pausedTimer)
+        pausedTimer = setTimeout(() => {
+          openingSound?.stop()
+          openingSound = undefined
+        }, pausedAfter)
+
+        $.setOpen(Math.min(1, $.open() + openSpeed))
+        if ($.open() >= 1) {
+          clearTimeout(pausedTimer) // Open, so the sound plays on to its sparkles
+          openingSound = undefined
+        }
       }
-      if (isOpen() && $.open() < 1) $.setOpen(Math.min(1, $.open() + openSpeed))
-      if (!isOpen() && $.open() > 0) $.setOpen(Math.max(0, $.open() - 0.03))
+      if (!isOpen() && $.open() > 0) {
+        clearTimeout(pausedTimer)
+        openingSound?.stop()
+        openingSound = undefined
+        $.setOpen(Math.max(0, $.open() - 0.03))
+      }
       // Keeps turning while open. Frames stop while paused, so it does too
       if ($.open() > 0) $.setSpin(($.spin() + spinSpeed) % 360)
 
-      // A SPACE held over from while gameplay was paused, like the one that closed a dialog, isn't a fresh press
-      const now = Date.now()
-      const spaceDown = Key.isDown(' ')
-      const spacePressed = spaceDown && !spaceWasDown && now - lastFrame < pauseGap
-      spaceWasDown = spaceDown
-      lastFrame = now
+      const spacePressed = prompt.freshPress()
 
       const diver = getDiver($scene)
       if (!diver || !props.onEnter) return
@@ -79,9 +96,7 @@ export function createPortalControllers(id: string, props: {
       const distance = Math.hypot(diverCenter.x - center.x, diverCenter.y - center.y)
       const ready = isOpen() && $.open() >= 1
       const near = ready && distance < vortexSize / 2 + spaceDistance
-      prompt.data.setShownIn(near ? $scene.gameState.options.locale : undefined)
-      if (near && !wasNear) effects.portalNear()
-      wasNear = near
+      prompt.show(near ? $scene.gameState.options.locale : undefined)
 
       if (near && spacePressed) props.onEnter()
     },
@@ -105,53 +120,14 @@ export function createPortalControllers(id: string, props: {
   })
 
   // "SPACE: Enter the Portal", shown while you're close enough to use it
-  const prompt = createController({
-    frames: [emptyAsset],
-    init() {
-      const shownIn = createObjectSignal(undefined as Locale | undefined, 'shownIn') // The language to show it in
-      return {
-        id: id + '-prompt',
-        type: 'portal-prompt',
-        x: () => props.x,
-        y: () => props.y - 34,
-        width: () => size,
-        height: () => 30,
-        ...shownIn,
-        children: () => {
-          const locale = shownIn.shownIn()
-          if (!locale) return null
-          const t = Translations[locale]
-          return <div class={styles.prompt}>
-            <em>{t.instructions.spacebar}</em> {t.realms.enterPortal}
-          </div>
-        },
-      }
-    },
+  const prompt = createSpacePrompt(id + '-prompt', {
+    type: 'portal-prompt',
+    x: props.x,
+    y: props.y - 34,
+    width: size,
+    action: t => t.realms.enterPortal,
   })
 
-  return [ring, vortex, prompt] as const
+  return [ring, vortex, prompt.controller] as const
 }
 
-const styles = {
-  prompt: css({
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: '6px',
-    width: '100%',
-    height: '100%',
-    color: 'white',
-    fontSize: '1.2rem',
-    whiteSpace: 'nowrap',
-    textShadow: '1px 1px 3px #000',
-    animation: 'fadeIn 0.3s ease-in-out',
-    '& em': {
-      fontStyle: 'normal',
-      background: 'white',
-      color: 'black',
-      p: '0 8px',
-      borderRadius: '4px',
-      textShadow: 'none',
-    },
-  }),
-}

@@ -1,6 +1,7 @@
 import { createConnectedController, createController } from '@/engine'
 import { Sprite } from '@/engine/components/Sprite'
-import { kingdomCrownAsset, linkFrontAsset } from '@/assets'
+import { kingdomCrownAsset } from '@/assets'
+import { wornSurfaceCostume } from '../../multiplayer/skins'
 import { createObjectSignal } from '@/engine/utils'
 import { useGameState } from '@/utils/GameStateContext'
 
@@ -15,7 +16,7 @@ interface CorgiSurfaceControllerProps {
 export function createCorgiSurfaceController(id: string, props?: CorgiSurfaceControllerProps) {
   const corgi = createController(
     {
-      frames: [linkFrontAsset],
+      frames: [wornSurfaceCostume().corgi],
       init() {
         return {
           id,

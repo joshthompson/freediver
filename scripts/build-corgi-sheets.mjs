@@ -12,18 +12,18 @@ import { PNG } from 'pngjs'
 
 const assets = path.resolve(import.meta.dirname, '../src/assets')
 const sheets = [
-  'sprites/link/link.png',
-  'sprites/multiplayer/red/link.png',
-  'sprites/multiplayer/yellow/link.png',
-  'sprites/multiplayer/pink/link.png',
-  'kingdom/corgi-citizen.png',
-  'kingdom/corgi-citizen-cardigan.png',
-  'kingdom/corgi-king.png',
-  'realms/corgosphere/space-corgi.png',
-  'realms/trigger-fish-lair/captain-chum.png',
-  'realms/fried-egg/eggy-corgi.png',
-  'realms/depths/judge-corgi.png',
-  'realms/hell/hell-corgi.png',
+  'sprites/costumes/teal/link.png',
+  'sprites/costumes/red/link.png',
+  'sprites/costumes/yellow/link.png',
+  'sprites/costumes/pink/link.png',
+  'sprites/npcs/corgis/corgi-citizen.png',
+  'sprites/npcs/corgis/corgi-citizen-cardigan.png',
+  'sprites/npcs/corgis/corgi-king.png',
+  'sprites/npcs/corgis/space-corgi.png',
+  'sprites/npcs/corgis/captain-chum.png',
+  'sprites/npcs/corgis/eggy-corgi.png',
+  'sprites/npcs/corgis/judge-corgi.png',
+  'sprites/npcs/corgis/hell-corgi.png',
 ]
 
 const frameCount = 3

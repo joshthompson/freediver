@@ -141,20 +141,37 @@ export const effects = {
   },
 
   // A Portal powering up as it spins open: a rising, fluttering zhhhh over a humming charge, the
-  // whole time it takes to open, then a bloom of sparkles once it's open
-  portalOpen(openTime: number) { // Seconds the Portal takes to open
+  // whole time it takes to open, then a bloom of sparkles once it's open. `from` is how far open it
+  // already is, so it can carry on after gameplay was paused. Stop it if the Portal stops opening
+  portalOpen(openTime: number, from = 0) { // Seconds the Portal takes to open
     const ctx = audioContext()
     const t = ctx.currentTime
-    const open = t + openTime
+    const open = t + openTime * (1 - from)
+    const half = t + openTime * (0.5 - from) // Halfway open, if it isn't yet
+    const at = (start: number, end: number, progress: number) => start * (end / start) ** progress // Exponential sweep
+    const sweep = (param: AudioParam, start: number, end: number) => {
+      param.setValueAtTime(at(start, end, from), t)
+      param.exponentialRampToValueAtTime(end, open)
+    }
+    const sound = ctx.createGain()
+    sound.connect(output())
+    const sources: AudioScheduledSourceNode[] = []
+    const play = (source: AudioScheduledSourceNode, start: number, stop: number) => {
+      source.start(start)
+      source.stop(stop)
+      sources.push(source)
+    }
 
     // A gain swelling from nothing to `level` as the Portal opens, then dropping away
     const swell = (level: number) => {
       const env = ctx.createGain()
+      const now = from < 0.5 ? at(0.0001, level * 0.3, from / 0.5) : at(level * 0.3, level, (from - 0.5) / 0.5)
       env.gain.setValueAtTime(0.0001, t)
-      env.gain.exponentialRampToValueAtTime(level * 0.3, t + openTime * 0.5)
-      env.gain.exponentialRampToValueAtTime(level, open)
+      env.gain.exponentialRampToValueAtTime(now, t + 0.05) // Quickly, when carrying on partway
+      if (half > t + 0.05) env.gain.exponentialRampToValueAtTime(level * 0.3, half)
+      env.gain.exponentialRampToValueAtTime(level, Math.max(open, t + 0.06))
       env.gain.exponentialRampToValueAtTime(0.001, open + 0.35)
-      env.connect(output())
+      env.connect(sound)
       return env
     }
 
@@ -163,40 +180,33 @@ export const effects = {
     zh.loop = true
     const band = ctx.createBiquadFilter()
     band.type = 'bandpass'
-    band.Q.setValueAtTime(1.2, t)
+    band.Q.setValueAtTime(1.2 + 3.8 * from, t)
     band.Q.linearRampToValueAtTime(5, open)
-    band.frequency.setValueAtTime(200, t)
-    band.frequency.exponentialRampToValueAtTime(5000, open)
+    sweep(band.frequency, 200, 5000)
     const zhEnv = swell(0.5)
     zh.connect(band).connect(zhEnv)
-    zh.start(t)
-    zh.stop(open + 0.4)
+    play(zh, t, open + 0.4)
 
     // Fluttering faster and faster as it charges
     const flutter = ctx.createOscillator()
-    flutter.frequency.setValueAtTime(5, t)
-    flutter.frequency.exponentialRampToValueAtTime(28, open)
+    sweep(flutter.frequency, 5, 28)
     const depth = ctx.createGain()
     depth.gain.value = 0.12
     flutter.connect(depth).connect(zhEnv.gain)
-    flutter.start(t)
-    flutter.stop(open + 0.4)
+    play(flutter, t, open + 0.4)
 
     // The charge: two slightly out of tune saws climbing two octaves to the D the sparkles start on
     const filter = ctx.createBiquadFilter()
     filter.type = 'lowpass'
-    filter.frequency.setValueAtTime(300, t)
-    filter.frequency.exponentialRampToValueAtTime(2500, open)
+    sweep(filter.frequency, 300, 2500)
     filter.connect(swell(0.09))
     for (const detune of [-12, 12]) {
       const hum = ctx.createOscillator()
       hum.type = 'sawtooth'
       hum.detune.value = detune
-      hum.frequency.setValueAtTime(73.4, t)
-      hum.frequency.exponentialRampToValueAtTime(293.7, open)
+      sweep(hum.frequency, 73.4, 293.7)
       hum.connect(filter)
-      hum.start(t)
-      hum.stop(open + 0.4)
+      play(hum, t, open + 0.4)
     }
 
     // Open: a soft whump and sparkles climbing a D major chord, the ocean music's key
@@ -208,25 +218,32 @@ export const effects = {
     whumpEnv.gain.setValueAtTime(0.0001, open)
     whumpEnv.gain.exponentialRampToValueAtTime(0.35, open + 0.01)
     whumpEnv.gain.exponentialRampToValueAtTime(0.001, open + 0.4)
-    whumpEnv.connect(output())
+    whumpEnv.connect(sound)
     whump.connect(whumpEnv)
-    whump.start(open)
-    whump.stop(open + 0.45)
+    play(whump, open, open + 0.45)
 
     ;[587, 740, 880, 1175, 1480].forEach((frequency, n) => {
-      const at = open + n * 0.07
+      const sparkleAt = open + n * 0.07
       const sparkle = ctx.createOscillator()
       sparkle.type = 'sine'
       sparkle.frequency.value = frequency
       const env = ctx.createGain()
-      env.gain.setValueAtTime(0.0001, at)
-      env.gain.exponentialRampToValueAtTime(0.12, at + 0.01)
-      env.gain.exponentialRampToValueAtTime(0.001, at + 0.6)
-      env.connect(output())
+      env.gain.setValueAtTime(0.0001, sparkleAt)
+      env.gain.exponentialRampToValueAtTime(0.12, sparkleAt + 0.01)
+      env.gain.exponentialRampToValueAtTime(0.001, sparkleAt + 0.6)
+      env.connect(sound)
       sparkle.connect(env)
-      sparkle.start(at)
-      sparkle.stop(at + 0.65)
+      play(sparkle, sparkleAt, sparkleAt + 0.65)
     })
+
+    return {
+      stop() {
+        const now = ctx.currentTime
+        sound.gain.setTargetAtTime(0, now, 0.03)
+        // A source that hasn't started yet can still be told to stop sooner
+        for (const source of sources) source.stop(now + 0.2)
+      },
+    }
   },
 
   // Finding a Crystal Corgi: glass bells climbing a D major chord and ringing on together, over a
@@ -269,18 +286,37 @@ export const effects = {
     shimmer.stop(chord + 1.3)
   },
 
-  // Swimming onto an open Portal: a soft chime
-  portalNear() {
+  // Buying something: a ka-ching, two bright coin notes with a rattle
+  purchase() {
     const ctx = audioContext()
     const t = ctx.currentTime
-    for (const [frequency, level] of [[880, 0.16], [1320, 0.1], [2428, 0.04]]) {
-      const chime = ctx.createOscillator()
-      chime.type = 'sine'
-      chime.frequency.value = frequency
-      chime.connect(decay(level, 0.9))
-      chime.start(t)
-      chime.stop(t + 0.95)
-    }
+    ;[[988, 0], [1319, 0.09]].forEach(([frequency, delay]) => {
+      for (const [ratio, level] of [[1, 0.14], [2, 0.05], [3.1, 0.03]]) {
+        const coin = ctx.createOscillator()
+        coin.type = 'square'
+        coin.frequency.value = frequency * ratio
+        const filter = ctx.createBiquadFilter()
+        filter.type = 'lowpass'
+        filter.frequency.value = 6000
+        const env = ctx.createGain()
+        env.gain.setValueAtTime(0.0001, t + delay)
+        env.gain.exponentialRampToValueAtTime(level, t + delay + 0.005)
+        env.gain.exponentialRampToValueAtTime(0.001, t + delay + 0.45)
+        env.connect(output())
+        coin.connect(filter).connect(env)
+        coin.start(t + delay)
+        coin.stop(t + delay + 0.5)
+      }
+    })
+
+    const rattle = noise()
+    const filter = ctx.createBiquadFilter()
+    filter.type = 'bandpass'
+    filter.frequency.value = 7000
+    filter.Q.value = 3
+    rattle.connect(filter).connect(decay(0.08, 0.15))
+    rattle.start(t)
+    rattle.stop(t + 0.17)
   },
 
   // An Egg Bullet hitting the Diver: a squelch over a low thump

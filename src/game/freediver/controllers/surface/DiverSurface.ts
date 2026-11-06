@@ -1,7 +1,7 @@
 import { createConnectedController, createController } from '@/engine'
 import { Sprite } from '@/engine/components/Sprite'
 import { generateFrames } from '@/utils'
-import { seadiverFrontBodyAsset, seadiverFrontHeadAsset } from '@/assets'
+import { wornSurfaceCostume } from '../../multiplayer/skins'
 import { createObjectSignal, Key } from '@/engine'
 import { playTone } from '@/utils/game'
 
@@ -19,16 +19,17 @@ const oxygenUpRate = 20
 const oxygenDownRate = 3
 
 export function createDiverSurfaceController(id: string, props?: DiverSurfaceControllerProps) {
-  const diverSurface = createDiverSurfaceBodyController(id, props)
-  diverSurface.attach(createDiverSurfaceHeadController(diverSurface))
+  const costume = wornSurfaceCostume()
+  const diverSurface = createDiverSurfaceBodyController(id, costume.body, props)
+  diverSurface.attach(createDiverSurfaceHeadController(diverSurface, costume.head))
   return diverSurface
 }
 
-function createDiverSurfaceBodyController(id: string, props?: DiverSurfaceControllerProps) {
+function createDiverSurfaceBodyController(id: string, body: string, props?: DiverSurfaceControllerProps) {
   const baseY = 400
   return createController(
     {
-      frames: generateFrames(seadiverFrontBodyAsset, 638, 1578, 68, 7),
+      frames: generateFrames(body, 638, 1578, 68, 7),
       style: props?.style,
       init() {
         return {
@@ -63,11 +64,11 @@ function createDiverSurfaceBodyController(id: string, props?: DiverSurfaceContro
   )
 }
 
-function createDiverSurfaceHeadController(body: DiverSurfaceBodyController) {
+function createDiverSurfaceHeadController(body: DiverSurfaceBodyController, head: string) {
   return createConnectedController({
     type: 'head',
     base: body,
-    frames: generateFrames(seadiverFrontHeadAsset, 184, 265, 70, 2),
+    frames: generateFrames(head, 184, 265, 70, 2),
     width: () => 70,
     height: () => 101,
     rotation: (_, $age) => Math.sin($age / 7) * 3,

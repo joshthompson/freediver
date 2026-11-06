@@ -40,7 +40,7 @@ export function createCorgiController(
     y?: number
     type?: string
     diverId?: string // The diver to follow. Defaults to 'diver'
-    skin?: string // The sprite sheet, so multiplayer can give each Player's corgi their suit colour
+    skin?: string | (() => string) // The sprite sheet, so the corgi's suit can match the diver's
     crown?: boolean // Whether to wear the crown once the Corgi King hands it over. Defaults to true
     bubbles?: boolean // Whether swimming makes bubbles. False where there's no water. Defaults to true
     puppet?: () => CorgiPose | undefined // Copies these poses instead of following a diver
@@ -49,10 +49,13 @@ export function createCorgiController(
   const followDistance = 50
   const boostDistance = 200 // If the corgi is further than this from the diver, he goes faster
 
+  const { skin: chosen } = props
+  const skin = typeof chosen === 'function' ? chosen : () => chosen ?? linkAsset
   const corgi = createController({
-    frames: generateSheetFrames(props.skin ?? linkAsset, corgiSheet, 44),
+    frames: generateSheetFrames(skin(), corgiSheet, 44),
     init() {
       return {
+        frames: () => generateSheetFrames(skin(), corgiSheet, 44),
         id,
         type: props.type ?? 'corgi',
         ...createObjectSignal(props.x, 'x'),

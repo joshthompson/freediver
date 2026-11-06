@@ -8,6 +8,7 @@ import {
 import { Locale } from "@/game/freediver/data/Translations"
 import { LevelName, OCEAN } from "@/game/freediver/scene/levels/data"
 import { RealmName, RealmNames, RealmPoints, Realms } from "@/game/freediver/data/Realms"
+import { SuitColour, suitPrice } from "@/game/freediver/data/Suits"
 
 export interface GameState {
   score: {
@@ -45,6 +46,10 @@ export interface GameState {
     }
     // A Crystal Corgi is carried from its realm's Exit Portal until Linkosha puts it on its Plinth
     crystals: Partial<Record<RealmName, 'carried' | 'delivered'>>
+  }
+  suits: {
+    owned: SuitColour[]
+    wearing: SuitColour
   }
   achievements: AchievementsRecord
 }
@@ -94,6 +99,10 @@ const baseState: GameState = {
     },
     crystals: {},
   },
+  suits: {
+    owned: ['teal'],
+    wearing: 'teal',
+  },
 }
 
 export function initialState(): GameState {
@@ -120,6 +129,10 @@ export function initialState(): GameState {
     questState: {
       ...baseState.questState,
       ...loadedState.questState,
+    },
+    suits: {
+      ...baseState.suits,
+      ...loadedState.suits,
     },
     achievements: Object.fromEntries(
       Object.entries((loadedState.achievements ?? {}))
@@ -189,6 +202,9 @@ export const useGameState = () => {
   function score(points: number) {
     setGameState('score', 'currentDive', (score) => score + points)
   }
+
+  // Everything you can spend: what's banked, and what you've picked up on this dive so far
+  const points = () => gameState.score.total + gameState.score.currentDive
 
   return {
     gameState,
@@ -285,6 +301,23 @@ export const useGameState = () => {
         setGameState('questState', 'crystals', realm, 'delivered')
         saveState(gameState, true)
         return RealmNames.filter(name => gameState.questState.crystals[name] !== 'delivered').length
+      },
+      points,
+      // Spends points from this dive first, then banked ones. Returns whether there were enough
+      buySuit: (suit: SuitColour) => {
+        if (points() < suitPrice) return false
+        const fromDive = Math.min(suitPrice, gameState.score.currentDive)
+        setGameState('score', 'currentDive', dive => dive - fromDive)
+        setGameState('score', 'total', total => total - (suitPrice - fromDive))
+        setGameState('suits', 'owned', owned => [...owned, suit])
+        setGameState('suits', 'wearing', suit)
+        saveState(gameState, true) // Points spent shouldn't be lost if the game closes straight after
+        return true
+      },
+      wearSuit: (suit: SuitColour) => {
+        if (!gameState.suits.owned.includes(suit)) return
+        setGameState('suits', 'wearing', suit)
+        saveState(gameState, true)
       },
       crown: () => {
         setGameState('questState', 'king', 'state', 'crowned')

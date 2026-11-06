@@ -6,9 +6,9 @@ import { generateFrames } from '@/utils'
 import { emptyAsset, seadiverBodyAsset, seadiverHeadAsset } from '@/assets'
 import { createObjectSignal, Key } from '@/engine/utils'
 
-import armFrontUpper from '@assets/sprites/seadiver/seadiver-arm-front-upper.png'
-import armFrontLower from '@assets/sprites/seadiver/seadiver-arm-front-lower.png'
-import armFrontHand from '@assets/sprites/seadiver/seadiver-arm-front-hand.png'
+import armFrontUpper from '@assets/sprites/costumes/teal/seadiver-arm-front-upper.png'
+import armFrontLower from '@assets/sprites/costumes/teal/seadiver-arm-front-lower.png'
+import armFrontHand from '@assets/sprites/costumes/teal/seadiver-arm-front-hand.png'
 
 export type DiverController = ReturnType<typeof createDiver>
 export type DiverHeadController = ReturnType<typeof createDiverHead>
@@ -43,7 +43,7 @@ export interface DiverPose {
 
 interface DiverControllerProps {
   type?: string
-  skin?: DiverSkin
+  skin?: DiverSkin | (() => DiverSkin) // A function to change suit while diving
   puppet?: () => DiverPose | undefined // Copies these poses instead of reading the keyboard
   x: number
   y?: number
@@ -78,7 +78,8 @@ const down = () => Key.isDown('ArrowDown') || Key.isDown('s')
 const space = () => Key.isDown(' ')
 
 export function createDiverController(id: string, props: DiverControllerProps) {
-  const skin = props.skin ?? defaultSkin
+  const { skin: chosen } = props
+  const skin = typeof chosen === 'function' ? chosen : () => chosen ?? defaultSkin
   const diver = createDiver(id, props)
   diver.attach(createDiverArm(diver, 'back', skin, props.puppet))
   diver.attach(createDiverBody(diver, skin))
@@ -319,16 +320,17 @@ function createDiver(id: string, props: DiverControllerProps) {
   )
 }
 
-function createDiverHead(diver: DiverController, skin: DiverSkin) {
+function createDiverHead(diver: DiverController, skin: () => DiverSkin) {
   return createConnectedController({
     type: 'head',
     base: diver,
-    frames: [skin.head],
+    frames: [skin().head],
     width: () => 20,
     height: () => 34,
     rotation: $ => -70 * $.speed() / maxSpeed,
     offset: { x: 45, y: -20 },
     origin: { x: 8, y: 30 },
+    init: () => ({ frames: () => [skin().head] }),
   })
 }
 
@@ -339,15 +341,18 @@ const bodyScale = 157 / bodyFrame.height
 const bodyPadding = bodyFrame.padding * bodyScale
 const bodyCell = { width: bodyFrame.width + bodyFrame.padding * 2, height: bodyFrame.height + bodyFrame.padding * 2 }
 
-function createDiverBody(diver: DiverController, skin: DiverSkin) {
+const bodyFrames = (body: string) => generateFrames(body, bodyCell.width, bodyCell.height, bodyCell.width * bodyScale, 7)
+
+function createDiverBody(diver: DiverController, skin: () => DiverSkin) {
   return createConnectedController({
     type: 'body',
     base: diver,
-    frames: generateFrames(skin.body, bodyCell.width, bodyCell.height, bodyCell.width * bodyScale, 7),
+    frames: bodyFrames(skin().body),
     width: () => bodyCell.width * bodyScale,
     height: () => bodyCell.height * bodyScale,
     offset: { x: -bodyPadding, y: -bodyPadding },
     init: () => ({
+      frames: () => bodyFrames(skin().body),
       state: diver.data.state,
       frameInterval: diver.data.frameInterval,
     }),
@@ -357,18 +362,19 @@ function createDiverBody(diver: DiverController, skin: DiverSkin) {
 function createDiverArm(
   diver: DiverController,
   type: 'front' | 'back',
-  skin: DiverSkin,
+  skin: () => DiverSkin,
   puppet?: () => DiverPose | undefined,
 ) {
   const arm = createConnectedController({
     type: 'arm-' + type,
     base: diver,
-    frames: [skin.armUpper],
+    frames: [skin().armUpper],
     width: () => 101 / 3,
     height: () => 28 / 3,
     offset: { x: 48, y: 7 },
     origin: { x: 5, y: 4.5 },
     init: $ => ({
+      frames: () => [skin().armUpper],
       isSwimming: () => puppet ? (puppet()?.arms[type].isSwimming ?? false) : up(),
       rotationSpeed: () => Math.max(3, $.speed() * 1),
       ...createObjectSignal(0, 'swimPosition'), // Value between 0 and 360
@@ -401,16 +407,17 @@ function createDiverArm(
   return arm
 }
 
-function createDiverArmLower(arm: DiverArmController, type: 'front' | 'back', skin: DiverSkin) {
+function createDiverArmLower(arm: DiverArmController, type: 'front' | 'back', skin: () => DiverSkin) {
   const armLower = createConnectedController({
     type: 'lower',
     base: arm,
-    frames: [skin.armLower],
+    frames: [skin().armLower],
     width: () => 83 / 3,
     height: () => 19 / 3,
     offset: { x: 27, y: 3 },
     origin: { x: 3, y: 3 },
     init: ($) => ({
+      frames: () => [skin().armLower],
       isSwimming: $.isSwimming,
       rotation: () => {
         if (!$.isSwimming()) return 0
@@ -446,16 +453,17 @@ function createDiverArmLower(arm: DiverArmController, type: 'front' | 'back', sk
   return armLower
 }
 
-function createDiverArmHand(armLower: DiverArmLowerController, skin: DiverSkin) {
+function createDiverArmHand(armLower: DiverArmLowerController, skin: () => DiverSkin) {
   return createConnectedController({
     type: 'hand',
     base: armLower,
-    frames: [skin.armHand],
+    frames: [skin().armHand],
     width: () => 48 / 3,
     height: () => 15 / 3,
     offset: { x: 25, y: 2 },
     origin: { x: 2, y: 2 },
     rotation: $ => $.isSwimming() ? 20 : 0,
+    init: () => ({ frames: () => [skin().armHand] }),
   })
 }
 

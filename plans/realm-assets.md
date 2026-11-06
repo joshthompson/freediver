@@ -17,13 +17,13 @@ In dev builds, the page at `/freediver/art-checklist` shows every placeholder wi
 
 ### Realm Guides
 
-Each guide is a 3-frame sprite sheet laid out like `kingdom/corgi-citizen.png` (1902×394), plus a 320×320 dialog portrait. All are tinted from the corgi citizen and Linkosha's portrait.
+Each guide lives in `sprites/npcs/corgis/`. It is a 3-frame sprite sheet laid out like `corgi-citizen.png`, plus a 320×320 dialog portrait. All are tinted from the corgi citizen and Linkosha's portrait.
 
-- [ ] `corgosphere/space-corgi.png` and `corgosphere/space-corgi-dialog.png`: Cosmo the Space Corgi
-- [ ] `trigger-fish-lair/captain-chum.png` and `trigger-fish-lair/captain-chum-dialog.png`: Captain Chum
-- [ ] `fried-egg/eggy-corgi.png` and `fried-egg/eggy-corgi-dialog.png`: Yolko the Eggy Corgi
-- [ ] `depths/judge-corgi.png` and `depths/judge-corgi-dialog.png`: Judge Fathom
-- [ ] `hell/hell-corgi.png` and `hell/hell-corgi-dialog.png`: Ember
+- [ ] `space-corgi.png` and `space-corgi-dialog.png`: Cosmo the Space Corgi
+- [ ] `captain-chum.png` and `captain-chum-dialog.png`: Captain Chum
+- [ ] `eggy-corgi.png` and `eggy-corgi-dialog.png`: Yolko the Eggy Corgi
+- [ ] `judge-corgi.png` and `judge-corgi-dialog.png`: Judge Fathom
+- [ ] `hell-corgi.png` and `hell-corgi-dialog.png`: Ember
 
 ### Corgosphere
 

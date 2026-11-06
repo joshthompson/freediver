@@ -1,6 +1,7 @@
 import { Scene } from "@/engine"
 import { useGameState } from "@/utils/GameStateContext"
-import { alertAsset, equalisationSound, kingdomBackAsset, kingdomCeilingAsset, kingdomFloorAsset, kingdomMidAsset, starfishSound, thudSound } from "@/assets"
+import { randomItem } from "@/utils"
+import { alertAsset, equalisationSound, kingdomBackAsset, kingdomShopBackAsset, kingdomShopBackPurpleAsset, kingdomShopkeeperAsset, kingdomTailorAsset, kingdomCeilingAsset, kingdomFloorAsset, kingdomMidAsset, starfishSound, thudSound } from "@/assets"
 import { JSX } from "solid-js/jsx-runtime"
 import { createRoot, onCleanup } from "solid-js"
 import { createBoxController } from "../../controllers/utils/BoxController"
@@ -23,14 +24,15 @@ import {
   createPlinthController,
   floorY,
   plinthTop,
-  shopSize,
   throneSize,
 } from "../../controllers/scenary/KingdomController"
-import { createPortalControllers } from "../../controllers/realm/PortalController"
+import { createPortalControllers, playPortalSound } from "../../controllers/realm/PortalController"
 import { createCrystalCorgiController } from "../../controllers/realm/CrystalCorgiController"
 import { RealmName, RealmNames } from "../../data/Realms"
-import { KingDeliveries } from "../../data/Dialogs"
+import { KingDeliveries, ShopkeeperBackgroundDialogLines, ShopkeeperDialog, TailorBackgroundDialogLines, TailorDialog } from "../../data/Dialogs"
 import { PortalMenu } from "../../ui/PortalMenu"
+import { SuitShop } from "../../ui/SuitShop"
+import { wornSuit } from '../../multiplayer/skins'
 
 // Where each realm's Crystal Corgi stands, either side of the throne
 const plinthXs: Record<RealmName, number> = {
@@ -54,8 +56,8 @@ export function KingdomLevel(props: {
   const portalCenter = { x: portal.x + portal.size / 2, y: portal.y + portal.size / 2 }
   const { gameState, gameStateActions, setGameState } = props.state
   const throughPortal = props.mode === 'portal'
-  let closePortalMenu: (() => void) | undefined
-  onCleanup(() => closePortalMenu?.())
+  let closeMenu: (() => void) | undefined
+  onCleanup(() => closeMenu?.())
 
   const scene = new Scene('kingdom', {
     ...props.state,
@@ -110,12 +112,53 @@ export function KingdomLevel(props: {
         $scene.addController(createGlowCoralController('glow-coral-' + n, { x, scale, hue }))
       })
 
-      // The shop at the far end, against the wall
-      const shopX = KINGDOM.minX + 60
-      $scene.addController(...createKingdomShopControllers('shop', { x: shopX }))
+      // The Tailor's costume shop, at the far end against the wall. He says a word, then shows his
+      // costumes. Opened from the game loop, so like the Portal menu it gets its own root to be
+      // cleaned up when it closes
+      const crowned = gameState.questState.king.state === 'crowned'
+      const costumeShopX = KINGDOM.minX + 60
+      const openCostumes = () => createRoot(dispose => {
+        closeMenu = () => {
+          dispose()
+          closeMenu = undefined
+          $scene.modal.set(undefined)
+        }
+        $scene.modal.set(<SuitShop
+          gameState={gameState}
+          points={gameStateActions.points}
+          buy={gameStateActions.buySuit}
+          wear={gameStateActions.wearSuit}
+          onLeave={() => closeMenu?.()}
+        />)
+      })
+      $scene.addController(...createKingdomShopControllers('costume-shop', {
+        x: costumeShopX,
+        back: kingdomShopBackAsset,
+        name: t => t.shop.costumes,
+        onOpen: () => $scene.startDialog({
+          messages: randomItem(crowned ? TailorDialog.king : TailorDialog.visitor),
+          pauseGameplay: true,
+          onComplete: openCostumes,
+        }),
+      }))
+      $scene.addController(createCorgiShopkeeperController('tailor', {
+        shopX: costumeShopX,
+        asset: kingdomTailorAsset,
+        lines: crowned ? TailorBackgroundDialogLines.king : TailorBackgroundDialogLines.visitor,
+      }))
+
+      // The Shopkeeper's shop, between the first two columns, with nothing to sell yet
+      const emptyShopX = 615
+      $scene.addController(...createKingdomShopControllers('empty-shop', {
+        x: emptyShopX,
+        back: kingdomShopBackPurpleAsset,
+        name: t => t.shop.supplies,
+        onOpen: () => $scene.startDialog({ messages: ShopkeeperDialog.closed, pauseGameplay: true }),
+      }))
       $scene.addController(createCorgiShopkeeperController('shopkeeper', {
-        x: shopX + shopSize.width / 2 - 45,
-        y: floorY - 10 - shopSize.height + 72,
+        shopX: emptyShopX,
+        asset: kingdomShopkeeperAsset,
+        lines: crowned ? ShopkeeperBackgroundDialogLines.king : ShopkeeperBackgroundDialogLines.visitor,
       }))
 
       // The royal court
@@ -124,18 +167,19 @@ export function KingdomLevel(props: {
         open: () => gameState.questState.king.state !== 'new',
         // The menu is opened from the game loop, so it gets its own root to be cleaned up when it closes
         onEnter: () => createRoot(dispose => {
-          closePortalMenu = () => {
+          playPortalSound()
+          closeMenu = () => {
             dispose()
-            closePortalMenu = undefined
+            closeMenu = undefined
           }
           $scene.modal.set(<PortalMenu
             gameState={gameState}
             onChoose={realm => {
-              closePortalMenu?.()
+              closeMenu?.()
               props.setScene(realm)
             }}
             onStay={() => {
-              closePortalMenu?.()
+              closeMenu?.()
               $scene.modal.set(undefined)
             }}
           />)
@@ -164,6 +208,7 @@ export function KingdomLevel(props: {
       })
 
       $scene.addController(createDiverController('diver', {
+        skin: wornSuit($scene.gameState).diver,
         x: diverStart.x,
         y: diverStart.y,
         rotation: diverStart.rotation,
@@ -174,7 +219,7 @@ export function KingdomLevel(props: {
           props.setScene('blackout')
         },
       }))
-      $scene.addController(createCorgiController('corgi', { x: diverStart.x + 10, y: diverStart.y }))
+      $scene.addController(createCorgiController('corgi', { skin: wornSuit($scene.gameState).corgi, x: diverStart.x + 10, y: diverStart.y }))
 
       // Crystal Corgis already home, and any just brought back for Linkosha to set on their Plinth
       RealmNames.forEach(realm => {
@@ -242,6 +287,7 @@ export function KingdomLevel(props: {
       ],
       [
         // The shopkeeper stands behind his counter, under his awning
+        'shop-sign',
         'kingdom-shop-counter',
         'corgi-shopkeeper',
         'kingdom-shop-back',
