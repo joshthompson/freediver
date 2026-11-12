@@ -1,4 +1,4 @@
-import { Accessor, createSignal, JSX, onCleanup } from 'solid-js'
+import { Accessor, createEffect, createSignal, JSX, onCleanup } from 'solid-js'
 import { css } from '@style/css'
 import { createController, Scene, SceneComponent } from '@/engine'
 import { emptyAsset } from '@/assets'
@@ -14,6 +14,9 @@ import { createCrystalCorgiController, CrystalCorgiController } from '../../cont
 import { createRealmGuideController } from '../../controllers/realm/RealmGuideController'
 import { LetterBounce } from '../../ui/LetterBounce'
 import { Level } from '../Level'
+import { music } from '../../music/music'
+import type { SongName } from '../../music/songs'
+import { wornSuit } from '../../multiplayer/skins'
 
 export interface RealmLevelProps {
   setScene: (scene: string, mode?: string) => void
@@ -25,6 +28,7 @@ export interface RealmLevel {
   scene: Scene
   style: Accessor<JSX.CSSProperties>
   hud?: () => JSX.Element
+  music: Accessor<SongName> // Which song plays, which can change as the realm goes on
 }
 
 const failDuration = 2000
@@ -95,6 +99,7 @@ export function addRealmArrival($scene: Scene, realm: Realm, options: {
   }))
 
   const diver = createDiverController('diver', {
+    skin: wornSuit($scene.gameState).diver,
     x: entry.x - 34,
     y: entry.y - 78,
     rotation: 90,
@@ -104,7 +109,7 @@ export function addRealmArrival($scene: Scene, realm: Realm, options: {
     blackout: () => realm.fail($scene),
   })
   $scene.addController(diver)
-  const corgi = createCorgiController('corgi', { x: entry.x - 20, y: entry.y, bubbles: options.bubbles })
+  const corgi = createCorgiController('corgi', { skin: wornSuit($scene.gameState).corgi, x: entry.x - 20, y: entry.y, bubbles: options.bubbles })
   $scene.addController(corgi)
   return { diver, corgi }
 }
@@ -179,8 +184,8 @@ export function followDiver($scene: Scene, bounds: Rect) {
   const canvas = $scene.canvas.get()
   const center = diver.data.center()
   const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value))
-  canvas.setX(clamp(center.x - canvas.width / 2, bounds.x, Math.max(bounds.x, bounds.x + bounds.width - canvas.width)))
-  canvas.setY(clamp(center.y - canvas.height / 2, bounds.y, Math.max(bounds.y, bounds.y + bounds.height - canvas.height)))
+  canvas.setX(clamp(center.x - canvas.width() / 2, bounds.x, Math.max(bounds.x, bounds.x + bounds.width - canvas.width())))
+  canvas.setY(clamp(center.y - canvas.height() / 2, bounds.y, Math.max(bounds.y, bounds.y + bounds.height - canvas.height())))
 }
 
 // Frames for a number of seconds at the game's frame rate
@@ -211,6 +216,8 @@ export function RealmScene(level: (props: RealmLevelProps) => RealmLevel): Scene
       state: useGameState()!,
       mode: props.mode,
     })
+    createEffect(() => music.play(realm.music()))
+    onCleanup(() => music.stop(realm.music()))
 
     return <Level
       levelStyle={realm.style}

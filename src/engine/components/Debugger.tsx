@@ -1,6 +1,6 @@
 import { Scene } from "@/engine";
-import { CorgiController } from "@/game/freediver/controllers/CorgiController";
-import { DiverController } from "@/game/freediver/controllers/DiverController";
+import { CorgiController } from "@/game/freediver/controllers/main/CorgiController";
+import { DiverController } from "@/game/freediver/controllers/main/DiverController";
 import { css, cx } from "@style/css";
 import { Component, createSignal, onCleanup, Show } from "solid-js";
 
@@ -23,6 +23,13 @@ export const Debugger: Component<{ scene: Scene }> = props => {
     corgi()?.data.setX(parseFloat(newX) + 50)
   }
 
+  // The banked score, which is also what the shop spends from
+  const setScore = () => {
+    const current = props.scene.gameState.score.total.toString()
+    const score = parseInt(prompt('Set Score', current) ?? current)
+    if (!isNaN(score)) props.scene.setGameState('score', 'total', score)
+  }
+
   return <div class={cx(styles.debugger, 'group')}>
     <div>
       <div>Controllers:</div>
@@ -40,6 +47,9 @@ export const Debugger: Component<{ scene: Scene }> = props => {
         <div class={styles.actions}>
           <button class={styles.action} onClick={setX}>
             Set X
+          </button>
+          <button class={styles.action} onClick={setScore}>
+            Set Score
           </button>
         </div>
       </Show>
@@ -71,8 +81,10 @@ const styles = {
   actions: css({
     display: 'none',
 
+    gap: '5px',
+
     _groupHover: {
-      display: 'block',
+      display: 'flex',
     }
   }),
   action: css({

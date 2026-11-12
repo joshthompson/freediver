@@ -8,6 +8,8 @@ import {
   hellCorgiDialogAsset,
   judgeCorgiDialogAsset,
   kingDialogAsset,
+  kingdomShopkeeperDialogAsset,
+  kingdomTailorDialogAsset,
   linkDialogAsset,
   manateeHappyDialogAsset,
   manateeSadDialogAsset,
@@ -15,30 +17,36 @@ import {
   scrambledEggMonsterHappyAsset,
   spaceCorgiDialogAsset,
 } from '@/assets'
-import { DialogMessage, Localised } from '@/utils/game'
+import { DialogMessage, Localised, SpeechSound } from '@/utils/game'
 import { RealmName } from './Realms'
 
 // Every line in English, Russian, Swedish and Fvelyntari
 const say = (en: string, ru: string, sv: string, fl: string): Localised => ({ en, ru, sv, fl })
 
+// How a character sounds as their lines type out: their pitch in Hz, the wave, and how each beep bends
+const speech = (pitch: number, wave: OscillatorType, slide?: number, volume?: number): SpeechSound => ({ pitch, wave, slide, volume })
+
 const woof = say('Woof woof!', 'Гав-гав!', 'Voff voff!', 'Wuf wuf!')
 const woofQuestion = say('Woof?', 'Гав?', 'Voff?', 'Wuf?')
 
-const cow = { speaker: say('Wanda the Cow', 'Корова Ванда', 'Kossan Wanda', 'Wanda Kavur'), image: cowDialogAsset }
-const link = { speaker: say('Linkosha', 'Линкоша', 'Linkosha', 'Linkosha'), image: linkDialogAsset }
-const manateeSad = { speaker: say('Manny the Manatee', 'Ламантин Мэнни', 'Manaten Manny', 'Manny Morvakel'), image: manateeSadDialogAsset }
+const cow = { speaker: say('Wanda the Cow', 'Корова Ванда', 'Kossan Wanda', 'Wanda Kavur'), image: cowDialogAsset, speechSound: speech(150, 'sawtooth', 0.8) }
+const link = { speaker: say('Linkosha', 'Линкоша', 'Linkosha', 'Linkosha'), image: linkDialogAsset, speechSound: speech(640, 'square', 1.2) }
+const manateeSad = { speaker: say('Manny the Manatee', 'Ламантин Мэнни', 'Manaten Manny', 'Manny Morvakel'), image: manateeSadDialogAsset, speechSound: speech(115, 'sine', 0.9) }
 const manateeHappy = { ...manateeSad, image: manateeHappyDialogAsset }
-const king = { speaker: say('The Corgi King', 'Король Корги', 'Corgikungen', 'Korli Kalun'), image: kingDialogAsset }
+const king = { speaker: say('The Corgi King', 'Король Корги', 'Corgikungen', 'Korli Kalun'), image: kingDialogAsset, speechSound: speech(210, 'triangle', 1, 2) }
+// Shopkeeper names are placeholders too
+const tailor = { speaker: say('The Tailor', 'Портной', 'Skräddaren', 'Kelunar'), image: kingdomTailorDialogAsset, speechSound: speech(390, 'triangle', 1.15, 1.5) }
+const shopkeeper = { speaker: say('The Shopkeeper', 'Лавочник', 'Butiksägaren', 'Merkal Korli'), image: kingdomShopkeeperDialogAsset, speechSound: speech(250, 'square', 0.9) }
 // Realm Guide names are placeholders until they're named properly
-const cosmo = { speaker: say('Cosmo the Space Corgi', 'Космо, космический корги', 'Rymdcorgin Cosmo', 'Cosmo Estrel-korli'), image: spaceCorgiDialogAsset }
-const chum = { speaker: say('Captain Chum', 'Капитан Прикорм', 'Kapten Agn', 'Kaptal Chum'), image: captainChumDialogAsset }
-const yolko = { speaker: say('Yolko the Eggy Corgi', 'Желток, яичный корги', 'Äggcorgin Yolko', 'Yolko Esh-korli'), image: eggyCorgiDialogAsset }
-const fathom = { speaker: say('Judge Fathom', 'Судья Глубин', 'Domare Famn', 'Drekun Fathom'), image: judgeCorgiDialogAsset }
-const ember = { speaker: say('Ember', 'Уголёк', 'Glöd', 'Ember'), image: hellCorgiDialogAsset }
-const eggMonster = { speaker: say('The Scrambled Egg Monster', 'Монстр-Омлет', 'Äggröremonstret', 'Eshrova Morgul'), image: scrambledEggMonsterAsset }
+const cosmo = { speaker: say('Cosmo the Space Corgi', 'Космо, космический корги', 'Rymdcorgin Cosmo', 'Cosmo Estrel-korli'), image: spaceCorgiDialogAsset, speechSound: speech(720, 'sine', 1.4) }
+const chum = { speaker: say('Captain Chum', 'Капитан Прикорм', 'Kapten Agn', 'Kaptal Chum'), image: captainChumDialogAsset, speechSound: speech(175, 'sawtooth') }
+const yolko = { speaker: say('Yolko the Eggy Corgi', 'Желток, яичный корги', 'Äggcorgin Yolko', 'Yolko Esh-korli'), image: eggyCorgiDialogAsset, speechSound: speech(900, 'square', 1.25) }
+const fathom = { speaker: say('Judge Fathom', 'Судья Глубин', 'Domare Famn', 'Drekun Fathom'), image: judgeCorgiDialogAsset, speechSound: speech(300, 'sine') }
+const ember = { speaker: say('Ember', 'Уголёк', 'Glöd', 'Ember'), image: hellCorgiDialogAsset, speechSound: speech(430, 'sawtooth', 1.1) }
+const eggMonster = { speaker: say('The Scrambled Egg Monster', 'Монстр-Омлет', 'Äggröremonstret', 'Eshrova Morgul'), image: scrambledEggMonsterAsset, speechSound: speech(95, 'sawtooth', 0.6) }
 const eggMonsterHappy = { ...eggMonster, image: scrambledEggMonsterHappyAsset }
-const demon = { speaker: say('The Demon Corgi Fish', 'Демон корги-рыба', 'Demoncorgifisken', 'Vashkur Korlishol'), image: demonCorgiFishAsset }
-const devil = { speaker: say('The Devil Corgi Fish', 'Дьявольская корги-рыба', 'Djävulscorgifisken', 'Vashkalun Korlishol'), image: devilCorgiFishAsset }
+const demon = { speaker: say('The Demon Corgi Fish', 'Демон корги-рыба', 'Demoncorgifisken', 'Vashkur Korlishol'), image: demonCorgiFishAsset, speechSound: speech(520, 'sawtooth', 0.75) }
+const devil = { speaker: say('The Devil Corgi Fish', 'Дьявольская корги-рыба', 'Djävulscorgifisken', 'Vashkalun Korlishol'), image: devilCorgiFishAsset, speechSound: speech(70, 'sawtooth', 0.7) }
 const devilFriend = { ...devil, image: devilCorgiFishHappyAsset }
 
 export const CowQuest = {
@@ -274,6 +282,77 @@ export const KingDeliveries = {
 } as const
 
 // What the corgis about the kingdom say as Linkosha swims by, before and after taking the crown
+// The Tailor's costume shop. He always says a word before showing you his costumes
+export const TailorDialog = {
+  visitor: [
+    [{ ...tailor, text: say('Ah, a customer! Take a look at my swimsuits.', 'О, покупатель! Взгляни на мои гидрокостюмы.', 'Åh, en kund! Ta en titt på mina våtdräkter.', 'Oh, merkari! Vel shon vashra kelun.') }],
+    [{ ...tailor, text: say('Welcome! Fancy a new colour for the deep?', 'Добро пожаловать! Хочешь новый цвет для глубины?', 'Välkommen! Sugen på en ny färg för djupet?', 'Hela! Shon telvä vel fen drekalun?') }],
+    [{ ...tailor, text: say(`Back again? Let's find you something lovely.`, 'Снова здесь? Давай подберём что-нибудь красивое.', 'Tillbaka igen? Vi hittar något fint åt dig.', 'Revol? Shon lerosh kelun vä.') }],
+  ],
+  king: [
+    [{ ...tailor, text: say(`Your Majesty! Let's find something fit for a king.`, 'Ваше Величество! Подберём что-нибудь достойное короля.', 'Ers Majestät! Vi hittar något värdigt en kung.', 'Kalun! Lerosh kelun fen Kalun.') }],
+    [{ ...tailor, text: say('The royal wardrobe awaits, Your Majesty.', 'Королевский гардероб ждёт, Ваше Величество.', 'Den kungliga garderoben väntar, Ers Majestät.', 'Kalunra kelun telvor, Kalun.') }],
+  ],
+}
+
+// The Shopkeeper's shop between the pillars, with nothing to sell yet
+export const ShopkeeperDialog = {
+  closed: [
+    { ...shopkeeper, text: say(
+      `Welcome to my shop! It's a bit... empty, I know.`,
+      'Добро пожаловать в мою лавку! Да, тут пока... пустовато.',
+      'Välkommen till min butik! Den är lite... tom, jag vet.',
+      'Hela tal merkal! Vä... nel fes, shon varil.',
+    ) },
+    { ...link, text: woofQuestion },
+    { ...shopkeeper, text: say(
+      'The shelves will be full soon. Come back later!',
+      'Скоро полки будут полными. Приходи попозже!',
+      'Hyllorna blir snart fulla. Kom tillbaka senare!',
+      'Merkal lerosh nerun. Revol tal nerun!',
+    ) },
+  ],
+}
+
+// What the Tailor calls out as Linkosha swims by: selling to a visitor, then to the new king
+export const TailorBackgroundDialogLines = {
+  visitor: [
+    say('Swimsuits! Lovely swimsuits! Fifty points each!', 'Гидрокостюмы! Чудесные гидрокостюмы! По пятьдесят очков!', 'Våtdräkter! Härliga våtdräkter! Femtio poäng styck!', 'Vashra kelun! Lerosh vashra kelun! Fen 50 punra!'),
+    say('Every colour of the sea, for you and your pup!', 'Все цвета моря, для тебя и твоего щенка!', 'Havets alla färger, för dig och din valp!', 'Allra vel vashra, fen shon vä korli!'),
+    say('Red, yellow, pink... or teal, if you must.', 'Красный, жёлтый, розовый... или бирюзовый, если уж так хочется.', 'Röd, gul, rosa... eller turkos, om du måste.', 'Rovra, solvra, pinkra... nel tealun, naril.'),
+    say(`A new suit for the King's quest? Very brave, very stylish.`, 'Новый костюм для задания Короля? Очень смело, очень стильно.', 'En ny dräkt för kungens uppdrag? Väldigt modigt, väldigt snyggt.', 'Vashra kel fen drevok Kalun? Vorli, lerosh.'),
+    say('No refunds! But swapping back is free.', 'Деньги не возвращаем! Но переодеться обратно можно бесплатно.', 'Inga återbetalningar! Men att byta tillbaka är gratis.', 'Nel revolpunra! Velun revol tal nel.'),
+    say('Psst. Yellow is very fashionable this season.', 'Псст. Жёлтый в этом сезоне очень моден.', 'Psst. Gult är väldigt modernt den här säsongen.', 'Pssh. Solvra tal lerosh talun.'),
+    say('Points spent here are points well spent!', 'Очки, потраченные здесь, потрачены не зря!', 'Poäng som spenderas här är väl spenderade!', 'Punra merkra dra tal punra lerosh!'),
+  ],
+  king: [
+    say('Your Majesty! Something new for the royal wardrobe?', 'Ваше Величество! Что-нибудь новое для королевского гардероба?', 'Ers Majestät! Något nytt till den kungliga garderoben?', 'Kalun! Vashra kel fen Kalunra?'),
+    say('King Linkosha shops here, you know!', 'Сам король Линкоша здесь покупает, между прочим!', 'Kung Linkosha handlar här, vet du!', 'Kalun Linkosha merkra dra!'),
+    say('Fit for a king! And for his diver.', 'Достойно короля! И его дайвера.', 'Värdigt en kung! Och hans dykare.', 'Lerosh fen Kalun! Vä terra-shonari.'),
+    say('Even royalty needs a spare swimsuit.', 'Даже королям нужен запасной гидрокостюм.', 'Även kungligheter behöver en extra våtdräkt.', 'Kalunra telvä fes vashra kel.'),
+    say('The old King always said pink was his colour.', 'Старый Король всегда говорил, что розовый — его цвет.', 'Den gamle kungen sa alltid att rosa var hans färg.', 'Ardun Kalun varil pinkra tal Kalunvel.'),
+    say('Long live King Linkosha! Prices stay the same, though.', 'Да здравствует король Линкоша! Но цены не меняются.', 'Länge leve kung Linkosha! Priserna är dock desamma.', 'Lorva Kalun Linkosha! Punra nel revol.'),
+  ],
+}
+
+// What the Shopkeeper calls out, waiting for something to sell
+export const ShopkeeperBackgroundDialogLines = {
+  visitor: [
+    say('Grand opening soon! Very soon. Probably.', 'Скоро открытие! Очень скоро. Наверное.', 'Invigning snart! Väldigt snart. Förmodligen.', 'Merkal nerun! Lerosh nerun. Varil.'),
+    say(`Don't mind the empty shelves.`, 'Не обращай внимания на пустые полки.', 'Bry dig inte om de tomma hyllorna.', 'Nel vel merkal nelfes.'),
+    say(`I'm still waiting on a delivery from the surface.`, 'Я всё ещё жду доставку с поверхности.', 'Jag väntar fortfarande på en leverans från ytan.', 'Shon telvor terra drekal.'),
+    say('What should I sell? Bones? Shells? Snacks?', 'Что бы мне продавать? Косточки? Ракушки? Вкусняшки?', 'Vad ska jag sälja? Ben? Snäckor? Godis?', 'Varil merkra? Bonra? Shelra? Nomra?'),
+    say(`Everything in stock! Well... nothing in stock.`, 'Всё в наличии! Ну... ничего в наличии.', 'Allt i lager! Nja... inget i lager.', 'Allra tal merkal! Vä... nel tal merkal.'),
+    say('A shop with nothing in it is still a shop.', 'Лавка без товаров — всё равно лавка.', 'En butik utan något i är fortfarande en butik.', 'Merkal nelfes tal merkal.'),
+  ],
+  king: [
+    say('Your Majesty! The royal shop opens soon.', 'Ваше Величество! Королевская лавка скоро откроется.', 'Ers Majestät! Den kungliga butiken öppnar snart.', 'Kalun! Kalunra merkal nerun.'),
+    say(`A king needs a shop. I'm working on it!`, 'Королю нужна лавка. Я над этим работаю!', 'En kung behöver en butik. Jag jobbar på det!', 'Kalun telvä merkal. Shon silen!'),
+    say('King Linkosha will be my very first customer!', 'Король Линкоша будет моим самым первым покупателем!', 'Kung Linkosha blir min allra första kund!', 'Kalun Linkosha fes merkari!'),
+    say('Long live King Linkosha! Still nothing in stock, though.', 'Да здравствует король Линкоша! Правда, товаров всё ещё нет.', 'Länge leve kung Linkosha! Fortfarande inget i lager dock.', 'Lorva Kalun Linkosha! Nel tal merkal.'),
+  ],
+}
+
 export const CorgiCitizenBackgroundDialogLines = {
   visitor: [
     say('Woof! A visitor!', 'Гав! У нас гость!', 'Voff! En besökare!', 'Wuf! Shonari!'),

@@ -21,7 +21,7 @@ const Bubble: Component<{ scene: Scene, dialog: BackgroundDialogData }> = props 
     const x = speaker.data.x() - canvas.x() + speaker.data.width() / 2
     const y = speaker.data.y() - canvas.y()
     return {
-      left: `${Math.min(Math.max(x, edgeX), canvas.width - edgeX)}px`,
+      left: `${Math.min(Math.max(x, edgeX), canvas.width() - edgeX)}px`,
       top: `${Math.max(y, minTop)}px`,
     }
   }

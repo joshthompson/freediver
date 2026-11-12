@@ -22,6 +22,7 @@ import { JSX } from "solid-js/jsx-runtime"
 import { createBoxController } from "../../controllers/utils/BoxController"
 import { OCEAN } from "./data"
 import { createTriggerController } from "../../controllers/utils/TriggerController"
+import { wornSuit } from '../../multiplayer/skins'
 
 export function OceanLevel(props: {
   setScene: (scene: string, mode?: string) => void
@@ -47,6 +48,7 @@ export function OceanLevel(props: {
       $scene.addController(createSharkController('shark'))
       $scene.addController(createWreckController('wreck'))
       $scene.addController(createDiverController('diver', {
+        skin: wornSuit($scene.gameState).diver,
         x: diverStart.x,
         y: diverStart.y,
         rotation: diverStart.rotation,
@@ -80,7 +82,7 @@ export function OceanLevel(props: {
         cave: 'left',
         open: () => state.gameState.questState.cave.state === 'open'
       }))
-      const corgi = createCorgiController('corgi', { x: diverStart.x + 10, y: diverStart.y })
+      const corgi = createCorgiController('corgi', { skin: wornSuit($scene.gameState).corgi, x: diverStart.x + 10, y: diverStart.y })
       $scene.addController(corgi)
       $scene.addController(createRopeController('rope'))
       $scene.addController(...createFriedEggFishController('fried-egg-fish-1', { x: -2000 }))
@@ -151,7 +153,7 @@ export function OceanLevel(props: {
       const diver = $scene.getControllerById<DiverController>('diver')
       // Center camera
       if (diver) {
-        $scene.canvas.get().setX(diver.data.x() - $scene.canvas.get().width / 2 + diver.data.width() / 2)
+        $scene.canvas.get().setX(diver.data.x() - $scene.canvas.get().width() / 2 + diver.data.width() / 2)
       }
     },
     assetOrder: [

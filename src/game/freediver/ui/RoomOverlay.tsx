@@ -35,7 +35,8 @@ export const RoomOverlay: Component<{ scene: Scene, session: RoomSession, leave:
     const id = player.id === props.session.selfId ? 'diver' : puppetDiverId(player.id)
     const diver = props.scene.getControllerById<DiverController>(id)
     if (!diver) return
-    const { width, height } = canvas()
+    const width = canvas().width()
+    const height = canvas().height()
     const x = diver.data.x() + diver.data.width() / 2 - canvas().x()
     const y = diver.data.y() + diver.data.height() / 2 - canvas().y()
     const onScreen = x >= -offScreenMargin && x <= width + offScreenMargin
@@ -61,10 +62,10 @@ export const RoomOverlay: Component<{ scene: Scene, session: RoomSession, leave:
     const place = placement(player)
     if (!place) return
     // Off screen, the bubble sits just inside the Pointer
-    const x = place.onScreen ? place.x : place.x + (canvas().width / 2 - place.x) * 0.2
-    const y = place.onScreen ? place.y - bubbleAbove : place.y + (canvas().height / 2 - place.y) * 0.2
+    const x = place.onScreen ? place.x : place.x + (canvas().width() / 2 - place.x) * 0.2
+    const y = place.onScreen ? place.y - bubbleAbove : place.y + (canvas().height() / 2 - place.y) * 0.2
     return {
-      left: `${Math.min(Math.max(x, edgeX), canvas().width - edgeX)}px`,
+      left: `${Math.min(Math.max(x, edgeX), canvas().width() - edgeX)}px`,
       top: `${Math.max(y, minTop)}px`,
     }
   }

@@ -1,9 +1,10 @@
 import { createSignal, JSX, Show } from 'solid-js'
 import { Scene } from '@/engine'
-import { eggyCorgiAsset, equalisationSound, starfishSound, thudSound } from '@/assets'
+import { eggyCorgiAsset, equalisationSound, friedEggCeilingAsset, friedEggFloorAsset, friedEggWallLeftAsset, friedEggWallRightAsset, thudSound } from '@/assets'
 import { Translations } from '../../data/Translations'
 import { EggMonsterDialog, RealmDialogs } from '../../data/Dialogs'
 import { createFriedEggFishController } from '../../controllers/creature/FriedEggFish'
+import { createBoxController } from '../../controllers/utils/BoxController'
 import {
   createEggBulletController,
   createFlyingEggController,
@@ -12,6 +13,7 @@ import {
 } from '../../controllers/realm/EggControllers'
 import { getDiver } from '../../controllers/realm/Hazard'
 import { HudMeter, HudStack, HudTimer } from '../../ui/RealmHud'
+import { effects } from '../../music/effects'
 import {
   addRealmArrival,
   addRealmFinish,
@@ -25,6 +27,11 @@ import {
 } from './realm'
 
 const bounds = { x: 0, y: 0, width: 2100, height: 1400 }
+const floorArt = { width: 490, height: 100 } // Half the art's size, repeated along the floor and ceiling
+const floorSolid = 80 // The bricks are solid, the moss and eggs along their edge aren't
+const wallWidth = 180 // Repeated down each side, with bricks about the height of the floor's
+const wallSolid = 140
+const margin = { x: 210, y: 150 } // Keeps eggs and fish clear of the walls, floor and ceiling
 const eggsNeeded = 100
 const collectTime = seconds(60)
 const rageTime = seconds(60)
@@ -57,6 +64,14 @@ export function FriedEggLevel(props: RealmLevelProps): RealmLevel {
         diver: { equalise: false, oxygenUse: () => 0 },
         bubbles: false,
       })
+      $scene.addController(createBoxController('ceiling', { x: bounds.x, y: bounds.y, width: bounds.width, height: floorSolid }))
+      $scene.addController(createBoxController('floor', {
+        x: bounds.x, y: bounds.y + bounds.height - floorSolid, width: bounds.width, height: floorSolid,
+      }))
+      $scene.addController(createBoxController('wall-left', { x: bounds.x, y: bounds.y, width: wallSolid, height: bounds.height }))
+      $scene.addController(createBoxController('wall-right', {
+        x: bounds.x + bounds.width - wallSolid, y: bounds.y, width: wallSolid, height: bounds.height,
+      }))
 
       const guide = addRealmGuide($scene, {
         asset: eggyCorgiAsset,
@@ -83,16 +98,19 @@ export function FriedEggLevel(props: RealmLevelProps): RealmLevel {
       // Plenty of eggs, scattered on a jittered grid so they're spread right across the realm
       const columns = 18
       const rows = 14
+      let eggsLeft = columns * rows
       Array(columns * rows).fill(null).forEach((_, n) => {
         const column = n % columns
         const row = Math.floor(n / columns)
         $scene.addController(createFriedEggController('fried-egg-' + n, {
-          x: 100 + column * (bounds.width - 200) / (columns - 1) + (Math.random() - 0.5) * 80,
-          y: 100 + row * (bounds.height - 200) / (rows - 1) + (Math.random() - 0.5) * 80,
+          x: margin.x + column * (bounds.width - margin.x * 2) / (columns - 1) + (Math.random() - 0.5) * 80,
+          y: margin.y + row * (bounds.height - margin.y * 2) / (rows - 1) + (Math.random() - 0.5) * 80,
           onCollect: () => {
+            // Every egg counts towards this, even after the Egg-o-meter is full
+            if (--eggsLeft === 0) $scene.gameStateActions.achievement('everyEgg')
+            effects.eggCollect()
             if (phase() !== 'collect') return
             setEggs(eggs() + 1)
-            $scene.playSound('starfish', { unique: true, volume: 0.4 })
             if (eggs() >= eggsNeeded) {
               setPhase('deliver')
               $scene.startDialog({ messages: [...EggMonsterDialog.bring], pauseGameplay: true })
@@ -104,7 +122,7 @@ export function FriedEggLevel(props: RealmLevelProps): RealmLevel {
       Array(8).fill(null).forEach((_, n) => {
         $scene.addController(...createFriedEggFishController('egg-fish-' + n, {
           x: Math.random() * bounds.width,
-          y: 100 + n * (bounds.height - 200) / 7,
+          y: margin.y + n * (bounds.height - margin.y * 2) / 7,
           wrap: { minX: -100, maxX: bounds.width + 100 },
           kissCooldown: seconds(8),
         }))
@@ -115,6 +133,7 @@ export function FriedEggLevel(props: RealmLevelProps): RealmLevel {
       $scene.addController(monster)
 
       const fire = (from: Vector, angle: number, speed = bulletSpeed) => {
+        effects.eggFire()
         $scene.addController(createEggBulletController('egg-bullet-' + bullets++, {
           ...from,
           velocity: { x: Math.cos(angle) * speed, y: Math.sin(angle) * speed },
@@ -133,8 +152,8 @@ export function FriedEggLevel(props: RealmLevelProps): RealmLevel {
           const marginX = monster.data.width() / 2 + 20
           const marginY = monster.data.height() / 2 + 20
           return {
-            x: clamp(spot.x, canvas.x() + marginX, canvas.x() + canvas.width - marginX),
-            y: clamp(spot.y, canvas.y() + marginY, canvas.y() + canvas.height - marginY),
+            x: clamp(spot.x, canvas.x() + marginX, canvas.x() + canvas.width() - marginX),
+            y: clamp(spot.y, canvas.y() + marginY, canvas.y() + canvas.height() - marginY),
           }
         }
         phaseFrames++
@@ -217,7 +236,7 @@ export function FriedEggLevel(props: RealmLevelProps): RealmLevel {
           } else if (pattern === 4) {
             // Egg rain from the top of the screen, while he keeps taking aim
             if (phaseFrames % 4 === 0) {
-              fire({ x: canvas.x() + Math.random() * canvas.width, y: canvas.y() - 20 }, Math.PI / 2 + (Math.random() - 0.5) * 0.3, 4 + Math.random() * 2)
+              fire({ x: canvas.x() + Math.random() * canvas.width(), y: canvas.y() - 20 }, Math.PI / 2 + (Math.random() - 0.5) * 0.3, 4 + Math.random() * 2)
             }
             if (phaseFrames % 30 === 0) fire(monsterCenter, aim, 6.5)
           } else {
@@ -265,8 +284,8 @@ export function FriedEggLevel(props: RealmLevelProps): RealmLevel {
     sounds: {
       thud: thudSound,
       equalisation: equalisationSound,
-      starfish: starfishSound,
     },
+    images: [friedEggFloorAsset, friedEggCeilingAsset, friedEggWallLeftAsset, friedEggWallRightAsset],
   })
 
   const style = () => {
@@ -275,13 +294,22 @@ export function FriedEggLevel(props: RealmLevelProps): RealmLevel {
     const y = canvas.y()
     return {
       'background-image': `
+        url(${friedEggCeilingAsset}),
+        url(${friedEggFloorAsset}),
+        url(${friedEggWallLeftAsset}),
+        url(${friedEggWallRightAsset}),
         radial-gradient(circle at 50% 50%, #ffc21a 0 9px, transparent 10px),
         radial-gradient(circle at 50% 50%, #fffdf5 0 22px, transparent 23px),
         radial-gradient(circle at 50% 50%, #ffcf3366 0 30px, transparent 31px),
         linear-gradient(160deg, #ffe9a8 0%, #ffd1dc 50%, #c9f0ff 100%)
       `,
-      'background-size': '240px 200px, 240px 200px, 170px 150px, 100% 100%',
+      'background-size': `${floorArt.width}px ${floorArt.height}px, ${floorArt.width}px ${floorArt.height}px, ${wallWidth}px auto, ${wallWidth}px auto, 240px 200px, 240px 200px, 170px 150px, 100% 100%`,
+      'background-repeat': 'repeat-x, repeat-x, repeat-y, repeat-y, repeat, repeat, repeat, no-repeat',
       'background-position': `
+        ${bounds.x - x}px ${bounds.y - y}px,
+        ${bounds.x - x}px ${bounds.y + bounds.height - floorArt.height - y}px,
+        ${bounds.x - x}px ${bounds.y - y}px,
+        ${bounds.x + bounds.width - wallWidth - x}px ${bounds.y - y}px,
         ${-x / 2 + 60}px ${-y / 2 + 40}px,
         ${-x / 2 + 60}px ${-y / 2 + 40}px,
         ${-x / 4}px ${-y / 4}px,
@@ -300,5 +328,5 @@ export function FriedEggLevel(props: RealmLevelProps): RealmLevel {
     </Show>
   </HudStack>
 
-  return { scene, style, hud }
+  return { scene, style, hud, music: () => phase() === 'rage' ? 'friedEggBoss' : 'friedEgg' }
 }

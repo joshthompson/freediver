@@ -14,6 +14,7 @@ export const AllAchievements = [
   'bilingual', // Change language
   'surviveTitanTriggerFish', // Survive an encounter with a titan trigger fish
   'eggFishKiss', // Get kissed by a fried egg fish
+  'everyEgg', // Collect every Fried Egg in the Fried Egg realm
 
   // Explore
   'whale', // Find a whale
@@ -47,6 +48,7 @@ export const AchievementEmojis: Record<Achievement, string> = {
   endOfTheWorld: '🌍',
   firstDive: '🏊',
   eggFishKiss: '💋',
+  everyEgg: '🍳',
   prequalisation: '👃',
   shark: '🦈',
   statue: '🗿',

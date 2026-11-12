@@ -61,7 +61,7 @@ function createPlantBase(id: string, x: number) {
       $.setAnimationPosition($.animationPosition() + Math.random() / 200)
       
       const offset = $.x() - $scene.canvas.get().x()
-      const canvasWidth = $scene.canvas.get().width
+      const canvasWidth = $scene.canvas.get().width()
       if (offset < -repeatMargin) $.setX($.x() + canvasWidth + repeatMargin * 2)
       if (offset > canvasWidth + repeatMargin) $.setX($.x() - canvasWidth - repeatMargin * 2)
 

@@ -2,6 +2,9 @@ import { Key, Scene } from '@/engine'
 import { css, cva, cx } from '@style/css'
 import { Component, createEffect, createSignal, For, onCleanup, onMount, Show } from 'solid-js'
 import { Translations } from '@/game/freediver/data/Translations'
+import { effects } from '../music/effects'
+
+const speechEvery = 3 // Letters per beep
 
 export const Dialog: Component<{scene: Scene}> = props => {
   const [text, setText] = createSignal('')
@@ -11,7 +14,11 @@ export const Dialog: Component<{scene: Scene}> = props => {
 
   const locale = () => props.scene.gameState.options.locale
 
+  let interval: ReturnType<typeof setInterval> | undefined
+  onCleanup(() => clearInterval(interval))
+
   createEffect(() => {
+    clearInterval(interval)
     const text = message()?.text[locale()] ?? undefined
     if (!text) {
       setText('')
@@ -24,9 +31,14 @@ export const Dialog: Component<{scene: Scene}> = props => {
     setCanProceed(false)
     let currentIndex = 0
     setText('')
-    const interval = setInterval(() => {
+    const speechSound = message()?.speechSound
+    interval = setInterval(() => {
       currentIndex++
       setText(fullText.slice(0, currentIndex))
+      // A beep every few letters while the speaker talks
+      if (speechSound && currentIndex % speechEvery === 1 && /\p{L}/u.test(fullText[currentIndex - 1])) {
+        effects.speech(speechSound)
+      }
       if (currentIndex >= fullText.length) {
         setCanProceed(true)
         setSelectedOption(0)

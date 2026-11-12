@@ -4,7 +4,7 @@ import { createBubbleController } from '../scenary/BubbleController'
 import { BoneController } from '../scenary/BoneController'
 import { kingdomCrownAsset, linkAsset } from '@/assets'
 import { createObjectSignal } from '@/engine/utils'
-import { generateFrames } from '@/utils'
+import { generateSheetFrames } from '@/utils'
 import { useGameState } from '@/utils/GameStateContext'
 import { CrystalCorgiController } from '../realm/CrystalCorgiController'
 
@@ -12,6 +12,10 @@ const bubbleFrequency = 20
 const maxSpeed = 10
 const minSpeed = 0
 let bubbleN = 0
+
+// How every swimming corgi's sprite sheet is laid out: Linkosha, the citizens, the King and the
+// realm guides. Built by scripts/build-corgi-sheets.mjs
+export const corgiSheet = { cell: { width: 634, height: 398 }, gutter: 36, frameCount: 3 }
 
 export type CorgiController = ReturnType<typeof createCorgiController>
 
@@ -36,7 +40,7 @@ export function createCorgiController(
     y?: number
     type?: string
     diverId?: string // The diver to follow. Defaults to 'diver'
-    skin?: string // The sprite sheet, so multiplayer can give each Player's corgi their suit colour
+    skin?: string | (() => string) // The sprite sheet, so the corgi's suit can match the diver's
     crown?: boolean // Whether to wear the crown once the Corgi King hands it over. Defaults to true
     bubbles?: boolean // Whether swimming makes bubbles. False where there's no water. Defaults to true
     puppet?: () => CorgiPose | undefined // Copies these poses instead of following a diver
@@ -45,10 +49,13 @@ export function createCorgiController(
   const followDistance = 50
   const boostDistance = 200 // If the corgi is further than this from the diver, he goes faster
 
+  const { skin: chosen } = props
+  const skin = typeof chosen === 'function' ? chosen : () => chosen ?? linkAsset
   const corgi = createController({
-    frames: generateFrames(props.skin ?? linkAsset, 634, 394, 70, 3, true),
+    frames: generateSheetFrames(skin(), corgiSheet, 44),
     init() {
       return {
+        frames: () => generateSheetFrames(skin(), corgiSheet, 44),
         id,
         type: props.type ?? 'corgi',
         ...createObjectSignal(props.x, 'x'),

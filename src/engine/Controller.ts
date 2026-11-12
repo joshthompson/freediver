@@ -1,239 +1,44 @@
-import { Accessor, createMemo, createSignal, JSX, Setter } from "solid-js"
-import { Sprite } from '@/engine/components/Sprite'
-import { Scene } from "./Scene"
-import { isOverlapping, SolidRect } from "@/utils/game"
-import { blockBySolidsRectPlayer } from "@/utils/blockBySolids"
-import { cx } from "@style/css"
+import {
+  type Controller,
+  type ControllerBaseType,
+  type ControllerProps,
+  createConnectedController as createScoopConnectedController,
+  createController as createScoopController,
+} from 'scoopjs'
+import { isOverlapping } from '@/utils/game'
 
-type Accessorise<T> = {
-  [K in keyof T]: Accessor<T[K]>
-}
+export type { Controller, ControllerBaseType, ControllerProps } from 'scoopjs'
 
-export type ControllerBaseType = {
-  id: string
-  type: string
-  x: Accessor<Sprite['x']>
-  y: Accessor<Sprite['y']>
-  setX?: Setter<Sprite['x']>
-  setY?: Setter<Sprite['y']>
-  scene?: Scene
-  style?: Accessor<Sprite['style']>
-  width: Accessor<Sprite['width']>
-  height: Accessor<number>
-  inner?: {
-    rotation?: Accessor<number>
-    origin?: Accessor<Vector>
-  },
-} & Partial<Accessorise<Sprite>>
+// Freediver's controllers collide where their sprites are drawn on the page, rotation and scale
+// included, rather than by their own x and y as ScoopJS's do. That's what lets an attached controller,
+// like the diver's arm, whose x and y are only where it sits on whatever carries it, catch things
 
-export interface Controller<
-  CP extends ControllerBaseType,
-> {
-  type: string
-  id: string
-  frames?: Sprite['frames']
-  solid: SolidRect
-  onEnterFrame: (scene: Scene) => void
-  destroy: () => void
-  hitTest: (other: Controller<any>) => boolean
-  distanceTo: (x: number, y: number) => number
-  direction: (x: number, y: number) => number
-  attach: (controller: Controller<any>) => void
-  setGame: (scene: Scene) => void
-  data: CP
-  sprite: Accessor<Sprite>
-  element: () => HTMLElement | undefined
-  age: Accessor<number>
-  childControllers: Accessor<Controller<any>[]>
-}
+// Kept when the sprite mounts, so hitTest doesn't have to search the document every tick
+const elements = new WeakMap<Controller<any>, HTMLElement | undefined>()
 
-interface OnEnterFrameData<T extends ControllerBaseType> {
-  $: T,
-  $scene: Scene,
-  $age: number,
-  $currentFrame: number
-  $controller: Controller<T>
-}
-
-interface OnMountData<T extends ControllerBaseType> {
-  $: T,
-  $scene: Scene,
-  $currentFrame: number
-  $controller: Controller<T>
-  $ref: HTMLDivElement | undefined
-}
-
-interface ControllerProps<T extends ControllerBaseType> {
-  init: () => T
-  frames?: Sprite['frames']
-  solid?: SolidRect
-  blockedBySolid?: boolean
-  randomStartFrame?: Sprite['randomStartFrame']
-  class?: Sprite['class']
-  style?: Sprite['style']
-  onEnterFrame?: (data: OnEnterFrameData<T>) => void
-  onMount?: (data: OnMountData<T>) => void
-}
-
-type ExtractControllerType<T> = T extends Controller<infer A> ? A : never
-
-export function createController<
-  CP extends ControllerBaseType
->(options: ControllerProps<CP>): Controller<CP> {
-
-  const [age, setAge] = createSignal<number>(0)
-  const onEnterFrame = options.onEnterFrame ?? (() => {})
-  const [currentFrame, setCurrentFrame] = createSignal<number>(0)
-  const [childControllers, setChildControllers] = createSignal<Controller<any>[]>([])
-  const data: CP = options.init()
-  const destroy = () => {}
-  const setGame = (scene: Scene) => (data.scene = scene)
-  // Set when the sprite mounts, so hitTest doesn't have to search the document every frame
-  let element: HTMLElement | undefined
-  const getElement = () => element?.isConnected
+function elementOf(controller: Controller<any>) {
+  const element = elements.get(controller)
+  return element?.isConnected
     ? element
-    : document.querySelector<HTMLElement>(`[data-controller-id="${data.id}"]`) ?? undefined
-  const hitTest = (other: Controller<any>) => {
-    return isOverlapping(getElement(), other.element())
-  }
-  const distanceTo = (x: number, y: number) => {
-    return Math.hypot(data.x() - x, data.y() - y)
-  }
-  const direction = (x: number, y: number) => {
-    return Math.atan2(y - data.y(), x - data.x())
-  }
-  const attach = (controller: Controller<any>) => {
-    setChildControllers([...childControllers(), controller])
-  }
+    : document.querySelector<HTMLElement>(`[data-controller-id="${controller.id}"]`) ?? undefined
+}
 
-  const controller: Controller<CP> = {
-    id: data.id,
-    type: data.type,
-    frames: options.frames,
-    solid: options.solid ?? false,
-    onEnterFrame: $scene => {
-      const prevX = data.x()
-      const prevY = data.y()
-
-      onEnterFrame({
-        $: data,
-        $scene,
-        $age: age(),
-        $currentFrame: currentFrame(),
-        $controller: controller
-      })
-
-      if (options.blockedBySolid) {
-        blockBySolidsRectPlayer(data, prevX, prevY)
-      }
-      setAge(age() + 1)
-
-      childControllers().forEach(child => child.onEnterFrame($scene))
-    },
-    destroy,
-    hitTest,
-    distanceTo,
-    direction,
-    attach,
-    setGame,
-    age,
-    data,
-    childControllers,
-    element: getElement,
-    sprite: () => sprite,
-  }
-
-  // Getters, so each Sprite prop only tracks the signals it reads. A plain object would make every
-  // prop depend on every signal, re-rendering the whole Sprite whenever any one of them changed
-  const sprite: Sprite = {
-    get frames() { return data?.frames?.() ?? options.frames ?? [] },
-    get frame() { return data?.frame?.() },
-    randomStartFrame: options.randomStartFrame ?? false,
-    get class() { return cx(options.class, data.class?.()) },
-    get style() { return { ...options.style, ...data.style?.() } },
-    get x() { return data.x() },
-    get y() { return data.y() },
-    get origin() { return data.origin?.() },
-    get xScale() { return data.xScale?.() ?? 1 },
-    get yScale() { return data.yScale?.() ?? 1 },
-    get width() { return data.width() },
-    get height() { return data.height?.() ?? console.log(data.type) ?? 0 },
-    get parallax() { return data.parallax?.() ?? 1 },
-    get rotation() { return data.rotation?.() ?? 0 },
-    get state() { return data.state?.() },
-    get frameInterval() { return data.frameInterval?.() },
-    get children() { return data.children?.() },
-    inner: {
-      get rotation() { return data.inner?.rotation?.() },
-      get origin() { return data.inner?.origin?.() },
-    },
-    onChangeFrame: frame => setCurrentFrame(frame),
-    onMount: ({ $ref }) => {
-      element = $ref
-      options.onMount && options.onMount({
-        $: data,
-        $scene: data.scene!,
-        $controller: controller,
-        $currentFrame: currentFrame(),
-        $ref: $ref,
-      })
-    },
-    controllers: childControllers,
-  }
-
+function collidesOnPage<C extends Controller<any>>(controller: C) {
+  controller.hitTest = other => isOverlapping(elementOf(controller), elementOf(other))
   return controller
 }
 
+function keepElement<T extends ControllerBaseType>(onMount: ControllerProps<T>['onMount']): ControllerProps<T>['onMount'] {
+  return data => {
+    elements.set(data.$controller, data.$ref)
+    onMount?.(data)
+  }
+}
 
-export function createConnectedController<
-  C extends Controller<any>,
-  T extends {} = ControllerBaseType,
->(options: {
-  type: string | ((baseType: string) => string),
-  base: C,
-  frames?: ControllerProps<ExtractControllerType<C>>['frames'],
-  offset: Vector,
-  transformOrigin?: Vector,
-  origin?: Vector,
-  solid?: SolidRect
-  width: ($: ExtractControllerType<C>) => number,
-  height: ($: ExtractControllerType<C>) => number,
-  xScale?: ($: ExtractControllerType<C>) => number,
-  rotation?: ($: ExtractControllerType<C>, $age: number) => number,
-  frameInterval?: ($: ExtractControllerType<C>) => number,
-  state?: ($: ExtractControllerType<C>) => Sprite['state'],
-  onEnterFrame?: ControllerProps<ExtractControllerType<Controller<T & ControllerBaseType>>>['onEnterFrame'],
-  frame?: ($: ExtractControllerType<C>) => number,
-  style?: ($: ExtractControllerType<C>) => JSX.CSSProperties,
-  randomStartFrame?: boolean
-  init?: ($: ExtractControllerType<C>, $age: number) => T,
-}): Controller<T & ControllerBaseType> {
-  return createController<any>({
-    frames: options.frames,
-    randomStartFrame: options.randomStartFrame ?? false,
-    init() {
-      const baseData = options.base.data as ExtractControllerType<C>
+export function createController<CP extends ControllerBaseType>(options: ControllerProps<CP>): Controller<CP> {
+  return collidesOnPage(createScoopController({ ...options, onMount: keepElement(options.onMount) }))
+}
 
-      return {
-        id: `${options.base.id}-${options.type}`,
-        type: typeof options.type === 'function'
-          ? options.type(options.base.type)
-          : `${options.base.type}-${options.type}`,
-
-        x: () => options.offset.x,
-        y: () => options.offset.y,
-        rotation: () => options.rotation?.(baseData, options.base.age()) ?? 0,
-        origin: () => ({ x: options.origin?.x ?? 0, y: options.origin?.y ?? 0 }),
-        frame: () => options.frame?.(baseData),
-        frameInterval: () => options.frameInterval?.(baseData),
-        state: () => options.state?.(baseData),
-        width: options.width,
-        height: options.height,
-        solid: options.solid,
-        style: () => options.style?.(baseData),
-        ...options.init?.(baseData, options.base.age()),
-      }
-    },
-    onEnterFrame: options.onEnterFrame,
-  })
+export const createConnectedController: typeof createScoopConnectedController = options => {
+  return collidesOnPage(createScoopConnectedController({ ...options, onMount: keepElement(options.onMount) }))
 }

@@ -1,7 +1,8 @@
 import { createEffect, createRoot, createSignal, on } from 'solid-js'
 import type { Room } from 'trystero'
 import { Action, createAction } from './net'
-import { audioContext, mic } from './mic'
+import { audioContext } from '@/utils/audio'
+import { mic } from './mic'
 import { EARSHOT, FULL_VOLUME_DISTANCE, LISTEN_DISTANCE, STOP_LISTENING_DISTANCE } from './protocol'
 
 export interface Point {

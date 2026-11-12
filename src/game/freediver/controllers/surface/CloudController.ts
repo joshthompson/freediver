@@ -29,7 +29,7 @@ export function createCloudController(
     onEnterFrame({ $, $scene }) {
       $.setX($.x() + 0.2 * options.size)
 
-      if ($.x() > $scene.canvas.get().width + $.width()) {
+      if ($.x() > $scene.canvas.get().width() + $.width()) {
         $.setX(-500)
       }
     }

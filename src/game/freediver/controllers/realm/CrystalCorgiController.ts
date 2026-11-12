@@ -3,6 +3,7 @@ import { createController } from '@/engine'
 import { createObjectSignal } from '@/engine/utils'
 import { RealmName, Realms } from '../../data/Realms'
 import { CorgiController } from '../main/CorgiController'
+import { effects } from '../../music/effects'
 
 export type CrystalCorgiController = ReturnType<typeof createCrystalCorgiController>
 export type CrystalCorgiStage = 'waiting' | 'carried' | 'delivering' | 'placed'
@@ -90,6 +91,7 @@ export function createCrystalCorgiController(id: string, props: {
         if (corgiDistance < pickUpDistance) {
           $.setFound(true)
           $.setStage('carried')
+          effects.crystalFound()
           props.onFound?.()
         }
       } else if ($.stage() === 'carried' || $.stage() === 'delivering') {

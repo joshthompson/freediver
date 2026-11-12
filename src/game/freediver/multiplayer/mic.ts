@@ -1,4 +1,5 @@
 import { createSignal } from 'solid-js'
+import { audioContext } from '@/utils/audio'
 
 export type MicStatus = 'off' | 'asking' | 'on' | 'blocked' | 'unavailable'
 
@@ -16,16 +17,6 @@ function loadSettings(): MicSettings {
   } catch {
     return { on: false }
   }
-}
-
-let context: AudioContext | undefined
-
-// One AudioContext for Voice Chat and the Mic Check. Browsers only let it start after the
-// player has tapped something, so call this from a tap when you can
-export function audioContext() {
-  context ??= new AudioContext()
-  if (context.state === 'suspended') context.resume().catch(() => {})
-  return context
 }
 
 // Edges of the Mic Check's five bars, low to high pitch, in Hz

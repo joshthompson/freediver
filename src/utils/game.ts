@@ -1,5 +1,4 @@
 import { Scene } from '@/engine'
-import { Accessor } from 'solid-js'
 import type { Locale } from '@/game/freediver/data/Translations'
 
 // Text written out in every language the game supports
@@ -46,9 +45,6 @@ export function playSound(
   return audio
 }
 
-export type SolidRectInner = boolean | Rect
-export type SolidRect = SolidRectInner | Accessor<SolidRectInner>
-
 export interface Dialog {
   messages: DialogMessage[],
   onComplete?: () => void,
@@ -61,10 +57,18 @@ export interface BackgroundDialog {
   framesLeft: number
 }
 
+export interface SpeechSound {
+  pitch: number // Hz
+  wave?: OscillatorType
+  slide?: number // How far each beep bends, as a multiple of its pitch: below 1 droops, above 1 rises
+  volume?: number // A multiple of the usual loudness, for a voice that sounds quieter than the rest
+}
+
 export interface DialogMessage {
   text: Localised
   speaker?: Localised
   image?: string
+  speechSound?: SpeechSound // The beeps a speaker makes as their line types out
   after?: () => void,
   options?: {
     text: Localised;

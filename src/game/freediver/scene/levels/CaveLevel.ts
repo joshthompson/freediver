@@ -18,6 +18,7 @@ import { createDiverController, DiverController } from "../../controllers/main/D
 import { createCorgiController } from "../../controllers/main/CorgiController"
 import { createBoneController } from "../../controllers/scenary/BoneController"
 import { createStatueSignController } from "../../controllers/scenary/StatueSignController"
+import { wornSuit } from '../../multiplayer/skins'
 
 export function CaveLevel(props: {
   setScene: (scene: string, mode?: string) => void
@@ -50,6 +51,7 @@ export function CaveLevel(props: {
         doorId: 'floor-cave-block',
       }))
       $scene.addController(createDiverController('diver', {
+        skin: wornSuit($scene.gameState).diver,
         x: diverStart.x,
         y: diverStart.y,
         rotation: diverStart.rotation,
@@ -71,7 +73,7 @@ export function CaveLevel(props: {
         .sort((a, b) => a.data.y() - b.data.y())
       plants.forEach(plant => $scene.addController(plant))
 
-      const corgi = createCorgiController('corgi', { x: diverStart.x + 10, y: diverStart.y })
+      const corgi = createCorgiController('corgi', { skin: wornSuit($scene.gameState).corgi, x: diverStart.x + 10, y: diverStart.y })
       $scene.addController(corgi)
       $scene.addController(...createTriggerFishController('triggerfish-1', { x: 3000 }))
       $scene.addController(...createTriggerFishController('triggerfish-2', { x: 6000 }))
@@ -153,7 +155,7 @@ export function CaveLevel(props: {
       const diver = $scene.getControllerById<DiverController>('diver')
       // Center camera
       if (diver) {
-        $scene.canvas.get().setX(diver.data.x() - $scene.canvas.get().width / 2 + diver.data.width() / 2)
+        $scene.canvas.get().setX(diver.data.x() - $scene.canvas.get().width() / 2 + diver.data.width() / 2)
       }
     },
     assetOrder: [

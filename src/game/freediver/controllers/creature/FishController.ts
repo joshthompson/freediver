@@ -61,7 +61,7 @@ export function createFishController(
       $.setJitter({ x: Math.random() * 5 - 2.5, y: Math.random() * 5 - 2.5 })
 
       const xMin = $scene.canvas.get().x() - 30
-      const xMax = $scene.canvas.get().width + $scene.canvas.get().x() + 30
+      const xMax = $scene.canvas.get().width() + $scene.canvas.get().x() + 30
       if (x > xMax || x < xMin) {
         $.setY(Math.random() * 500 + 100)
         $.setSize(Math.random() + 0.5)

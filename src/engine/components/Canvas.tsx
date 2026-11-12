@@ -1,70 +1,30 @@
-import { Accessor, Component, For, JSX, onCleanup, Setter } from 'solid-js'
+import { Canvas as ScoopCanvas, type CanvasProps as ScoopCanvasProps } from 'scoopjs'
 import { css, cx } from '@style/css'
-import { Controller } from '@/engine'
-import { SceneContext } from '@/utils/SceneContext'
 import { Debugger } from './Debugger'
-import { Scene } from '@/engine'
-import { Sprite } from './Sprite'
-import { Modal } from './Modal'
 
-export type CanvasControllers = { id: string, controller: Controller<any> }[]
+export type { CanvasControllers } from 'scoopjs'
 
-export interface CanvasProps {
-  ref?: HTMLDivElement | undefined
-  scene: Scene
-  loading?: Component<{ scene: Scene }>
-  dialog?: Component<{ scene: Scene }>
-  underDialog?: JSX.Element // Drawn above sprites but beneath the dialog
-  overlay?: JSX.Element
-  underlay?: JSX.Element
-  style?: JSX.CSSProperties
-  class?: string
+export interface CanvasProps extends Omit<ScoopCanvasProps, 'runOffScreen'> {
   debug?: boolean
-  onClick?: (event: Vector) => void
-  onMouseDown?: (event: Vector) => void
-  onMouseUp?: (event: Vector) => void
 }
 
-export interface Canvas<T extends CanvasControllers = CanvasControllers> {
-  width: number
-  height: number
-  x: Accessor<number>
-  setX: Setter<number>
-  y: Accessor<number>
-  setY: Setter<number>
-  controllers: Accessor<T>
-}
-
-export function Canvas<T extends CanvasControllers = CanvasControllers>(
-  props: CanvasProps,
-) {
-  onCleanup(() => {
-    props.scene.controllers.get().forEach(({ controller }) =>
-      controller.destroy(),
-    )
-  })
-
-  const sprites = () => {
-    const assetOrder = new Map<string, number>()
-    props.scene.options.assetOrder?.flat().forEach((type, index) => {
-      // Keep the first index, as findIndex did
-      if (!assetOrder.has(type)) assetOrder.set(type, index)
-    })
-    const priority = (type: string) => assetOrder.get(type) ?? -1
-    return props.scene.controllers.get()
-      .map(({ controller }) => controller)
-      .sort((a, b) => priority(b.type) - priority(a.type))
-  }
+// ScoopJS's Canvas, the way freediver has always had it:
+// - The scene keeps running whether or not the canvas is on the screen
+// - A class can set the background, which is white otherwise, and a modal's shade is a little darker
+// - Clicks and touches are heard here rather than by ScoopJS, which reads a touch from the fingers
+//   still down, so has nothing to go on when the last one lifts. Here a touch is wherever the finger
+//   that changed is, so a tap's end is heard too
+export function Canvas(props: CanvasProps) {
+  let events: HTMLDivElement | undefined
 
   const getMousePosition = (event: MouseEvent | TouchEvent) => {
-    const rect = (event.currentTarget as HTMLDivElement).getBoundingClientRect()
-    const x = (event instanceof MouseEvent
-      ? event.clientX - rect.left
-      : event.changedTouches[0].clientX - rect.left) + props.scene.canvas.get().x()
-    const y = (event instanceof MouseEvent
-      ? event.clientY - rect.top
-      : event.changedTouches[0].clientY - rect.top) + props.scene.canvas.get().y()
-    return { x, y }
+    const canvas = events!.firstElementChild as HTMLElement
+    const rect = canvas.getBoundingClientRect()
+    const point = event instanceof MouseEvent ? event : event.changedTouches[0]
+    return {
+      x: point.clientX - rect.left + props.scene.canvas.get().x(),
+      y: point.clientY - rect.top + props.scene.canvas.get().y(),
+    }
   }
 
   const handleClick = (e: MouseEvent) => props.onClick?.(getMousePosition(e))
@@ -79,59 +39,44 @@ export function Canvas<T extends CanvasControllers = CanvasControllers>(
   const handleMouseDown = (e: MouseEvent) => props.onMouseDown?.(getMousePosition(e))
   const handleMouseUp = (e: MouseEvent) => props.onMouseUp?.(getMousePosition(e))
 
-  return (
-    <SceneContext.Provider value={props.scene}>
-      <div
-        ref={props.ref}
-        data-game-scene={props.scene.id}
-        class={cx(styles.canvas, props.class)}
-        style={{
-          width: `${props.scene.canvas.get().width}px`,
-          height: `${props.scene.canvas.get().height}px`,
-          ...props.style,
-        }}
-        onClick={handleClick}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
-      >
-        {props.underlay}
-        {/* The camera moves this one layer, so sprites only restyle when they move themselves */}
-        <div
-          class={styles.world}
-          style={{ transform: `translate(${-props.scene.canvas.get().x()}px, ${-props.scene.canvas.get().y()}px)` }}
-        >
-          <For each={sprites()}>
-            {controller => <Sprite
-              {...controller.sprite()}
-              id={controller.id}
-              type={controller.type}
-              active={props.scene.isActive()}
-            />}
-          </For>
-        </div>
-        {props.underDialog}
-        {props.dialog && <props.dialog scene={props.scene} />}
-        {props.scene.modal.get() && <Modal>{props.scene.modal.get()}</Modal>}
+  // No box of its own, so the canvas is laid out as if this weren't here
+  return <div
+    ref={events}
+    class={styles.events}
+    onClick={handleClick}
+    onTouchStart={handleTouchStart}
+    onTouchEnd={handleTouchEnd}
+    onMouseDown={handleMouseDown}
+    onMouseUp={handleMouseUp}
+  >
+    <ScoopCanvas
+      scene={props.scene}
+      loading={props.loading}
+      dialog={props.dialog}
+      underDialog={props.underDialog}
+      underlay={props.underlay}
+      overlay={<>
         {props.overlay}
-        {props.loading && props.scene.loading.get() && <props.loading scene={props.scene} />}
         {!!props.debug && <Debugger scene={props.scene} />}
-      </div>
-    </SceneContext.Provider>
-  )
+      </>}
+      class={cx(styles.canvas, props.class)}
+      style={{
+        background: undefined, // Left to the class, unlike ScoopJS's inline white
+        ...props.style,
+      }}
+      runOffScreen
+    />
+  </div>
 }
 
 const styles = {
-  canvas: css({
-    position: 'relative',
-    overflow: 'hidden',
-    background: 'white',
+  events: css({
+    display: 'contents',
+    // Up here rather than on the canvas: a level restyles its canvas every tick as the camera moves, and
+    // a custom property of its own makes the browser restyle every sprite in it each time
+    '--scoopjs-modal-backdrop': '#00000088',
   }),
-  world: css({
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    pointerEvents: 'none',
+  canvas: css({
+    background: 'white',
   }),
 }

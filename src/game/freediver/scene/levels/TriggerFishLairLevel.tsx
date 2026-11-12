@@ -164,5 +164,5 @@ export function TriggerFishLairLevel(props: RealmLevelProps): RealmLevel {
     <span style={{ 'font-size': '1rem', color: 'white' }}>{t().realms.bait}: E</span>
   </HudStack>
 
-  return { scene, style, hud }
+  return { scene, style, hud, music: () => 'triggerFishLair' }
 }

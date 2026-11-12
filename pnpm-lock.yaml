@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      scoopjs:
+        specifier: npm:@joshthompson/scoopjs@^0.2.0
+        version: '@joshthompson/scoopjs@0.2.0(solid-js@1.9.9)'
       solid-js:
         specifier: ^1.9.5
         version: 1.9.9
@@ -769,6 +772,11 @@ packages:
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
     engines: {node: '>=12'}
+
+  '@joshthompson/scoopjs@0.2.0':
+    resolution: {integrity: sha512-t5j6bymSCsLSCS7dg8+L3my6VdqcBGWoeL4JRun9hr8MY3PKJi/5M9Tk7Cam8achozM2GOnpJuk8/lnDAKWw8A==, tarball: https://npm.pkg.github.com/download/@joshthompson/scoopjs/0.2.0/1c42f4ce768daf5608e6a93cfa5a82df8e4c1bd1}
+    peerDependencies:
+      solid-js: ^1.9.0
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -3416,6 +3424,10 @@ snapshots:
       strip-ansi-cjs: strip-ansi@6.0.1
       wrap-ansi: 8.1.0
       wrap-ansi-cjs: wrap-ansi@7.0.0
+
+  '@joshthompson/scoopjs@0.2.0(solid-js@1.9.9)':
+    dependencies:
+      solid-js: 1.9.9
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:

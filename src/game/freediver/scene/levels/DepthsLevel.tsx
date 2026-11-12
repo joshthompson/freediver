@@ -160,5 +160,5 @@ export function DepthsLevel(props: RealmLevelProps): RealmLevel {
     } satisfies JSX.CSSProperties
   }
 
-  return { scene, style }
+  return { scene, style, music: () => 'depths' }
 }

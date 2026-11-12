@@ -3,7 +3,7 @@
 // pixels from the next frame. After padding, draw each frame `padding` source pixels bigger on
 // every side, and offset it by the same, so the art stays where it was.
 // Run once per sheet, as running it again pads it again:
-//   node scripts/pad-sprite-sheet.mjs src/assets/sprites/seadiver/seadiver-body.png 7 10
+//   node scripts/pad-sprite-sheet.mjs src/assets/sprites/costumes/teal/seadiver-body.png 7 10
 import fs from 'node:fs'
 import { PNG } from 'pngjs'
 

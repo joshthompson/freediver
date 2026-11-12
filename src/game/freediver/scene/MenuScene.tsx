@@ -7,6 +7,7 @@ import { useGameState } from '@/utils/GameStateContext'
 import { LocaleFlags, Translations } from '@/game/freediver/data/Translations'
 import { alertAsset, menu1Asset } from '@/assets'
 import { Logo } from '../ui/Logo'
+import { NoInternetIcon } from '../ui/NoInternetIcon'
 
 export const MenuScene: SceneComponent = props => {
   const scene = new Scene('menu', {
@@ -48,7 +49,9 @@ export const MenuScene: SceneComponent = props => {
         {scene.gameState.score.total > 0 ? t().menu.continue : t().menu.start}
       </Button>
       <Button onClick={() => props.setScene('lobby')} size="small" disabled={!online()}>
-        {online() ? t().menu.multiplayer : t().multiplayer.needsInternet}
+        {online() ? t().menu.multiplayer : <span class={styles.offline} title={t().multiplayer.needsInternet}>
+          <s>{t().menu.multiplayer}</s> <NoInternetIcon title={t().multiplayer.needsInternet} />
+        </span>}
       </Button>
       <Button onClick={() => props.setScene('instructions')} size="small">{t().menu.instructions}</Button>
       <Button onClick={() => props.setScene('achievements')} size="small">{t().achievements.title}</Button>
@@ -68,6 +71,26 @@ const styles = {
     flexDirection: 'column',
     gap: '10px',
     pb: '75px',
+  }),
+  offline: css({
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '8px',
+    // Drawn rather than text-decoration, which sits low in this font
+    '& s': {
+      position: 'relative',
+      textDecoration: 'none',
+      _after: {
+        content: '""',
+        position: 'absolute',
+        left: '-3px',
+        right: '-3px',
+        top: 'calc(50% - 2px)',
+        height: '3px',
+        background: 'white',
+        boxShadow: '0.06em 0.06em 0 black',
+      },
+    },
   }),
   credits: css({
     position: 'absolute',

@@ -38,11 +38,11 @@ export function createLightRayController(
     onEnterFrame({ $, $scene }) {
       const offset = $.x() - $scene.canvas.get().x()
       if (offset < -100) {
-        $.setX($.x() + $scene.canvas.get().width + 200)
+        $.setX($.x() + $scene.canvas.get().width() + 200)
         if (type === 'green') $.setRotation(Math.random() * 30 - 15)
       }
-      if (offset > $scene.canvas.get().width + 100) {
-        $.setX($.x() - $scene.canvas.get().width - 200)
+      if (offset > $scene.canvas.get().width() + 100) {
+        $.setX($.x() - $scene.canvas.get().width() - 200)
         if (type === 'green') $.setRotation(Math.random() * 30 - 15)
       }
     },

@@ -5,6 +5,7 @@ import { Scene, SceneComponent } from '@/engine'
 import { useGameState } from '@/utils/GameStateContext'
 import { Translations } from '@/game/freediver/data/Translations'
 import { kingdomCrownAsset, linkDialogAsset } from '@/assets'
+import { music } from '../music/music'
 
 const duration = 30
 
@@ -37,6 +38,8 @@ export const CreditsScene: SceneComponent = props => {
     images: [linkDialogAsset, kingdomCrownAsset],
   })
   const t = () => Translations[gameState.options.locale]
+  music.play('credits')
+  onCleanup(() => music.stop('credits'))
 
   let done = false
   const finish = () => {
