@@ -262,8 +262,8 @@ export function KingdomLevel(props: {
       // Center camera, without looking past the castle walls
       if (diver) {
         const canvas = $scene.canvas.get()
-        const x = diver.data.x() - canvas.width / 2 + diver.data.width() / 2
-        canvas.setX(Math.max(KINGDOM.minX - 200, Math.min(KINGDOM.maxX + 200 - canvas.width, x)))
+        const x = diver.data.x() - canvas.width() / 2 + diver.data.width() / 2
+        canvas.setX(Math.max(KINGDOM.minX - 200, Math.min(KINGDOM.maxX + 200 - canvas.width(), x)))
       }
     },
     assetOrder: [

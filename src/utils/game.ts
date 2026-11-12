@@ -1,5 +1,4 @@
 import { Scene } from '@/engine'
-import { Accessor } from 'solid-js'
 import type { Locale } from '@/game/freediver/data/Translations'
 
 // Text written out in every language the game supports
@@ -45,9 +44,6 @@ export function playSound(
   if (manage) audio.addEventListener('ended', () => audio.remove())
   return audio
 }
-
-export type SolidRectInner = boolean | Rect
-export type SolidRect = SolidRectInner | Accessor<SolidRectInner>
 
 export interface Dialog {
   messages: DialogMessage[],

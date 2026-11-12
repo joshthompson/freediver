@@ -21,7 +21,10 @@
     "paths": {
       "@/*": ["./src/*"],
       "@style/*": ["./styled-system/*"],
-      "@assets/*": ["./src/assets/*"]
+      "@assets/*": ["./src/assets/*"],
+      // The game's own Solid for a linked ScoopJS too, or there'd be two JSX namespaces
+      "solid-js": ["./node_modules/solid-js"],
+      "solid-js/*": ["./node_modules/solid-js/*"]
     }
   }
 }

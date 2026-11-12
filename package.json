@@ -23,6 +23,7 @@
     "vite-plugin-solid": "^2.11.8"
   },
   "dependencies": {
+    "scoopjs": "npm:@joshthompson/scoopjs@^0.2.0",
     "solid-js": "^1.9.5",
     "trystero": "^0.26.0",
     "workbox-window": "^7.4.0"

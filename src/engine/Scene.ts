@@ -1,180 +1,74 @@
-import { SetStoreFunction } from "solid-js/store"
-import { GameState, GameStateActions } from "../utils/GameStateContext"
-import { BackgroundDialog, Dialog } from "../utils/game"
-import { Accessor, batch, Component, createMemo, createSignal, JSX, Setter } from "solid-js"
-import { Canvas, CanvasControllers } from "@/engine/components/Canvas"
-import { createObjectSignal, isTyping, ObjectSignal } from "./utils"
-import { Controller } from "./Controller"
+import { type Controller, createObjectSignal, type ObjectSignal, Scene as CoreScene, type SceneOptions } from 'scoopjs'
+import { SetStoreFunction } from 'solid-js/store'
+import { GameState, GameStateActions } from '@/utils/GameStateContext'
+import { BackgroundDialog, Dialog } from '@/utils/game'
+import { createDialogs, type Dialogs } from './plugins/dialog'
+import { createSounds, type PlaySoundOptions, type Sounds } from './plugins/sounds'
+import { isOnCanvas } from './utils/isOnCanvas'
+import { isTyping } from './utils/Key'
 
+export type { SceneComponent } from 'scoopjs'
 
-export type SceneComponent<T extends {} = any> = Component<{
-  setScene: (scene: string, mode?: string) => void
-  mode?: string
-} & T>
-
-interface GameOptions {
+export interface GameOptions extends Omit<SceneOptions, 'setup' | 'afterEnterFrames'> {
   gameState: GameState
   setGameState: SetStoreFunction<GameState>
   gameStateActions: GameStateActions,
-  width: number
-  height: number
-  x?: number,
-  y?: number,
   setup?: (scene: Scene) => void
   afterEnterFrames?: (data: { $scene: Scene }) => void
   sounds?: Record<string, string>
-  images?: string[] // These are other assets that are not in controllers
-  frameRate?: number
-  assetOrder?: (string | string[])[]
   pauseStopsGameplay?: boolean // False in multiplayer, where pausing only opens the menu. Defaults to true
 }
 
-export class Scene<C extends Controller<any> = Controller<any>> {
-  gameState: GameState
-  setGameState: SetStoreFunction<GameState>
-  gameStateActions: GameStateActions
-  // canvas: ObjectSignal<Canvas>
-  // controllers: ObjectSignal<CanvasControllers>
-  sounds: Record<string, HTMLAudioElement>
-  // loadingAssetCount: ObjectSignal<number>
-  // loadingAssetTotal: ObjectSignal<number>
-  interval: number
-  dialog: {
-    data: Accessor<Dialog | undefined>
-    setData: Setter<Dialog | undefined>
-    messageIndex: Accessor<number>
-    setMessageIndex: Setter<number>
+// Freediver's own parts of a scene. They're declared on ScoopJS's Scene, rather than only on the class
+// below, so the scene ScoopJS hands a controller ($scene) has them too: every scene in freediver is one
+// of these
+declare module 'scoopjs' {
+  interface Scene<C extends Controller<any> = Controller<any>> {
+    gameState: GameState
+    setGameState: SetStoreFunction<GameState>
+    gameStateActions: GameStateActions
+    paused: ObjectSignal<boolean>
+    dialog: Dialogs<Scene<C>, Dialog, BackgroundDialog>['dialog']
+    backgroundDialogs: ObjectSignal<BackgroundDialog[]>
+    togglePause(): void
+    startDialog(dialog: Dialog, options?: { firstMessageIndex?: number }): void
+    startBackgroundDialog(backgroundDialog: BackgroundDialog): boolean
+    diaglogAction(optionIndex: number): void
+    endDialog(): void
+    playSound(name: string, options?: PlaySoundOptions): void
+    stopSound(name: string): void
+    isOnCanvas(controller: Controller<any>, margin?: number): boolean
   }
-  backgroundDialogs = createObjectSignal([] as BackgroundDialog[])
-  loading = createObjectSignal(false)
-  paused = createObjectSignal(false)
-  modal = createObjectSignal(undefined as JSX.Element | undefined)
-  loadingAssetCount = createObjectSignal(0)
-  loadingAssetTotal = createObjectSignal(0)
-  controllers = createObjectSignal([] as CanvasControllers)
-  canvas: ObjectSignal<Canvas>
+}
 
-  // Lookup indexes over controllers and their children, rebuilt only when either list changes
-  #indexes = createMemo(() => {
-    const byId = new Map<string, Controller<any>>()
-    const byType = new Map<string, Controller<any>[]>()
-    this.getAllControllers().forEach(controller => {
-      // Keep the first match, as Array.find did
-      if (!byId.has(controller.id)) byId.set(controller.id, controller)
-      const ofType = byType.get(controller.type)
-      if (ofType) ofType.push(controller)
-      else byType.set(controller.type, [controller])
+// What a scene keeps to itself. Out here, so the class has nothing ScoopJS's Scene doesn't, and either
+// can stand in for the other
+interface Parts {
+  options: GameOptions
+  dialogs: Dialogs<Scene, Dialog, BackgroundDialog>
+  sounds: Sounds
+  onKeydown: (event: KeyboardEvent) => void
+  onPauseGame: () => void
+}
+const parts = new WeakMap<CoreScene, Parts>()
+const partsOf = (scene: CoreScene) => parts.get(scene)!
+
+export class Scene<C extends Controller<any> = Controller<any>> extends CoreScene<C> {
+  constructor(id: string, options: GameOptions) {
+    super(id, {
+      // How freediver draws its scenes (see each in ScoopJS's SceneOptions)
+      cameraLayer: true,
+      standbyFrames: true,
+      frameClock: 'display',
+      ...options,
+      // ScoopJS runs setup from inside its own constructor, before this one's body would, so freediver's
+      // parts go on first thing in it, ready for the game's own setup
+      setup: scene => {
+        addParts(scene, options)
+        options.setup?.(scene)
+      },
+      afterEnterFrames: options.afterEnterFrames as SceneOptions['afterEnterFrames'],
     })
-    return { byId, byType }
-  })
-
-  // Bound once so destroy() can remove the same function references
-  #onKeydown = (event: KeyboardEvent) => this.handleWindowKeydown(event)
-  #onPauseGame = () => this.togglePause()
-
-  constructor(public id: string, public options: GameOptions) {
-    // Store setup options
-    this.gameState = options.gameState
-    this.setGameState = options.setGameState
-    this.gameStateActions = options.gameStateActions
-
-    // Setup sounds
-    this.sounds = {}
-    Object.entries(options.sounds ?? {}).forEach(([name, path]) => {
-      this.sounds[name] = new Audio(path)
-    })
-
-
-    // Setup signals
-    this.canvas = createObjectSignal(this.createCanvas())
-
-    // Dialog setup
-    const [dialog, setDialog] = createSignal<Dialog | undefined>(undefined)
-    const [currentMessageIndex, setCurrentMessageIndex] = createSignal<number>(0)
-    this.dialog = {
-      data: dialog,
-      setData: setDialog,
-      messageIndex: currentMessageIndex,
-      setMessageIndex: setCurrentMessageIndex,
-    }
-
-    // Setup onEnterFrame functions for controllers. Batched so the DOM is written once per frame,
-    // rather than after every signal write, which also keeps hitTest's layout reads from forcing a reflow
-    this.interval = window.setInterval(() => batch(() => {
-      if (this.isActive()) {
-        this.controllers.get().forEach(({ controller }) => controller.onEnterFrame(this))
-        this.#tickBackgroundDialogs()
-      }
-      this.options.afterEnterFrames?.({ $scene: this })
-    }), this.options.frameRate ?? 40)
-
-    // Set window event listeners
-    window.addEventListener('keydown', this.#onKeydown)
-    window.addEventListener('pause-game', this.#onPauseGame)
-
-    // Run setup
-    this.setup()
-  }
-
-  addController(...controllers: (C | undefined)[]) {
-    const added: CanvasControllers = []
-    controllers.forEach(controller => {
-      if (!controller) return
-      controller.setGame(this)
-      added.push({ id: controller.id, controller })
-    })
-    if (added.length) {
-      this.controllers.set([...this.controllers.get(), ...added])
-    }
-  }
-
-  removeController(id: string) {
-    this.controllers.set(this.controllers.get().filter(({ id: name }) => name !== id))
-  }
-
-  getAllControllers() {
-    return [
-      ...this.controllers.get().map(c => c.controller),
-      ...this.controllers.get().map(c => c.controller.childControllers()).flat(),
-    ]
-  }
-
-  getControllerById<T = Controller<any>>(id: string) {
-    return this.#indexes().byId.get(id) as T | undefined
-  }
-
-  getControllersByType<T = Controller<any>>(type: string) {
-    return (this.#indexes().byType.get(type)?.slice() ?? []) as T[]
-  }
-
-  getSolidControllerRects(): Rect[] {
-    return this.controllers.get()
-      .filter(c => c.controller.solid && c.controller.sprite())
-      .map(c => {
-        const solid = c.controller.solid as Accessor<Rect> | Rect | true
-        if (solid === true) {
-          return {
-            x: c.controller.data.x() + c.controller.solid,
-            y: c.controller.data.y() + c.controller.solid,
-            width: c.controller.data.width,
-            height: c.controller.data.height, // TODO Force height being set
-          }
-        }
-        const rect = typeof solid === 'function' ? solid() : solid
-        return {
-          x: c.controller.data.x() + rect.x,
-          y: c.controller.data.y() + rect.y,
-          width: rect.width,
-          height: rect.height,
-        }
-      })
-  }
-
-  handleWindowKeydown(event: KeyboardEvent) {
-    if (isTyping(event)) return
-    if (event.key === 'p' || event.key === 'Escape') {
-      this.togglePause()
-    }
   }
 
   togglePause() {
@@ -182,169 +76,78 @@ export class Scene<C extends Controller<any> = Controller<any>> {
   }
 
   isActive() {
-    return (!this.paused.get() || this.options.pauseStopsGameplay === false)
-        && !this.loading.get()
-        && ((this.dialog.data()?.pauseGameplay ?? false) !== true)
-        && !this.modal.get()
+    const { options, dialogs } = partsOf(this)
+    return (!this.paused.get() || options.pauseStopsGameplay === false)
+        && super.isActive() // Not loading, and no modal up
+        && !dialogs.pausesScene()
   }
 
   destroy() {
-    clearInterval(this.interval)
-    window.removeEventListener('keydown', this.#onKeydown)
-    window.removeEventListener('pause-game', this.#onPauseGame)
+    super.destroy()
+    const { onKeydown, onPauseGame } = partsOf(this)
+    window.removeEventListener('keydown', onKeydown)
+    window.removeEventListener('pause-game', onPauseGame)
   }
 
-  createCanvas(): Canvas {
-    return {
-      width: this.options.width,
-      height: this.options.height,
-      controllers: this.controllers.get,
-      ...createObjectSignal(this.options.x ?? 0, 'x'),
-      ...createObjectSignal(this.options.y ?? 0, 'y'),
-    }
+  // Sounds count towards loading, alongside ScoopJS's images
+  async preloadAssets() {
+    const images = super.preloadAssets()
+    const sounds = partsOf(this).sounds.preload(() => this.loadingAssetCount.set(this.loadingAssetCount.get() + 1))
+    this.loadingAssetTotal.set(this.loadingAssetTotal.get() + sounds.length)
+    await Promise.allSettled([images, ...sounds])
   }
 
   startDialog(dialog: Dialog, options?: { firstMessageIndex?: number }) {
-    this.backgroundDialogs.set([])
-    this.dialog.setMessageIndex(options?.firstMessageIndex ?? 0)
-    this.dialog.setData(dialog)
+    partsOf(this).dialogs.start(dialog, options)
   }
 
   // Only one shows at a time, and none while a dialog is open. Returns whether it started
   startBackgroundDialog(backgroundDialog: BackgroundDialog) {
-    if (this.dialog.data() || this.backgroundDialogs.get().length) return false
-    this.backgroundDialogs.set([backgroundDialog])
-    return true
-  }
-
-  // Drop background dialogs that have run out of frames or whose speaker has left the screen
-  #tickBackgroundDialogs() {
-    const dialogs = this.backgroundDialogs.get()
-    if (!dialogs.length) return
-    const remaining = dialogs.filter(dialog => {
-      dialog.framesLeft--
-      const speaker = this.getControllerById(dialog.controllerId)
-      if (!speaker || dialog.framesLeft <= 0) return false
-      return this.isOnCanvas(speaker)
-    })
-    if (remaining.length !== dialogs.length) this.backgroundDialogs.set(remaining)
-  }
-
-  // Whether any of a controller is within the canvas, or within margin px of it. Lets controllers skip
-  // purely visual work, like idle animation, while nobody can see them
-  isOnCanvas(controller: Controller<any>, margin = 0) {
-    const canvas = this.canvas.get()
-    const x = controller.data.x() - canvas.x()
-    const y = controller.data.y() - canvas.y()
-    return x + controller.data.width() > -margin && x < canvas.width + margin
-      && y + controller.data.height() > -margin && y < canvas.height + margin
+    return partsOf(this).dialogs.startBackground(backgroundDialog)
   }
 
   diaglogAction(optionIndex: number) {
-    const data = this.dialog.data()
-    const message = data?.messages[this.dialog.messageIndex()]
-    if (!message) return
-
-    // Run after hook and option onSelect
-    message.after?.()
-    const option = message.options?.[optionIndex]
-    if (option?.end) {
-      this.endDialog()
-    }
-    option?.onSelect?.(this)
-
-    // Move to next message or end dialog
-    const nextMessageIndex = option?.next ?? this.dialog.messageIndex() + 1
-    if (data.messages[nextMessageIndex]) {
-      this.dialog.setMessageIndex(nextMessageIndex)
-    } else {
-      this.endDialog()
-    }
+    partsOf(this).dialogs.choose(optionIndex)
   }
 
   endDialog() {
-    this.dialog.data()?.onComplete?.()
-    this.dialog.setData(undefined)
-    this.dialog.setMessageIndex(0)
-  }
-  
-  async setup() {
-    this.options.setup?.(this)
-    this.controllers.get().forEach(({ controller }) => {
-      controller.setGame(this)
-    })
-    this.load()
+    partsOf(this).dialogs.end()
   }
 
-  playSound(name: string, options?: {
-    volume?: number,
-    loop?: boolean,
-    unique?: boolean,
-  }) {
-    let sound = this.sounds[name]
-    if (!sound) return
-    if (options?.unique) {
-      sound = new Audio(sound.src)
-    }
-    sound.volume = (options?.volume ?? 1) * (this.gameState.options.volume ?? 1)
-    sound.loop = options?.loop ?? false
-    sound.setAttribute('data-game-volume', `${options?.volume ?? 1}`)
-    sound.play()
-    sound.style.setProperty('display', 'none')
-    document.body.appendChild(sound)
-    if (options?.unique) {
-      sound.addEventListener('ended', () => sound.remove())
-    }
+  playSound(name: string, options?: PlaySoundOptions) {
+    partsOf(this).sounds.play(name, options)
   }
 
   stopSound(name: string) {
-    let sound = this.sounds[name]
-    if (!sound) return
-    sound.pause()
-    sound.currentTime = 0
+    partsOf(this).sounds.stop(name)
   }
 
-  async load() {
-    this.loading.set(true)
-    await this.preloadAssets()
-    this.loading.set(false)
+  isOnCanvas(controller: Controller<any>, margin = 0) {
+    return isOnCanvas(this, controller, margin)
   }
+}
 
-  async preloadAssets() {
-    const frameAssets = this.controllers.get()
-      .map(({ controller }) => controller.frames ?? [])
-      .flat()
-      .map(frame => frame.split('#')[0])
+function addParts(scene: CoreScene, options: GameOptions) {
+  scene.gameState = options.gameState
+  scene.setGameState = options.setGameState
+  scene.gameStateActions = options.gameStateActions
+  scene.paused = createObjectSignal(false)
 
-    const imageAssets = [...new Set([...frameAssets, ...(this.options.images ?? [])])]
-    const audioAssets = Object.values(this.options.sounds ?? {})
-    this.loadingAssetCount.set(0)
-    this.loadingAssetTotal.set(imageAssets.length + audioAssets.length)
-    const assetLoaded = () => this.loadingAssetCount.set(this.loadingAssetCount.get() + 1)
-    const assetSet = new Set([...imageAssets, ...audioAssets])
-    const images = imageAssets.map(path => {
-      return new Promise<void>((resolve) => {
-        const img = new Image()
-        img.src = path
-        img.onload = () => assetLoaded() && resolve()
-        img.onerror = () => assetLoaded() && resolve()
-      }).then(() => assetSet.delete(path)).catch(() => console.error(`Error preloading "${path}"`))
-    })
-    const sounds = audioAssets.map(path => {
-      return new Promise<void>((resolve) => {
-        const audio = new Audio(path)
-        const done = () => {
-          audio.removeEventListener('canplay', done)
-          audio.removeEventListener('loadeddata', done)
-          audio.removeEventListener('error', done)
-          assetLoaded()
-          resolve()
-        }
-        audio.addEventListener('canplay', done)
-        audio.addEventListener('loadeddata', done)
-        audio.addEventListener('error', done)
-      }).then(() => assetSet.delete(path)).catch(() => console.error(`Error preloading "${path}"`))
-    })
-    await Promise.allSettled([...images, ...sounds])
+  const dialogs = createDialogs<Scene, Dialog, BackgroundDialog>(scene)
+  scene.dialog = dialogs.dialog
+  scene.backgroundDialogs = dialogs.background
+
+  const sounds = createSounds(options.sounds ?? {}, { volume: () => scene.gameState.options.volume ?? 1 })
+
+  const onKeydown = (event: KeyboardEvent) => {
+    if (isTyping(event)) return
+    if (event.key === 'p' || event.key === 'Escape') {
+      scene.togglePause()
+    }
   }
+  const onPauseGame = () => scene.togglePause()
+  window.addEventListener('keydown', onKeydown)
+  window.addEventListener('pause-game', onPauseGame)
+
+  parts.set(scene, { options, dialogs, sounds, onKeydown, onPauseGame })
 }

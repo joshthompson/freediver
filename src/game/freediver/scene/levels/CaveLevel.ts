@@ -155,7 +155,7 @@ export function CaveLevel(props: {
       const diver = $scene.getControllerById<DiverController>('diver')
       // Center camera
       if (diver) {
-        $scene.canvas.get().setX(diver.data.x() - $scene.canvas.get().width / 2 + diver.data.width() / 2)
+        $scene.canvas.get().setX(diver.data.x() - $scene.canvas.get().width() / 2 + diver.data.width() / 2)
       }
     },
     assetOrder: [

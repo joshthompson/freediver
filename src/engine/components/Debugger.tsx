@@ -1,6 +1,6 @@
 import { Scene } from "@/engine";
-import { CorgiController } from "@/game/freediver/controllers/CorgiController";
-import { DiverController } from "@/game/freediver/controllers/DiverController";
+import { CorgiController } from "@/game/freediver/controllers/main/CorgiController";
+import { DiverController } from "@/game/freediver/controllers/main/DiverController";
 import { css, cx } from "@style/css";
 import { Component, createSignal, onCleanup, Show } from "solid-js";
 

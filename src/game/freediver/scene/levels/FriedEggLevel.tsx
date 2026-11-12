@@ -152,8 +152,8 @@ export function FriedEggLevel(props: RealmLevelProps): RealmLevel {
           const marginX = monster.data.width() / 2 + 20
           const marginY = monster.data.height() / 2 + 20
           return {
-            x: clamp(spot.x, canvas.x() + marginX, canvas.x() + canvas.width - marginX),
-            y: clamp(spot.y, canvas.y() + marginY, canvas.y() + canvas.height - marginY),
+            x: clamp(spot.x, canvas.x() + marginX, canvas.x() + canvas.width() - marginX),
+            y: clamp(spot.y, canvas.y() + marginY, canvas.y() + canvas.height() - marginY),
           }
         }
         phaseFrames++
@@ -236,7 +236,7 @@ export function FriedEggLevel(props: RealmLevelProps): RealmLevel {
           } else if (pattern === 4) {
             // Egg rain from the top of the screen, while he keeps taking aim
             if (phaseFrames % 4 === 0) {
-              fire({ x: canvas.x() + Math.random() * canvas.width, y: canvas.y() - 20 }, Math.PI / 2 + (Math.random() - 0.5) * 0.3, 4 + Math.random() * 2)
+              fire({ x: canvas.x() + Math.random() * canvas.width(), y: canvas.y() - 20 }, Math.PI / 2 + (Math.random() - 0.5) * 0.3, 4 + Math.random() * 2)
             }
             if (phaseFrames % 30 === 0) fire(monsterCenter, aim, 6.5)
           } else {

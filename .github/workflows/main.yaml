@@ -9,6 +9,8 @@ on:
 
 permissions:
   contents: write
+  # ScoopJS, from GitHub Packages
+  packages: read
 
 jobs:
   build:
@@ -30,6 +32,13 @@ jobs:
         with:
           node-version: 20
           cache: 'pnpm'
+
+      # GitHub Packages wants a token even to install ScoopJS. This repo's own works once the package lets
+      # it read (the package's settings, "Manage Actions access")
+      - name: Log in to GitHub Packages
+        run: echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Install deps
       - name: Install dependencies

@@ -55,6 +55,9 @@ export default defineConfig({
     }),
   ],
   resolve: {
+    // One Solid for the game and ScoopJS. A linked ScoopJS would otherwise bring its own, and signals
+    // would silently stop updating (see scoopjs's plan.md)
+    dedupe: ['solid-js'],
     alias: {
       '@': path.resolve(__dirname, 'src'),
       '@style': path.resolve(__dirname, 'styled-system'),

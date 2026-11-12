@@ -229,7 +229,7 @@ export function HellLevel(props: RealmLevelProps): RealmLevel {
         } else if (phase() === 'race') {
           const demonX = demon.data.x() + demon.data.width() / 2
           const canvas = $scene.canvas.get()
-          const onScreen = demon.data.x() > canvas.x() && demon.data.x() + demon.data.width() < canvas.x() + canvas.width
+          const onScreen = demon.data.x() > canvas.x() && demon.data.x() + demon.data.width() < canvas.x() + canvas.width()
 
           // It can't resist stopping to rub it in
           mockCooldown--

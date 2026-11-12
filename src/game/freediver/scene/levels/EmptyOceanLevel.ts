@@ -63,7 +63,7 @@ export function EmptyOceanLevel(props: { session: RoomSession }) {
       const diver = $scene.getControllerById<DiverController>('diver')
       const corgi = $scene.getControllerById<CorgiController>('corgi')
       if (!diver || !corgi) return
-      $scene.canvas.get().setX(diver.data.x() - $scene.canvas.get().width / 2 + diver.data.width() / 2)
+      $scene.canvas.get().setX(diver.data.x() - $scene.canvas.get().width() / 2 + diver.data.width() / 2)
       if (frame++ % sendEvery === 0) {
         props.session.sendPose({ diver: readDiverPose(diver), corgi: readCorgiPose(corgi) })
       }

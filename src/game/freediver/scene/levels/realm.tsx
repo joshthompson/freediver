@@ -184,8 +184,8 @@ export function followDiver($scene: Scene, bounds: Rect) {
   const canvas = $scene.canvas.get()
   const center = diver.data.center()
   const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value))
-  canvas.setX(clamp(center.x - canvas.width / 2, bounds.x, Math.max(bounds.x, bounds.x + bounds.width - canvas.width)))
-  canvas.setY(clamp(center.y - canvas.height / 2, bounds.y, Math.max(bounds.y, bounds.y + bounds.height - canvas.height)))
+  canvas.setX(clamp(center.x - canvas.width() / 2, bounds.x, Math.max(bounds.x, bounds.x + bounds.width - canvas.width())))
+  canvas.setY(clamp(center.y - canvas.height() / 2, bounds.y, Math.max(bounds.y, bounds.y + bounds.height - canvas.height())))
 }
 
 // Frames for a number of seconds at the game's frame rate
